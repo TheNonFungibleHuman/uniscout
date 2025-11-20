@@ -4,30 +4,36 @@ import { AuthUser } from '../types';
 import { initializeApp } from 'firebase/app';
 import { getAuth, signInWithPopup, GoogleAuthProvider, signOut as firebaseSignOut, onAuthStateChanged, User } from 'firebase/auth';
 
-// Initialize Firebase configuration
+// Initialize Firebase configuration from Environment Variables
+// NOTE: To use real Firebase Auth, set these variables in your environment/hosting provider.
+// If missing, the app will automatically fallback to Mock Mode.
 const firebaseConfig = {
-  apiKey: "AIzaSyBDKBQg1V9Y6kuY_EbdjRKeEgYStT_EZA0",
-  authDomain: "gen-lang-client-0681949015.firebaseapp.com",
-  projectId: "gen-lang-client-0681949015",
-  storageBucket: "gen-lang-client-0681949015.firebasestorage.app",
-  messagingSenderId: "291482318316",
-  appId: "1:291482318316:web:391b6c1df554c17006fcc9",
-  measurementId: "G-XV75VXN5CK"
+  apiKey: process.env.FIREBASE_API_KEY,
+  authDomain: process.env.FIREBASE_AUTH_DOMAIN,
+  projectId: process.env.FIREBASE_PROJECT_ID,
+  storageBucket: process.env.FIREBASE_STORAGE_BUCKET,
+  messagingSenderId: process.env.FIREBASE_MESSAGING_SENDER_ID,
+  appId: process.env.FIREBASE_APP_ID,
+  measurementId: process.env.FIREBASE_MEASUREMENT_ID
 };
 
 let auth: any;
 let googleProvider: any;
 let isFirebaseInitialized = false;
 
-// Attempt to initialize Firebase
-try {
-    const app = initializeApp(firebaseConfig);
-    auth = getAuth(app);
-    googleProvider = new GoogleAuthProvider();
-    isFirebaseInitialized = true;
-    console.log("Firebase initialized successfully");
-} catch (e) {
-    console.error("Firebase initialization failed:", e);
+// Attempt to initialize Firebase only if API Key is present
+if (firebaseConfig.apiKey) {
+    try {
+        const app = initializeApp(firebaseConfig);
+        auth = getAuth(app);
+        googleProvider = new GoogleAuthProvider();
+        isFirebaseInitialized = true;
+        console.log("Firebase initialized successfully");
+    } catch (e) {
+        console.error("Firebase initialization failed:", e);
+    }
+} else {
+    console.log("Firebase config missing. Defaulting to Mock Auth mode.");
 }
 
 // Mapper from Firebase User to our AuthUser
@@ -81,14 +87,13 @@ export const authClient = {
                     return { data: mapFirebaseUser(result.user), error: null };
                  } catch (error: any) {
                     // ERROR HANDLING STRATEGY:
-                    // If the specific Google Auth configuration is missing on the backend (auth/configuration-not-found),
-                    // or the domain isn't authorized (auth/unauthorized-domain), we fallback to Demo Mode 
-                    // so the user isn't blocked during preview/testing.
+                    // Fallback to Demo Mode on configuration errors
                     const handledErrorCodes = [
                         'auth/configuration-not-found',
                         'auth/operation-not-allowed',
                         'auth/unauthorized-domain',
-                        'auth/admin-restricted-operation'
+                        'auth/admin-restricted-operation',
+                        'auth/api-key-not-valid'
                     ];
 
                     if (handledErrorCodes.includes(error.code)) {
@@ -107,7 +112,7 @@ export const authClient = {
             return { data: null, error: "Provider not supported" };
         }
 
-        // 2. Fallback to Mock Auth (If initialization failed entirely)
+        // 2. Fallback to Mock Auth (If initialization failed entirely or config missing)
         console.warn("Firebase not initialized. Using Mock Auth.");
         return await performMockLogin();
     },
@@ -179,8 +184,6 @@ export const authClient = {
         }
 
         // 2. Setup Manual Event Listener (For Mock Login Fallback)
-        // This is critical: If Firebase fails and we fallback to mock login, 
-        // onAuthStateChanged won't fire, so we need this event.
         const handleManualAuthChange = () => {
             const currentUser = (isFirebaseInitialized && auth) ? auth.currentUser : null;
             syncSessionState(currentUser);

@@ -30,7 +30,6 @@ export interface Application {
     academic?: {
       gpa?: string;
       major?: string;
-      testScores?: string;
     };
     essay?: string;
   };
@@ -45,10 +44,6 @@ export interface UserProfile {
   
   // Demographics & Background
   citizenship: string;
-  
-  // Academic Stats
-  gpa: string;
-  testScores: string;
   
   // Research Preferences
   degreeLevel: string;

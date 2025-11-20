@@ -102,8 +102,6 @@ const ApplicationFormModal: React.FC<ApplicationFormModalProps> = ({
     }));
   };
 
-  const progressPercentage = ((currentStep) / STEPS.length) * 100;
-
   return (
     <div className="fixed inset-0 z-50 bg-slate-50 flex flex-col animate-fade-in overflow-hidden">
         
@@ -216,7 +214,7 @@ const ApplicationFormModal: React.FC<ApplicationFormModalProps> = ({
                          <div className="space-y-8 animate-fade-in">
                              <div>
                                 <h2 className="text-2xl font-bold text-slate-800 mb-2">Academic Profile</h2>
-                                <p className="text-slate-500">Share your educational background and test scores.</p>
+                                <p className="text-slate-500">Share your educational background.</p>
                             </div>
                             <div className="space-y-6">
                                 <div>
@@ -228,27 +226,15 @@ const ApplicationFormModal: React.FC<ApplicationFormModalProps> = ({
                                         onChange={e => updateField('academic', 'major', e.target.value)}
                                     />
                                 </div>
-                                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                                    <div>
-                                        <label className="block text-sm font-bold text-slate-700 mb-2">Current GPA</label>
-                                        <input 
-                                            type="text" 
-                                            className="w-full p-4 rounded-xl border border-slate-200 focus:border-brand-500 focus:ring-4 focus:ring-brand-50 outline-none transition-all bg-slate-50 focus:bg-white"
-                                            placeholder="e.g. 3.8/4.0"
-                                            value={formData.academic?.gpa || ''}
-                                            onChange={e => updateField('academic', 'gpa', e.target.value)}
-                                        />
-                                    </div>
-                                    <div>
-                                        <label className="block text-sm font-bold text-slate-700 mb-2">Standardized Tests</label>
-                                        <input 
-                                            type="text" 
-                                            className="w-full p-4 rounded-xl border border-slate-200 focus:border-brand-500 focus:ring-4 focus:ring-brand-50 outline-none transition-all bg-slate-50 focus:bg-white"
-                                            placeholder="SAT, ACT, GRE scores"
-                                            value={formData.academic?.testScores || ''}
-                                            onChange={e => updateField('academic', 'testScores', e.target.value)}
-                                        />
-                                    </div>
+                                <div>
+                                    <label className="block text-sm font-bold text-slate-700 mb-2">Current GPA</label>
+                                    <input 
+                                        type="text" 
+                                        className="w-full p-4 rounded-xl border border-slate-200 focus:border-brand-500 focus:ring-4 focus:ring-brand-50 outline-none transition-all bg-slate-50 focus:bg-white"
+                                        placeholder="e.g. 3.8/4.0 (or N/A)"
+                                        value={formData.academic?.gpa || ''}
+                                        onChange={e => updateField('academic', 'gpa', e.target.value)}
+                                    />
                                 </div>
                                 <div className="border-2 border-dashed border-slate-200 rounded-2xl p-8 flex flex-col items-center justify-center text-center hover:bg-slate-50 transition-colors cursor-pointer group">
                                     <div className="w-12 h-12 bg-brand-100 text-brand-600 rounded-full flex items-center justify-center mb-3 group-hover:scale-110 transition-transform">

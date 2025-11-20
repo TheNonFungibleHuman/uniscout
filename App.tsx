@@ -46,13 +46,35 @@ const App: React.FC = () => {
   const [discardedSchools, setDiscardedSchools] = useState<string[]>([]);
   const [applications, setApplications] = useState<Application[]>([]);
 
-  // Handle Auth State Changes
+  // Handle Persistence & Auth State
   useEffect(() => {
     if (!isSessionPending) {
         if (sessionUser) {
-            if (!profile) {
-                // If user is logged in but no profile (in this session), go to onboarding
-                // In a real app, we'd fetch the profile from DB here
+            // Attempt to restore profile from local storage
+            const savedProfileStr = localStorage.getItem('gradwyn_profile');
+            const savedSchoolsStr = localStorage.getItem('gradwyn_savedSchools');
+            const savedAppsStr = localStorage.getItem('gradwyn_applications');
+            
+            if (savedProfileStr) {
+                try {
+                    const parsedProfile = JSON.parse(savedProfileStr);
+                    setProfile(parsedProfile);
+                    
+                    if (savedSchoolsStr) setSavedSchools(JSON.parse(savedSchoolsStr));
+                    if (savedAppsStr) setApplications(JSON.parse(savedAppsStr).map((app: any) => ({
+                        ...app,
+                        lastUpdated: new Date(app.lastUpdated),
+                        submittedDate: app.submittedDate ? new Date(app.submittedDate) : undefined
+                    })));
+                    
+                    // If we have a profile, default to dashboard to avoid "starting again"
+                    setView('dashboard');
+                } catch (e) {
+                    console.error("Failed to restore session", e);
+                    setView('onboarding');
+                }
+            } else {
+                // User logged in but no profile
                 setView('onboarding');
             }
         } else {
@@ -60,6 +82,25 @@ const App: React.FC = () => {
         }
     }
   }, [sessionUser, isSessionPending]);
+
+  // Persist data on changes
+  useEffect(() => {
+      if (profile) {
+          localStorage.setItem('gradwyn_profile', JSON.stringify(profile));
+      }
+  }, [profile]);
+
+  useEffect(() => {
+      if (savedSchools.length > 0) {
+          localStorage.setItem('gradwyn_savedSchools', JSON.stringify(savedSchools));
+      }
+  }, [savedSchools]);
+
+  useEffect(() => {
+      if (applications.length > 0) {
+          localStorage.setItem('gradwyn_applications', JSON.stringify(applications));
+      }
+  }, [applications]);
 
   // Check if API key is present
   const apiKey = process.env.API_KEY;
@@ -78,16 +119,24 @@ const App: React.FC = () => {
   const handleLoginSuccess = (user: AuthUser) => {
     // Auth state is handled by useSession hook, but we can force view update if needed
     if (user.type === 'applicant') {
-        setView('onboarding');
+        // Check if we already have a profile in state (handled by effect), if not go onboarding
+        if (!profile) setView('onboarding');
     }
   };
 
   const handleLogout = async () => {
     await authClient.signOut();
+    // Clear State
     setProfile(null);
     setSavedSchools([]);
     setApplications([]);
     setMessages([]);
+    setDiscardedSchools([]);
+    // Clear Local Storage
+    localStorage.removeItem('gradwyn_profile');
+    localStorage.removeItem('gradwyn_savedSchools');
+    localStorage.removeItem('gradwyn_applications');
+    
     setView('landing');
   };
 
@@ -109,6 +158,7 @@ const App: React.FC = () => {
   const startAnalysisFlow = async (userProfile: UserProfile) => {
       setIsLoadingWelcome(true);
       setMessages([]); // Clear any previous chat
+      setView('chat'); // Force view to chat immediately behind loading screen
 
       initializeChatSession(userProfile);
 
@@ -125,7 +175,6 @@ const App: React.FC = () => {
           };
           
           setMessages([welcomeMsg]);
-          setView('chat');
       } catch (error) {
           console.error("Failed to generate welcome:", error);
           setMessages([{
@@ -134,7 +183,6 @@ const App: React.FC = () => {
               text: `Welcome ${userProfile.name}! I'm ready to start researching universities for you. What would you like to know first?`,
               timestamp: new Date()
           }]);
-          setView('chat');
       } finally {
           setIsLoadingWelcome(false);
       }

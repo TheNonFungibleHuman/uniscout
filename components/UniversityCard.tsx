@@ -10,17 +10,19 @@ interface UniversityCardProps {
   isDiscarded?: boolean;
   minimal?: boolean;
   onClick?: () => void;
+  className?: string;
 }
 
-const UniversityCard: React.FC<UniversityCardProps> = ({ 
+export default function UniversityCard({ 
   university, 
   onSave, 
   onDiscard, 
   isSaved = false,
   isDiscarded = false,
   minimal = false,
-  onClick
-}) => {
+  onClick,
+  className = ''
+}: UniversityCardProps) {
   if (isDiscarded) return null;
 
   const scoreColor = university.matchScore >= 90 ? 'text-green-600 bg-green-50' : 
@@ -28,7 +30,7 @@ const UniversityCard: React.FC<UniversityCardProps> = ({
 
   return (
     <div 
-        className={`bg-white rounded-xl border border-slate-200 shadow-sm hover:shadow-md transition-all overflow-hidden flex flex-col ${minimal ? 'w-full' : 'w-72 md:w-80 flex-shrink-0'}`}
+        className={`bg-white rounded-xl border border-slate-200 shadow-sm hover:shadow-md transition-all overflow-hidden flex flex-col ${minimal ? 'w-full' : 'w-72 md:w-80 flex-shrink-0'} ${className}`}
         onClick={onClick}
     >
       <div className="h-24 bg-gradient-to-r from-brand-500 to-indigo-600 relative p-4">
@@ -106,6 +108,4 @@ const UniversityCard: React.FC<UniversityCardProps> = ({
       </div>
     </div>
   );
-};
-
-export default UniversityCard;
+}

@@ -7,6 +7,32 @@ export interface AuthUser {
   type: 'applicant' | 'mentor' | 'university';
 }
 
+export type ApplicationStatus = 'draft' | 'submitted' | 'under_review' | 'accepted' | 'rejected';
+
+export interface Application {
+  id: string;
+  university: University;
+  status: ApplicationStatus;
+  submittedDate?: Date;
+  lastUpdated: Date;
+  progress: number; // 0-100
+  currentStep: number; // 1-4
+  formData: {
+    personal?: {
+      fullName?: string;
+      email?: string;
+      phone?: string;
+      address?: string;
+    };
+    academic?: {
+      gpa?: string;
+      major?: string;
+      testScores?: string;
+    };
+    essay?: string;
+  };
+}
+
 export interface UserProfile {
   // Auth details
   email?: string;
@@ -37,6 +63,7 @@ export interface OnboardingQuestion {
 export interface GroundingSource {
   title: string;
   uri: string;
+  placeAnswerSources?: { reviewSnippets: { snippet: string }[] }
 }
 
 export interface University {

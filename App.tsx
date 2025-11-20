@@ -5,7 +5,7 @@ import ChatInterface from './components/ChatInterface';
 import Dashboard from './components/Dashboard';
 import LandingPage from './components/LandingPage';
 import LoginPage from './components/LoginPage';
-import { UserProfile, ChatMessage, University, AuthUser } from './types';
+import { UserProfile, ChatMessage, University, AuthUser, Application } from './types';
 import { generateWelcomeMessage, initializeChatSession } from './services/geminiService';
 
 type AppView = 'landing' | 'login' | 'onboarding' | 'chat' | 'dashboard';
@@ -24,6 +24,7 @@ const App: React.FC = () => {
   // State for Dashboard
   const [savedSchools, setSavedSchools] = useState<University[]>([]);
   const [discardedSchools, setDiscardedSchools] = useState<string[]>([]);
+  const [applications, setApplications] = useState<Application[]>([]);
 
   // Check if API key is present
   const apiKey = process.env.API_KEY;
@@ -50,6 +51,7 @@ const App: React.FC = () => {
     setAuthUser(null);
     setProfile(null);
     setSavedSchools([]);
+    setApplications([]);
     setMessages([]);
     setView('landing');
   };
@@ -112,6 +114,22 @@ const App: React.FC = () => {
       setDiscardedSchools(prev => [...prev, schoolId]);
       setSavedSchools(prev => prev.filter(s => s.id !== schoolId));
   };
+  
+  const handleUpdateApplication = (app: Application) => {
+      setApplications(prev => {
+          const exists = prev.some(a => a.id === app.id);
+          if (exists) {
+              return prev.map(a => a.id === app.id ? app : a);
+          }
+          return [...prev, app];
+      });
+      // Also ensure the school is saved if we are applying to it
+      handleSaveSchool(app.university);
+  };
+
+  const handleWithdrawApplication = (appId: string) => {
+      setApplications(prev => prev.filter(a => a.id !== appId));
+  };
 
   const handleGoToDashboard = () => {
       setIsTransitioningToDashboard(true);
@@ -169,7 +187,11 @@ const App: React.FC = () => {
           <Dashboard 
               profile={profile} 
               savedSchools={savedSchools}
+              applications={applications}
               onDiscardSchool={handleDiscardSchool}
+              onSaveSchool={handleSaveSchool}
+              onUpdateApplication={handleUpdateApplication}
+              onWithdrawApplication={handleWithdrawApplication}
               onUpdateProfile={handleUpdateProfile}
               onLogout={handleLogout}
               renderChat={() => (

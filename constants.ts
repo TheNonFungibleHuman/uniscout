@@ -174,3 +174,20 @@ export const MOCK_DATABASE_UNIVERSITIES: University[] = [
     tags: ["Scenic", "Development", "Africa"]
   }
 ];
+
+// A mock list of universities to simulate the search functionality
+export const AUTOCOMPLETE_UNIVERSITIES: University[] = [
+    ...MOCK_DATABASE_UNIVERSITIES,
+    { id: 's1', name: 'Harvard University', location: 'Cambridge, MA', matchScore: 96, tuition: '$57,000/yr', description: 'The oldest institution of higher learning in the US, known for its history, wealth, and influence.', website: 'https://harvard.edu', tags: ['Ivy League', 'Historic', 'Research'] },
+    { id: 's2', name: 'Stanford University', location: 'Stanford, CA', matchScore: 97, tuition: '$56,000/yr', description: 'Located in Silicon Valley, known for its entrepreneurial spirit and strength in computer science.', website: 'https://stanford.edu', tags: ['Silicon Valley', 'Tech', 'Entrepreneurship'] },
+    { id: 's3', name: 'ETH Zurich', location: 'Zurich, Switzerland', matchScore: 92, tuition: '$1,500/yr', description: 'A leading STEM university in Europe with extremely low tuition but high living costs.', website: 'https://ethz.ch', tags: ['STEM', 'Europe', 'Low Tuition'] },
+    { id: 's4', name: 'National University of Singapore', location: 'Singapore', matchScore: 91, tuition: '$30,000/yr', description: 'A comprehensive research university and the oldest higher education institution in Singapore.', website: 'https://nus.edu.sg', tags: ['Asia', 'Research', 'Global'] },
+    { id: 's5', name: 'University of Melbourne', location: 'Melbourne, Australia', matchScore: 89, tuition: '$40,000 AUD/yr', description: 'Australia’s leading comprehensive research university with a unique curriculum model.', website: 'https://unimelb.edu.au', tags: ['Australia', 'Urban', 'Research'] },
+    { id: 's6', name: 'McGill University', location: 'Montreal, Canada', matchScore: 90, tuition: '$25,000 CAD/yr', description: 'Known as the Harvard of Canada, located in a bilingual and student-friendly city.', website: 'https://mcgill.ca', tags: ['Canada', 'Historic', 'Medical'] },
+    { id: 's7', name: 'University of Tokyo', location: 'Tokyo, Japan', matchScore: 88, tuition: '$5,000/yr', description: 'Japan’s most prestigious university, offering world-class research facilities.', website: 'https://u-tokyo.ac.jp', tags: ['Japan', 'Prestige', 'Research'] },
+    { id: 's8', name: 'Tsinghua University', location: 'Beijing, China', matchScore: 93, tuition: '$5,000/yr', description: 'Consistently ranked as one of the best universities in China and Asia.', website: 'https://tsinghua.edu.cn', tags: ['China', 'Engineering', 'Elite'] },
+    { id: 's9', name: 'Imperial College London', location: 'London, UK', matchScore: 94, tuition: '£34,000/yr', description: 'A world-class university with a mission to benefit society through excellence in science, engineering, medicine and business.', website: 'https://imperial.ac.uk', tags: ['STEM', 'London', 'Innovation'] },
+    { id: 's10', name: 'University of British Columbia', location: 'Vancouver, Canada', matchScore: 89, tuition: '$40,000 CAD/yr', description: 'A global center for research and teaching, consistently ranked among the top 20 public universities in the world.', website: 'https://ubc.ca', tags: ['Canada', 'Nature', 'Research'] },
+    { id: 's11', name: 'Princeton University', location: 'Princeton, NJ', matchScore: 95, tuition: '$56,000/yr', description: 'A private Ivy League research university known for its beautiful campus and focus on undergraduate education.', website: 'https://princeton.edu', tags: ['Ivy League', 'Undergrad Focus', 'Suburban'] },
+    { id: 's12', name: 'Yale University', location: 'New Haven, CT', matchScore: 94, tuition: '$60,000/yr', description: 'Known for its drama and music programs, as well as its secret societies and residential college system.', website: 'https://yale.edu', tags: ['Ivy League', 'Arts', 'Historic'] }
+];

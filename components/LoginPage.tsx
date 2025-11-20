@@ -20,12 +20,12 @@ const LoginPage: React.FC<LoginPageProps> = ({ onLoginSuccess, onBack }) => {
           const { data, error } = await authClient.signIn.social({ provider });
           
           if (error) {
-              setError("Authentication failed. Please try again.");
+              setError(error);
           } else if (data) {
               onLoginSuccess(data);
           }
       } catch (e) {
-          setError("An unexpected error occurred.");
+          setError("An unexpected error occurred. Please try again.");
       } finally {
           setIsLoading(false);
       }
@@ -57,7 +57,7 @@ const LoginPage: React.FC<LoginPageProps> = ({ onLoginSuccess, onBack }) => {
 
         <div className="px-10 pb-10 space-y-4">
             {error && (
-                <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 text-xs font-bold uppercase tracking-wide mb-4">
+                <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 text-xs font-bold uppercase tracking-wide mb-4 leading-relaxed">
                     {error}
                 </div>
             )}

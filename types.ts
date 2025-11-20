@@ -112,3 +112,23 @@ export interface ChatState {
   messages: ChatMessage[];
   isLoading: boolean;
 }
+
+export interface Scholarship {
+  id: string;
+  name: string;
+  provider: string;
+  amount: string;
+  deadline: string;
+  location?: string;
+  tags: string[];
+  description: string;
+}
+
+export interface Guide {
+  id: string;
+  title: string;
+  category: string;
+  readTime: string;
+  image: string;
+  description: string;
+}

@@ -1,5 +1,5 @@
 
-import { OnboardingQuestion, Mentor, University } from './types';
+import { OnboardingQuestion, Mentor, University, Scholarship, Guide } from './types';
 
 export const ONBOARDING_STEPS: OnboardingQuestion[] = [
   {
@@ -42,7 +42,7 @@ export const ONBOARDING_STEPS: OnboardingQuestion[] = [
         "Europe (EU)", 
         "Canada", 
         "Australia/NZ", 
-        "Africa",
+        "Africa", 
         "Asia", 
         "Remote/Online"
     ]
@@ -138,6 +138,152 @@ export const MOCK_MENTORS: Mentor[] = [
     availability: "Sat 9am-12pm SAST",
     tags: ["Development", "Scholarships", "Africa"]
   }
+];
+
+export const MOCK_SCHOLARSHIPS: Scholarship[] = [
+    {
+        id: 'sch1',
+        name: 'Fulbright Foreign Student Program',
+        provider: 'U.S. Department of State',
+        amount: 'Full Tuition + Stipend',
+        deadline: 'Oct 15, 2025',
+        location: 'USA',
+        tags: ['Global', 'Graduate', 'All Fields'],
+        description: 'Enables graduate students, young professionals and artists from abroad to study and conduct research in the United States.'
+    },
+    {
+        id: 'sch2',
+        name: 'Chevening Scholarship',
+        provider: 'UK Government',
+        amount: 'Full Funding',
+        deadline: 'Nov 02, 2025',
+        location: 'UK',
+        tags: ['UK', 'Masters', 'Leadership'],
+        description: 'Chevening is the UK government’s international awards program aimed at developing global leaders.'
+    },
+    {
+        id: 'sch3',
+        name: 'Rhodes Scholarship',
+        provider: 'Rhodes Trust',
+        amount: 'Full Tuition + Living',
+        deadline: 'Oct 01, 2025',
+        location: 'UK',
+        tags: ['Oxford', 'Postgraduate', 'Global'],
+        description: 'The oldest (first awarded in 1902) and perhaps the most prestigious international scholarship program, enabling young people from around the world to study at the University of Oxford.'
+    },
+    {
+        id: 'sch4',
+        name: 'Gates Cambridge Scholarship',
+        provider: 'Bill & Melinda Gates Foundation',
+        amount: 'Full Cost',
+        deadline: 'Dec 05, 2025',
+        location: 'UK',
+        tags: ['Cambridge', 'PhD', 'Social Leadership'],
+        description: 'Applicants must intend to undertake a full-time postgraduate degree at the University of Cambridge and show a commitment to improving the lives of others.'
+    },
+    {
+        id: 'sch5',
+        name: 'Erasmus Mundus Joint Masters',
+        provider: 'European Union',
+        amount: '€1,000/month + Travel',
+        deadline: 'Jan 15, 2026',
+        location: 'Europe',
+        tags: ['EU', 'Masters', 'Mobility'],
+        description: 'High-level integrated study programs at master level. The program is designed and delivered by an international partnership of higher education institutions.'
+    },
+    {
+        id: 'sch6',
+        name: 'Knight-Hennessy Scholars',
+        provider: 'Stanford University',
+        amount: 'Full Funding',
+        deadline: 'Oct 09, 2025',
+        location: 'USA',
+        tags: ['Stanford', 'Graduate', 'Innovation'],
+        description: 'Cultivates and supports a multidisciplinary and multicultural community of graduate students across Stanford University.'
+    },
+    {
+        id: 'sch7',
+        name: 'AAUW International Fellowships',
+        provider: 'American Association of University Women',
+        amount: '$18,000 - $30,000',
+        deadline: 'Nov 15, 2025',
+        location: 'USA',
+        tags: ['Women', 'Research', 'Graduate'],
+        description: 'Support for women pursuing full-time graduate or postdoctoral study in the United States who are not U.S. citizens or permanent residents.'
+    },
+    {
+        id: 'sch8',
+        name: 'Schwarzman Scholars',
+        provider: 'Blackstone',
+        amount: 'Full Funding',
+        deadline: 'Sep 19, 2025',
+        location: 'Asia',
+        tags: ['China', 'Masters', 'Leadership'],
+        description: 'Designed to prepare the next generation of global leaders. Scholars pursue a one-year Master’s degree at Tsinghua University in Beijing.'
+    },
+    {
+        id: 'sch9',
+        name: 'Vanier Canada Graduate Scholarships',
+        provider: 'Government of Canada',
+        amount: '$50,000/year',
+        deadline: 'Nov 01, 2025',
+        location: 'Canada',
+        tags: ['PhD', 'Research', 'Canada'],
+        description: 'Attracts and retains world-class doctoral students and establishes Canada as a global center of excellence in research and higher learning.'
+    },
+    {
+        id: 'sch10',
+        name: 'Aga Khan Foundation ISP',
+        provider: 'Aga Khan Foundation',
+        amount: '50% Grant / 50% Loan',
+        deadline: 'Mar 31, 2026',
+        location: 'Global',
+        tags: ['Development', 'Need-Based', 'Developing Countries'],
+        description: 'Provides a limited number of scholarships each year for postgraduate studies to outstanding students from select developing countries.'
+    }
+];
+
+export const MOCK_GUIDES: Guide[] = [
+    {
+        id: 'g1',
+        title: 'Mastering the Personal Statement',
+        category: 'Essay Writing',
+        readTime: '8 min read',
+        image: 'https://images.unsplash.com/photo-1455390582262-044cdead277a?auto=format&fit=crop&w=400&q=80',
+        description: 'Learn the narrative structures that captivate admissions officers and how to avoid common clichés.'
+    },
+    {
+        id: 'g2',
+        title: 'Cracking the Ivy League Interview',
+        category: 'Interview Prep',
+        readTime: '12 min read',
+        image: 'https://images.unsplash.com/photo-1557804506-669a67965ba0?auto=format&fit=crop&w=400&q=80',
+        description: 'Strategic frameworks for answering "Tell me about yourself" and "Why this school?" with impact.'
+    },
+    {
+        id: 'g3',
+        title: 'Demystifying Financial Aid Packages',
+        category: 'Financial Planning',
+        readTime: '10 min read',
+        image: 'https://images.unsplash.com/photo-1554224155-6726b3ff858f?auto=format&fit=crop&w=400&q=80',
+        description: 'A comprehensive guide to understanding FAFSA, CSS Profile, and negotiating your aid offer.'
+    },
+    {
+        id: 'g4',
+        title: 'The Art of the Recommendation Letter',
+        category: 'Application Strategy',
+        readTime: '6 min read',
+        image: 'https://images.unsplash.com/photo-1586281380349-632531db7ed4?auto=format&fit=crop&w=400&q=80',
+        description: 'Who to ask, when to ask, and how to prepare a "brag sheet" to ensure glowing references.'
+    },
+    {
+        id: 'g5',
+        title: 'GRE vs GMAT: Choosing Your Path',
+        category: 'Standardized Testing',
+        readTime: '7 min read',
+        image: 'https://images.unsplash.com/photo-1434030216411-0b793f4b4173?auto=format&fit=crop&w=400&q=80',
+        description: 'A comparative analysis of exam structures and how different graduate programs view them.'
+    }
 ];
 
 // Reliable high-quality architectural images using specific IDs to avoid 403s

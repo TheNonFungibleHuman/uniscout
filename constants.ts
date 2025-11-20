@@ -29,20 +29,6 @@ export const ONBOARDING_STEPS: OnboardingQuestion[] = [
     placeholder: "e.g. Economics, Art History, Bioengineering"
   },
   {
-    id: 'gpa',
-    question: "What is your current cumulative GPA?",
-    subtext: "Please include the scale (e.g., 3.8/4.0). Enter 'N/A' or 'Not Applicable' if you do not have one.",
-    type: 'text',
-    placeholder: "e.g. 3.9/4.0 or N/A"
-  },
-  {
-    id: 'testScores',
-    question: "Have you taken any standardized tests?",
-    subtext: "Enter scores for SAT, ACT, GRE, GMAT, or 'None'.",
-    type: 'text',
-    placeholder: "e.g. SAT: 1520, ACT: 34"
-  },
-  {
     id: 'preferredLocations',
     question: "Where in the world do you wish to study?",
     subtext: "Select as many as apply.",

@@ -15,7 +15,6 @@ const createSystemInstruction = (profile: UserProfile) => `
     - Citizenship: ${profile.citizenship} (Consider visa requirements and international fees)
     - Degree: ${profile.degreeLevel}
     - Field: ${profile.fieldOfStudy}
-    - Academic Stats: GPA ${profile.gpa}, Tests: ${profile.testScores}
     - Budget: ${profile.budgetRange}
     - Locations: ${profile.preferredLocations.join(', ')}
     - Key Metrics: ${profile.keyMetrics.join(', ')}
@@ -24,7 +23,7 @@ const createSystemInstruction = (profile: UserProfile) => `
 
     STRICT BEHAVIORAL RULES:
     1. **ACTION OVER CONVERSATION:** Do not ask "Would you like me to look for...?" or "Shall I proceed?". Just DO the research and present the results immediately.
-    2. **REALISTIC MATCHING:** Use their GPA/Test scores to categorize schools as Reach, Target, or Safety. Be honest if a school is likely out of reach.
+    2. **REALISTIC MATCHING:** Base your recommendations on the user's preferred field, budget, and priorities.
     3. **MANDATORY CARDS:** If you mention specific universities that fit the user's criteria, you MUST generate the JSON block for them at the end of the response.
     4. **DEEP DETAIL:** In your text response, provide specific, "meaty" details about why you chose these schools. Mention specific professors, labs, clubs, or student sentiments found on forums.
     5. **SILENT JSON:** **NEVER** write "Here are the JSON blocks" or "Here is the data". The JSON block must be completely silent and invisible to the user in your text response. It exists ONLY for the code to read.
@@ -68,7 +67,6 @@ export const updateChatProfile = async (newProfile: UserProfile) => {
       - Budget: ${newProfile.budgetRange}
       - Locations: ${newProfile.preferredLocations.join(', ')}
       - Field: ${newProfile.fieldOfStudy}
-      - Stats: GPA ${newProfile.gpa}, Tests ${newProfile.testScores}
       - Priorities: ${newProfile.priorities}
       
       Reset your context. Ignore previous suggestions if they no longer fit. 
@@ -113,7 +111,6 @@ export const sendMessageToGemini = async (message: string): Promise<{ text: stri
         fullText = fullText.replace(jsonMatch[0], '');
 
         // 3. Clean up any "Here is the JSON" introductory text that might have been left behind
-        // This regex looks for common phrases at the end of the string
         fullText = fullText.replace(/(Here (is|are) the (JSON|data|blocks|recommendations).*?[:.]\s*$)/gim, '');
         fullText = fullText.trim();
 
@@ -153,11 +150,10 @@ export const generateWelcomeMessage = async (profile: UserProfile): Promise<{ te
   const prompt = `
     The user ${profile.name} has just completed onboarding.
     Field: ${profile.fieldOfStudy}, Locations: ${profile.preferredLocations.join(', ')}.
-    Citizenship: ${profile.citizenship}, Stats: ${profile.gpa}, ${profile.testScores}.
+    Citizenship: ${profile.citizenship}.
     Priorities: ${profile.priorities}.
     
     Immediately start researching and recommend 3 universities that match this profile. 
-    Consider their academic stats for realistic matching (Reach/Target/Safety).
     Provide detailed analysis and include the JSON block for cards. 
     Do not simply welcome them, give them value immediately.
     Remember: Do NOT say "Here is the JSON". Keep the data hidden.

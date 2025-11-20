@@ -1,3 +1,4 @@
+
 import React, { useState } from 'react';
 import { UserProfile } from '../types';
 
@@ -48,7 +49,7 @@ const EditProfileModal: React.FC<EditProfileModalProps> = ({ isOpen, onClose, pr
               onChange={(e) => setFormData({...formData, budgetRange: e.target.value})}
               className="w-full p-3 rounded-lg border border-slate-200 focus:border-brand-500 outline-none bg-white"
             >
-              {["Under $10k", "$10k - $25k", "$25k - $50k", "$50k+", "Scholarship Dependent"].map(opt => (
+              {["Under $15k", "$15k - $30k", "$30k - $50k", "$50k+", "Full Scholarship Required"].map(opt => (
                 <option key={opt} value={opt}>{opt}</option>
               ))}
             </select>
@@ -59,7 +60,7 @@ const EditProfileModal: React.FC<EditProfileModalProps> = ({ isOpen, onClose, pr
             <div className="flex flex-wrap gap-2">
               {[
                 "USA - East Coast", "USA - West Coast", "USA - Midwest", 
-                "UK", "Europe", "Canada", "Australia", "Africa", "Asia", "Remote/Online"
+                "UK - London", "UK - Other", "Europe (EU)", "Canada", "Australia/NZ", "Africa", "Asia", "Remote/Online"
               ].map(loc => (
                 <button
                   key={loc}
@@ -87,14 +88,14 @@ const EditProfileModal: React.FC<EditProfileModalProps> = ({ isOpen, onClose, pr
              <label className="block text-sm font-semibold text-slate-700 mb-2">Key Priorities (Select 3)</label>
              <div className="flex flex-wrap gap-2">
                  {[
-                    "Academic Ranking / Prestige",
-                    "Tuition Cost & Financial Aid",
-                    "Campus Culture & Social Life",
-                    "Location Safety & Comfort",
-                    "Career Support & Internships",
+                    "Academic Prestige",
+                    "Financial Aid & Value",
+                    "Campus Culture",
+                    "Safety & Location",
+                    "Career & Alumni Network",
                     "Diversity & Inclusion",
-                    "Research Opportunities",
-                    "Sports & Athletics"
+                    "Research Facilities",
+                    "Athletics"
                  ].map(metric => (
                      <button
                       key={metric}
@@ -118,11 +119,21 @@ const EditProfileModal: React.FC<EditProfileModalProps> = ({ isOpen, onClose, pr
                  ))}
              </div>
           </div>
+
+          <div>
+            <label className="block text-sm font-semibold text-slate-700 mb-2">Specific Requirements / Priorities</label>
+            <textarea 
+              value={formData.priorities || ''} 
+              onChange={(e) => setFormData({...formData, priorities: e.target.value})}
+              placeholder="E.g. Need a debate team, strong accessibility support, or specific internship programs..."
+              className="w-full p-3 rounded-lg border border-slate-200 focus:border-brand-500 outline-none min-h-[100px]"
+            />
+          </div>
         </div>
 
         <div className="p-6 border-t border-slate-100 flex justify-end gap-3 sticky bottom-0 bg-white">
           <button onClick={onClose} className="px-5 py-2.5 text-slate-500 font-medium hover:text-slate-800">Cancel</button>
-          <button onClick={handleSave} className="px-5 py-2.5 bg-brand-600 text-white rounded-lg font-bold hover:bg-brand-700">Save Changes</button>
+          <button onClick={handleSave} className="px-5 py-2.5 bg-brand-600 text-white rounded-lg font-bold hover:bg-brand-700">Update & Re-Analyze</button>
         </div>
       </div>
     </div>

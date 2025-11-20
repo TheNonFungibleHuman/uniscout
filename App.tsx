@@ -1,54 +1,89 @@
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import Onboarding from './components/Onboarding';
 import ChatInterface from './components/ChatInterface';
 import Dashboard from './components/Dashboard';
 import LandingPage from './components/LandingPage';
 import LoginPage from './components/LoginPage';
+import LoadingScreen from './components/LoadingScreen';
 import { UserProfile, ChatMessage, University, AuthUser, Application } from './types';
 import { generateWelcomeMessage, initializeChatSession } from './services/geminiService';
+import { authClient } from './lib/auth';
 
 type AppView = 'landing' | 'login' | 'onboarding' | 'chat' | 'dashboard';
 
+const PROFILE_ANALYSIS_MESSAGES = [
+    "Consulting global academic archives...",
+    "Analyzing your psychometric profile...",
+    "Cross-referencing Ivy League admissions data...",
+    "Synthesizing campus culture compatibility...",
+    "Calibrating financial aid optimizations...",
+    "Formatting your executive summary..."
+];
+
+const DASHBOARD_BUILD_MESSAGES = [
+    "Architecting your strategic roadmap...",
+    "Curating distinguished alumni mentors...",
+    "Synchronizing application deadlines...",
+    "Initializing candidacy tracker...",
+    "Preparing your executive briefing...",
+    "Finalizing dashboard layout..."
+];
+
 const App: React.FC = () => {
+  const { data: sessionUser, isPending: isSessionPending } = authClient.useSession();
   const [view, setView] = useState<AppView>('landing');
-  const [authUser, setAuthUser] = useState<AuthUser | null>(null);
   const [profile, setProfile] = useState<UserProfile | null>(null);
   
-  // Lifted Chat State so it persists between Main View and Dashboard
+  // Lifted Chat State
   const [messages, setMessages] = useState<ChatMessage[]>([]);
   
   const [isLoadingWelcome, setIsLoadingWelcome] = useState(false);
   const [isTransitioningToDashboard, setIsTransitioningToDashboard] = useState(false);
   
-  // State for Dashboard
+  // Dashboard State
   const [savedSchools, setSavedSchools] = useState<University[]>([]);
   const [discardedSchools, setDiscardedSchools] = useState<string[]>([]);
   const [applications, setApplications] = useState<Application[]>([]);
+
+  // Handle Auth State Changes
+  useEffect(() => {
+    if (!isSessionPending) {
+        if (sessionUser) {
+            if (!profile) {
+                // If user is logged in but no profile (in this session), go to onboarding
+                // In a real app, we'd fetch the profile from DB here
+                setView('onboarding');
+            }
+        } else {
+            setView('landing');
+        }
+    }
+  }, [sessionUser, isSessionPending]);
 
   // Check if API key is present
   const apiKey = process.env.API_KEY;
 
   if (!apiKey) {
     return (
-      <div className="h-screen w-screen flex items-center justify-center bg-slate-100 text-slate-600 p-8 text-center">
-         <div>
-             <h1 className="text-2xl font-bold text-red-500 mb-2">Configuration Error</h1>
-             <p>API_KEY is missing from the environment.</p>
+      <div className="h-screen w-screen flex items-center justify-center bg-beige-100 text-brand-900 p-8 text-center">
+         <div className="border border-accent-rust p-8 bg-white">
+             <h1 className="text-2xl font-serif font-bold text-accent-rust mb-2">Configuration Error</h1>
+             <p className="font-sans">API_KEY is missing from the environment.</p>
          </div>
       </div>
     );
   }
 
   const handleLoginSuccess = (user: AuthUser) => {
-    setAuthUser(user);
+    // Auth state is handled by useSession hook, but we can force view update if needed
     if (user.type === 'applicant') {
         setView('onboarding');
     }
   };
 
-  const handleLogout = () => {
-    setAuthUser(null);
+  const handleLogout = async () => {
+    await authClient.signOut();
     setProfile(null);
     setSavedSchools([]);
     setApplications([]);
@@ -59,48 +94,59 @@ const App: React.FC = () => {
   const handleOnboardingComplete = async (userProfile: UserProfile) => {
     const fullProfile: UserProfile = {
         ...userProfile,
-        email: authUser?.email,
-        photoUrl: authUser?.photoUrl,
+        id: sessionUser?.id || 'guest',
+        email: sessionUser?.email || '',
+        photoUrl: sessionUser?.image,
         savedSchools: [],
         discardedSchools: []
     };
 
     setProfile(fullProfile);
-    setIsLoadingWelcome(true); // Start loading
-
-    // Initialize chat logic
-    initializeChatSession(fullProfile);
-
-    try {
-        const response = await generateWelcomeMessage(fullProfile);
-        
-        const welcomeMsg: ChatMessage = {
-            id: 'welcome-msg',
-            role: 'model',
-            text: response.text,
-            sources: response.sources,
-            recommendations: response.recommendations,
-            timestamp: new Date()
-        };
-        
-        setMessages([welcomeMsg]);
-        setView('chat');
-    } catch (error) {
-        console.error("Failed to generate welcome:", error);
-        setMessages([{
-            id: 'error-fallback',
-            role: 'model',
-            text: `Welcome ${fullProfile.name}! I'm ready to start researching universities for you. What would you like to know first?`,
-            timestamp: new Date()
-        }]);
-        setView('chat');
-    } finally {
-        setIsLoadingWelcome(false); // Stop loading
-    }
+    startAnalysisFlow(fullProfile);
   };
 
-  const handleUpdateProfile = (newProfile: UserProfile) => {
-      setProfile(prev => prev ? { ...prev, ...newProfile } : newProfile);
+  // Trigger the AI analysis and switch to chat view
+  const startAnalysisFlow = async (userProfile: UserProfile) => {
+      setIsLoadingWelcome(true);
+      setMessages([]); // Clear any previous chat
+
+      initializeChatSession(userProfile);
+
+      try {
+          const response = await generateWelcomeMessage(userProfile);
+          
+          const welcomeMsg: ChatMessage = {
+              id: 'welcome-msg',
+              role: 'model',
+              text: response.text,
+              sources: response.sources,
+              recommendations: response.recommendations,
+              timestamp: new Date()
+          };
+          
+          setMessages([welcomeMsg]);
+          setView('chat');
+      } catch (error) {
+          console.error("Failed to generate welcome:", error);
+          setMessages([{
+              id: 'error-fallback',
+              role: 'model',
+              text: `Welcome ${userProfile.name}! I'm ready to start researching universities for you. What would you like to know first?`,
+              timestamp: new Date()
+          }]);
+          setView('chat');
+      } finally {
+          setIsLoadingWelcome(false);
+      }
+  };
+
+  // When profile updates, we do a "Soft Reset" of the flow
+  const handleFullProfileRefresh = (newProfile: UserProfile) => {
+      const mergedProfile = profile ? { ...profile, ...newProfile } : newProfile;
+      setProfile(mergedProfile);
+      
+      // Force the user back to the analysis flow
+      startAnalysisFlow(mergedProfile);
   };
 
   const handleSaveSchool = (school: University) => {
@@ -123,7 +169,6 @@ const App: React.FC = () => {
           }
           return [...prev, app];
       });
-      // Also ensure the school is saved if we are applying to it
       handleSaveSchool(app.university);
   };
 
@@ -136,10 +181,13 @@ const App: React.FC = () => {
       setTimeout(() => {
           setView('dashboard');
           setIsTransitioningToDashboard(false);
-      }, 2000);
+      }, 3000);
   };
 
-  // --- RENDER LOGIC ---
+  // Loading State for Session Check
+  if (isSessionPending) {
+      return <div className="h-screen bg-beige-100"></div>;
+  }
 
   if (view === 'landing') {
     return <LandingPage onGetStarted={() => setView('login')} />;
@@ -149,37 +197,16 @@ const App: React.FC = () => {
     return <LoginPage onLoginSuccess={handleLoginSuccess} onBack={() => setView('landing')} />;
   }
 
-  // MOVED UP: Check loading BEFORE checking onboarding view to ensure spinner shows
   if (isLoadingWelcome) {
-    return (
-      <div className="h-screen w-full flex flex-col items-center justify-center bg-slate-50 text-slate-800 space-y-6 animate-fade-in">
-        <div className="relative">
-            <div className="w-16 h-16 border-4 border-brand-200 border-t-brand-600 rounded-full animate-spin"></div>
-        </div>
-        <div className="text-center">
-            <h2 className="text-xl font-bold mb-2">Analyzing your profile...</h2>
-            <p className="text-slate-500 animate-pulse">Scanning global university databases...</p>
-        </div>
-      </div>
-    );
+    return <LoadingScreen messages={PROFILE_ANALYSIS_MESSAGES} />;
   }
 
   if (view === 'onboarding') {
-    return <Onboarding onComplete={handleOnboardingComplete} initialName={authUser?.name} />;
+    return <Onboarding onComplete={handleOnboardingComplete} initialName={sessionUser?.name} />;
   }
 
   if (isTransitioningToDashboard) {
-    return (
-      <div className="h-screen w-full flex flex-col items-center justify-center bg-indigo-50 text-indigo-900 space-y-6 animate-fade-in">
-        <div className="w-20 h-20 bg-white rounded-full flex items-center justify-center shadow-lg animate-bounce">
-             <span className="text-3xl">🎓</span>
-        </div>
-        <div className="text-center">
-            <h2 className="text-2xl font-bold mb-2">Building your Personal Dashboard</h2>
-            <p className="text-indigo-600">Curating mentors and matches...</p>
-        </div>
-      </div>
-    );
+    return <LoadingScreen messages={DASHBOARD_BUILD_MESSAGES} />;
   }
 
   if (view === 'dashboard' && profile) {
@@ -192,14 +219,14 @@ const App: React.FC = () => {
               onSaveSchool={handleSaveSchool}
               onUpdateApplication={handleUpdateApplication}
               onWithdrawApplication={handleWithdrawApplication}
-              onUpdateProfile={handleUpdateProfile}
+              onUpdateProfile={handleFullProfileRefresh}
               onLogout={handleLogout}
               renderChat={() => (
                   <ChatInterface 
                     profile={profile} 
                     messages={messages} 
                     setMessages={setMessages}
-                    onUpdateProfile={handleUpdateProfile}
+                    onUpdateProfile={handleFullProfileRefresh}
                     onSaveSchool={handleSaveSchool}
                     onDiscardSchool={handleDiscardSchool}
                     savedSchools={savedSchools}
@@ -218,7 +245,7 @@ const App: React.FC = () => {
             profile={profile} 
             messages={messages}
             setMessages={setMessages}
-            onUpdateProfile={handleUpdateProfile}
+            onUpdateProfile={handleFullProfileRefresh}
             onSaveSchool={handleSaveSchool}
             onDiscardSchool={handleDiscardSchool}
             savedSchools={savedSchools}

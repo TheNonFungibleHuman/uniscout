@@ -1,5 +1,5 @@
 
-import React from 'react';
+import React, { useState } from 'react';
 import { University } from '../types';
 
 interface UniversityCardProps {
@@ -23,72 +23,109 @@ export default function UniversityCard({
   onClick,
   className = ''
 }: UniversityCardProps) {
+  const [imgError, setImgError] = useState(false);
+  const [logoError, setLogoError] = useState(false);
+
   if (isDiscarded) return null;
 
-  const scoreColor = university.matchScore >= 90 ? 'text-green-600 bg-green-50' : 
-                     university.matchScore >= 80 ? 'text-brand-600 bg-brand-50' : 'text-yellow-600 bg-yellow-50';
+  // Determine accent color based on match score
+  const scoreColorClass = university.matchScore >= 90 ? 'text-brand-700 border-brand-700' : 
+                     university.matchScore >= 80 ? 'text-accent-olive border-accent-olive' : 'text-accent-gold border-accent-gold';
+  
+  // Fallback logic: If error, use a nice gradient pattern instead of a broken image
+  const showFallback = imgError || !university.images || university.images.length === 0;
+
+  // Fallback logo logic
+  const fallbackLogo = `https://ui-avatars.com/api/?name=${encodeURIComponent(university.name)}&background=f6f1e9&color=162714&size=128&font-size=0.33&bold=true`;
 
   return (
     <div 
-        className={`bg-white rounded-xl border border-slate-200 shadow-sm hover:shadow-md transition-all overflow-hidden flex flex-col ${minimal ? 'w-full' : 'w-72 md:w-80 flex-shrink-0'} ${className}`}
+        className={`group bg-white border border-slate-200 hover:border-brand-700 transition-all duration-300 flex flex-col shadow-none hover:shadow-xl ${minimal ? 'w-full' : 'w-80 md:w-96 flex-shrink-0'} ${className} cursor-pointer`}
         onClick={onClick}
     >
-      <div className="h-24 bg-gradient-to-r from-brand-500 to-indigo-600 relative p-4">
-         <div className={`absolute top-3 right-3 px-2 py-1 rounded-full text-xs font-bold ${scoreColor}`}>
-            {university.matchScore}% Match
+      {/* Image Header */}
+      <div className="h-40 relative overflow-hidden bg-slate-200">
+         <div className="absolute inset-0 bg-brand-900/20 group-hover:bg-brand-900/0 transition-colors z-10"></div>
+         
+         {showFallback ? (
+             <div className="w-full h-full bg-gradient-to-br from-brand-800 to-brand-600 flex items-center justify-center">
+                 <span className="text-brand-200 font-serif opacity-20 text-6xl font-bold">G</span>
+             </div>
+         ) : (
+            <img 
+                src={university.images![0]} 
+                alt={university.name} 
+                className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105" 
+                onError={() => setImgError(true)}
+            />
+         )}
+         
+         {/* Match Score Badge */}
+         <div className="absolute top-0 right-0 bg-beige-100 px-3 py-1.5 border-b border-l border-brand-700 z-20 shadow-sm">
+            <span className={`font-heading font-bold text-lg tracking-tight ${scoreColorClass.split(' ')[0]}`}>
+                {university.matchScore}% Match
+            </span>
          </div>
-         <h3 className="text-white font-bold text-lg leading-tight pr-16 shadow-black drop-shadow-md">
-            {university.name}
-         </h3>
-         <p className="text-brand-100 text-xs mt-1 flex items-center gap-1">
+
+         {/* Logo Overlay */}
+         <div className="absolute bottom-0 left-4 transform translate-y-1/2 z-20 w-12 h-12 bg-white border border-slate-200 flex items-center justify-center p-1 shadow-sm">
+             <img 
+                src={!logoError && university.logo ? university.logo : fallbackLogo} 
+                alt="logo" 
+                className="w-full h-full object-contain" 
+                onError={() => setLogoError(true)}
+            />
+         </div>
+      </div>
+
+      <div className="p-5 pt-8 flex-1 flex flex-col relative">
+         <div className="flex justify-between items-start mb-2">
+             <h3 className="text-brand-700 font-serif text-2xl leading-tight group-hover:text-accent-rust transition-colors">
+                {university.name}
+             </h3>
+         </div>
+         
+         <p className="text-accent-olive text-xs mb-3 font-heading font-bold uppercase tracking-widest flex items-center gap-1">
             <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" className="w-3 h-3">
                 <path fillRule="evenodd" d="M9.69 18.933l.003.001C9.89 19.02 10 19 10 19s.11.02.308-.066l.002-.001.006-.003.018-.008a5.741 5.741 0 00.281-.14c.186-.096.446-.24.757-.433.62-.384 1.445-.966 2.274-1.765C15.302 14.988 17 12.493 17 9A7 7 0 103 9c0 3.492 1.698 5.988 3.355 7.62.829.799 1.654 1.38 2.274 1.766a11.121 11.121 0 00.757.432l.018.009.006.003zM10 11.25a2.25 2.25 0 100-4.5 2.25 2.25 0 000 4.5z" clipRule="evenodd" />
             </svg>
             {university.location}
          </p>
-      </div>
 
-      <div className="p-4 flex-1 flex flex-col">
-         <div className="flex flex-wrap gap-1 mb-3">
+         <div className="flex flex-wrap gap-1 mb-4">
             {university.tags.slice(0, 3).map(tag => (
-                <span key={tag} className="text-[10px] uppercase tracking-wider text-slate-500 bg-slate-100 px-2 py-1 rounded-md">
+                <span key={tag} className="text-[10px] font-bold uppercase tracking-wider text-slate-600 bg-beige-200 px-2 py-1 border border-beige-300">
                     {tag}
                 </span>
             ))}
          </div>
          
-         <p className="text-xs text-slate-500 font-medium mb-2">{university.tuition}</p>
-         <p className="text-sm text-slate-600 mb-4 line-clamp-3">{university.description}</p>
+         <p className="text-xs text-slate-500 font-medium mb-2 border-l-2 border-accent-gold pl-2">{university.tuition}</p>
+         <p className="text-sm text-slate-700 mb-5 line-clamp-3 font-light leading-relaxed">{university.description}</p>
 
-         <div className="mt-auto flex gap-2 pt-2 border-t border-slate-100">
+         <div className="mt-auto flex gap-3 pt-4 border-t border-slate-100">
             <a 
                 href={university.website} 
                 target="_blank" 
                 rel="noopener noreferrer"
-                className="flex-1 py-2 text-center text-xs font-bold text-brand-600 bg-brand-50 hover:bg-brand-100 rounded-lg transition-colors"
+                className="flex-1 py-2 text-center text-xs font-bold uppercase tracking-widest text-brand-700 border border-brand-700 hover:bg-brand-700 hover:text-white transition-colors"
                 onClick={(e) => e.stopPropagation()}
             >
-                Website
+                Visit Site
             </a>
             
             {!isSaved ? (
                 <button 
                     onClick={(e) => { e.stopPropagation(); onSave(university); }}
-                    className="flex-1 py-2 text-center text-xs font-bold text-white bg-slate-800 hover:bg-slate-900 rounded-lg transition-colors flex items-center justify-center gap-1"
+                    className="flex-1 py-2 text-center text-xs font-bold uppercase tracking-widest text-white bg-brand-700 hover:bg-brand-800 transition-colors"
                 >
-                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" className="w-3 h-3">
-                        <path d="M10.75 4.75a.75.75 0 00-1.5 0v4.5h-4.5a.75.75 0 000 1.5h4.5v4.5a.75.75 0 001.5 0v-4.5h4.5a.75.75 0 000-1.5h-4.5v-4.5z" />
-                    </svg>
                     Save
                 </button>
             ) : (
                 <button 
-                    className="flex-1 py-2 text-center text-xs font-bold text-white bg-green-600 rounded-lg cursor-default flex items-center justify-center gap-1"
+                    className="flex-1 py-2 text-center text-xs font-bold uppercase tracking-widest text-white bg-accent-olive cursor-default"
                     onClick={(e) => e.stopPropagation()}
                 >
-                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" className="w-3 h-3">
-                        <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
-                    </svg>
                     Saved
                 </button>
             )}
@@ -96,7 +133,7 @@ export default function UniversityCard({
             {!minimal && onDiscard && (
                  <button 
                  onClick={(e) => { e.stopPropagation(); onDiscard(university.id); }}
-                 className="w-9 flex items-center justify-center text-slate-400 hover:text-red-500 hover:bg-red-50 rounded-lg transition-colors"
+                 className="w-9 flex items-center justify-center text-slate-400 hover:text-accent-rust hover:bg-red-50 border border-slate-200 hover:border-accent-rust transition-colors"
                  title="Discard"
              >
                  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" className="w-4 h-4">

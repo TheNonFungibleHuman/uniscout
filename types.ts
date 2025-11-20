@@ -1,5 +1,18 @@
 
+export interface AuthUser {
+  id: string;
+  name: string;
+  email: string;
+  photoUrl?: string;
+  type: 'applicant' | 'mentor' | 'university';
+}
+
 export interface UserProfile {
+  // Auth details
+  email?: string;
+  photoUrl?: string;
+  
+  // App details
   name: string;
   degreeLevel: string;
   fieldOfStudy: string;

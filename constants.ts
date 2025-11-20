@@ -358,6 +358,36 @@ export const MOCK_DATABASE_UNIVERSITIES: University[] = [
         "https://images.unsplash.com/photo-1576764698177-20604ec432c9?q=80&w=800&auto=format&fit=crop",
         "https://images.unsplash.com/photo-1523050854058-8df90110c9f1?q=80&w=800&auto=format&fit=crop"
     ]
+  },
+  {
+    id: 'alu-rw',
+    name: "African Leadership University - Rwanda",
+    location: "Kigali, Rwanda",
+    matchScore: 89,
+    tuition: "$3,000/yr",
+    description: "A mission-driven university nurturing the next generation of African leaders. Innovative, student-led project-based learning model in the heart of Kigali.",
+    website: "https://www.alueducation.com",
+    tags: ["Leadership", "Innovation", "Africa"],
+    logo: "https://upload.wikimedia.org/wikipedia/commons/thumb/8/85/African_Leadership_University_logo.png/640px-African_Leadership_University_logo.png",
+    images: [
+        "https://images.unsplash.com/photo-1523240795612-9a054b0db644?q=80&w=800&auto=format&fit=crop",
+        "https://images.unsplash.com/photo-1544531586-fde5298cdd40?q=80&w=800&auto=format&fit=crop"
+    ]
+  },
+  {
+    id: 'alu-mu',
+    name: "African Leadership University - Mauritius",
+    location: "Pamplemousses, Mauritius",
+    matchScore: 87,
+    tuition: "$3,000/yr",
+    description: "Located in the beautiful island nation, focusing on ethical leadership and entrepreneurial thinking in a diverse pan-African environment.",
+    website: "https://www.alueducation.com",
+    tags: ["Entrepreneurship", "Diversity", "Island Campus"],
+    logo: "https://upload.wikimedia.org/wikipedia/commons/thumb/8/85/African_Leadership_University_logo.png/640px-African_Leadership_University_logo.png",
+    images: [
+        "https://images.unsplash.com/photo-1596462502278-27bfdd403348?q=80&w=800&auto=format&fit=crop",
+        "https://images.unsplash.com/photo-1565034946487-077786996e27?q=80&w=800&auto=format&fit=crop"
+    ]
   }
 ];
 

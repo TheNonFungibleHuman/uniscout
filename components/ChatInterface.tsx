@@ -135,8 +135,7 @@ const ChatInterface: React.FC<ChatInterfaceProps> = ({
   const handleVoiceInput = () => {
     if (isListening) return;
 
-    // @ts-ignore
-    const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+    const SpeechRecognition = (window as any).SpeechRecognition || (window as any).webkitSpeechRecognition;
     
     if (!SpeechRecognition) {
       alert("Voice input is unavailable on this browser.");

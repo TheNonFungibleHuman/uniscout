@@ -286,17 +286,18 @@ export const MOCK_GUIDES: Guide[] = [
     }
 ];
 
-// Reliable high-quality architectural images using specific IDs to avoid 403s
+// Reliable high-quality architectural images
 const UNI_IMAGES = [
     "https://images.unsplash.com/photo-1562774053-701939374585?q=80&w=800&auto=format&fit=crop", // College Hall
     "https://images.unsplash.com/photo-1592280771884-4284b19273f2?q=80&w=800&auto=format&fit=crop", // Library
     "https://images.unsplash.com/photo-1498243691581-b145c3f54a5a?q=80&w=800&auto=format&fit=crop", // Campus Green
     "https://images.unsplash.com/photo-1541339907198-e08756dedf3f?q=80&w=800&auto=format&fit=crop", // Graduation
-    "https://images.unsplash.com/photo-1523050854058-8df90110c9f1?q=80&w=800&auto=format&fit=crop"  // Classroom
+    "https://images.unsplash.com/photo-1523050854058-8df90110c9f1?q=80&w=800&auto=format&fit=crop", // Classroom
+    "https://images.unsplash.com/photo-1564981797816-1043664bf78d?q=80&w=800&auto=format&fit=crop", // MIT Dome
+    "https://images.unsplash.com/photo-1580659446629-284e3dd498d7?q=80&w=800&auto=format&fit=crop", // Oxford
+    "https://images.unsplash.com/photo-1622396090064-2c895861e3f4?q=80&w=800&auto=format&fit=crop", // Toronto
+    "https://images.unsplash.com/photo-1576764698177-20604ec432c9?q=80&w=800&auto=format&fit=crop"  // Cape Town
 ];
-
-// Helper to get UI Avatar as fallback logo
-const getLogoUrl = (name: string) => `https://ui-avatars.com/api/?name=${encodeURIComponent(name)}&background=random&color=fff&size=128&font-size=0.33`;
 
 export const MOCK_DATABASE_UNIVERSITIES: University[] = [
   {
@@ -309,10 +310,7 @@ export const MOCK_DATABASE_UNIVERSITIES: University[] = [
     website: "https://www.mit.edu",
     tags: ["Top Ranked", "Research", "Urban"],
     logo: "https://upload.wikimedia.org/wikipedia/commons/0/0c/MIT_logo.svg", 
-    images: [
-        "https://images.unsplash.com/photo-1564981797816-1043664bf78d?q=80&w=800&auto=format&fit=crop",
-        "https://images.unsplash.com/photo-1635368590831-16363e2630c3?q=80&w=800&auto=format&fit=crop"
-    ]
+    images: [UNI_IMAGES[5], UNI_IMAGES[2]]
   },
   {
     id: 'd2',
@@ -324,10 +322,7 @@ export const MOCK_DATABASE_UNIVERSITIES: University[] = [
     website: "https://www.ox.ac.uk",
     tags: ["Historic", "Prestige", "Collegiate"],
     logo: "https://upload.wikimedia.org/wikipedia/commons/f/ff/Oxford_University_Coat_Of_Arms.svg",
-    images: [
-        "https://images.unsplash.com/photo-1580659446629-284e3dd498d7?q=80&w=800&auto=format&fit=crop",
-        "https://images.unsplash.com/photo-1465311440653-ba41d2783363?q=80&w=800&auto=format&fit=crop"
-    ]
+    images: [UNI_IMAGES[6], UNI_IMAGES[1]]
   },
   {
     id: 'd3',
@@ -339,10 +334,7 @@ export const MOCK_DATABASE_UNIVERSITIES: University[] = [
     website: "https://www.utoronto.ca",
     tags: ["Diverse", "Urban", "Research"],
     logo: "https://upload.wikimedia.org/wikipedia/en/0/04/Utoronto_coat.svg",
-    images: [
-        "https://images.unsplash.com/photo-1622396090064-2c895861e3f4?q=80&w=800&auto=format&fit=crop",
-        "https://images.unsplash.com/photo-1591123120675-6f7f4a542b7f?q=80&w=800&auto=format&fit=crop"
-    ]
+    images: [UNI_IMAGES[7], UNI_IMAGES[3]]
   },
   {
     id: 'd4',
@@ -354,10 +346,7 @@ export const MOCK_DATABASE_UNIVERSITIES: University[] = [
     website: "https://www.uct.ac.za",
     tags: ["Scenic", "Development", "Africa"],
     logo: "https://upload.wikimedia.org/wikipedia/en/7/7c/University_of_Cape_Town_logo.svg",
-    images: [
-        "https://images.unsplash.com/photo-1576764698177-20604ec432c9?q=80&w=800&auto=format&fit=crop",
-        "https://images.unsplash.com/photo-1523050854058-8df90110c9f1?q=80&w=800&auto=format&fit=crop"
-    ]
+    images: [UNI_IMAGES[8], UNI_IMAGES[4]]
   },
   {
     id: 'alu-rw',
@@ -369,10 +358,7 @@ export const MOCK_DATABASE_UNIVERSITIES: University[] = [
     website: "https://www.alueducation.com",
     tags: ["Leadership", "Innovation", "Africa"],
     logo: "https://upload.wikimedia.org/wikipedia/commons/thumb/8/85/African_Leadership_University_logo.png/640px-African_Leadership_University_logo.png",
-    images: [
-        "https://images.unsplash.com/photo-1523240795612-9a054b0db644?q=80&w=800&auto=format&fit=crop",
-        "https://images.unsplash.com/photo-1544531586-fde5298cdd40?q=80&w=800&auto=format&fit=crop"
-    ]
+    images: ["https://images.unsplash.com/photo-1523240795612-9a054b0db644?q=80&w=800&auto=format&fit=crop", UNI_IMAGES[0]]
   },
   {
     id: 'alu-mu',
@@ -384,10 +370,7 @@ export const MOCK_DATABASE_UNIVERSITIES: University[] = [
     website: "https://www.alueducation.com",
     tags: ["Entrepreneurship", "Diversity", "Island Campus"],
     logo: "https://upload.wikimedia.org/wikipedia/commons/thumb/8/85/African_Leadership_University_logo.png/640px-African_Leadership_University_logo.png",
-    images: [
-        "https://images.unsplash.com/photo-1596462502278-27bfdd403348?q=80&w=800&auto=format&fit=crop",
-        "https://images.unsplash.com/photo-1565034946487-077786996e27?q=80&w=800&auto=format&fit=crop"
-    ]
+    images: ["https://images.unsplash.com/photo-1596462502278-27bfdd403348?q=80&w=800&auto=format&fit=crop", UNI_IMAGES[1]]
   }
 ];
 

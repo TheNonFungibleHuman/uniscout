@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { University } from '../types';
 
@@ -13,7 +12,7 @@ interface UniversityCardProps {
   className?: string;
 }
 
-export default function UniversityCard({ 
+const UniversityCard: React.FC<UniversityCardProps> = ({ 
   university, 
   onSave, 
   onDiscard, 
@@ -22,7 +21,7 @@ export default function UniversityCard({
   minimal = false,
   onClick,
   className = ''
-}: UniversityCardProps) {
+}) => {
   const [imgError, setImgError] = useState(false);
   const [logoError, setLogoError] = useState(false);
 
@@ -145,4 +144,6 @@ export default function UniversityCard({
       </div>
     </div>
   );
-}
+};
+
+export default UniversityCard;

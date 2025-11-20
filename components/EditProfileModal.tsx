@@ -111,7 +111,7 @@ const EditProfileModal: React.FC<EditProfileModalProps> = ({ isOpen, onClose, pr
                       }}
                       className={`px-3 py-1.5 rounded-full text-xs font-medium transition-colors border text-left
                         ${formData.keyMetrics.includes(metric)
-                          ? 'bg-indigo-100 text-indigo-700 border-indigo-200'
+                          ? 'bg-brand-100 text-brand-700 border-brand-200'
                           : 'bg-slate-50 text-slate-600 border-slate-200 hover:bg-slate-100'}`}
                     >
                       {metric}

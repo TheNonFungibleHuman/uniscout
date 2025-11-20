@@ -1,4 +1,3 @@
-
 import React, { useState, useRef, useEffect } from 'react';
 import { UserProfile, University, Mentor, Application, Scholarship, Guide } from '../types';
 import { MOCK_MENTORS, MOCK_DATABASE_UNIVERSITIES, AUTOCOMPLETE_UNIVERSITIES, MOCK_SCHOLARSHIPS, MOCK_GUIDES } from '../constants';
@@ -72,7 +71,8 @@ const SchoolProfileView = ({
          
          <button 
             onClick={onClose}
-            className="absolute top-6 left-6 bg-white/90 hover:bg-white text-brand-900 p-3 shadow-lg transition-colors backdrop-blur-sm border border-brand-900"
+            className="absolute top-6 left-6 bg-white/90 hover:bg-white text-brand-900 p-3 shadow-lg transition-colors backdrop-blur-sm border border-brand-900 z-50 cursor-pointer"
+            aria-label="Back to Dashboard"
          >
             <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" className="w-5 h-5">
                 <path fillRule="evenodd" d="M17 10a.75.75 0 01-.75.75H5.612l4.158 3.96a.75.75 0 11-1.04 1.08l-5.5-5.25a.75.75 0 010-1.08l5.5-5.25a.75.75 0 111.04 1.08L5.612 9.25H16.25A.75.75 0 0117 10z" clipRule="evenodd" />
@@ -135,9 +135,11 @@ const SchoolProfileView = ({
                                 </div>
                             ))}
                              {/* Add some placeholders if not enough images */}
-                             <div className="h-40 overflow-hidden group relative bg-slate-200">
-                                <img src={defaultCover} alt="Students" className="w-full h-full object-cover grayscale group-hover:grayscale-0 transition-all duration-700" />
-                             </div>
+                             {uni.images.length < 3 && (
+                                 <div className="h-40 overflow-hidden group relative bg-slate-200">
+                                    <img src={defaultCover} alt="Students" className="w-full h-full object-cover grayscale group-hover:grayscale-0 transition-all duration-700" />
+                                 </div>
+                             )}
                         </div>
                     </section>
                 )}
@@ -562,7 +564,7 @@ const Dashboard: React.FC<DashboardProps> = ({
                                     <UniversityCard 
                                         key={uni.id}
                                         university={uni}
-                                        onSave={() => {}}
+                                        onSave={onSaveSchool}
                                         isSaved={!isFallback}
                                         minimal={false}
                                         onClick={() => setSelectedSchool(uni)}

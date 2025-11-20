@@ -1,7 +1,7 @@
 
 import React, { useState, useRef, useEffect } from 'react';
-import { UserProfile, University, Mentor, Application } from '../types';
-import { MOCK_MENTORS, MOCK_DATABASE_UNIVERSITIES, AUTOCOMPLETE_UNIVERSITIES } from '../constants';
+import { UserProfile, University, Mentor, Application, Scholarship, Guide } from '../types';
+import { MOCK_MENTORS, MOCK_DATABASE_UNIVERSITIES, AUTOCOMPLETE_UNIVERSITIES, MOCK_SCHOLARSHIPS, MOCK_GUIDES } from '../constants';
 import UniversityCard from './UniversityCard';
 import EditProfileModal from './EditProfileModal';
 import ApplicationFormModal from './ApplicationFormModal';
@@ -19,7 +19,7 @@ interface DashboardProps {
   onLogout: () => void;
 }
 
-type DashboardView = 'schools' | 'mentors' | 'chat' | 'prep' | 'tracker' | 'forum' | 'guides';
+type DashboardView = 'schools' | 'mentors' | 'chat' | 'scholarships' | 'tracker' | 'forum' | 'guides' | 'prep';
 
 const SidebarItem: React.FC<{ 
   view: DashboardView; 
@@ -231,6 +231,10 @@ const Dashboard: React.FC<DashboardProps> = ({
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   
+  // Scholarship State
+  const [scholarshipTab, setScholarshipTab] = useState<'all' | 'forYou'>('all');
+  const [scholarshipFilter, setScholarshipFilter] = useState<string>('All');
+  
   // Application Modal State
   const [isAppModalOpen, setIsAppModalOpen] = useState(false);
   const [currentApp, setCurrentApp] = useState<Application | null>(null);
@@ -316,6 +320,27 @@ const Dashboard: React.FC<DashboardProps> = ({
       setCurrentView('chat');
   };
 
+  // Scholarship Filtering Logic
+  const getScholarships = () => {
+      let filtered = MOCK_SCHOLARSHIPS;
+      
+      // For You Logic: Simple check against location or keywords matching profile
+      if (scholarshipTab === 'forYou') {
+          filtered = filtered.filter(sch => {
+              const locationMatch = profile.preferredLocations.some(loc => sch.location?.includes(loc) || sch.tags.some(t => t.includes(loc)));
+              const degreeMatch = sch.tags.some(t => profile.degreeLevel.includes(t));
+              const generalTagMatch = sch.tags.includes('Global') || sch.tags.includes('All Fields');
+              return locationMatch || degreeMatch || generalTagMatch;
+          });
+      }
+
+      if (scholarshipFilter !== 'All') {
+          filtered = filtered.filter(sch => sch.tags.includes(scholarshipFilter));
+      }
+
+      return filtered;
+  };
+
   const SidebarContent = () => (
     <div className="flex flex-col h-full bg-white border-r border-slate-200">
         <div className="p-8 border-b border-slate-200 bg-beige-100">
@@ -337,7 +362,7 @@ const Dashboard: React.FC<DashboardProps> = ({
             </div>
         </div>
         
-        <nav className="flex-1 py-6 space-y-1">
+        <nav className="flex-1 py-6 space-y-1 overflow-y-auto no-scrollbar">
             <SidebarItem 
                 view="schools"
                 currentView={currentView} 
@@ -360,6 +385,13 @@ const Dashboard: React.FC<DashboardProps> = ({
                 icon={<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" className="w-5 h-5"><path fillRule="evenodd" d="M7.5 6a4.5 4.5 0 119 0 4.5 4.5 0 01-9 0zM3.751 20.105a8.25 8.25 0 0116.498 0 .75.75 0 01-.437.695A18.683 18.683 0 0112 22.5c-2.786 0-5.433-.602-7.812-1.7a.75.75 0 01-.437-.695z" clipRule="evenodd" /></svg>}
             />
             <SidebarItem 
+                view="scholarships" 
+                currentView={currentView}
+                label="Scholarships" 
+                onClick={() => handleSidebarClick('scholarships')}
+                icon={<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" className="w-5 h-5"><path d="M10.464 8.746c.227-.18.497-.311.786-.394v2.795a2.252 2.252 0 01-.786-.393c-.394-.313-.546-.681-.546-1.004 0-.324.152-.691.546-1.004zM12.75 15.662v-2.824c.347.085.664.228.921.421.427.32.579.686.579.991 0 .305-.152.671-.579.991a2.534 2.534 0 01-.921.42z" /><path fillRule="evenodd" d="M12 2.25c-5.385 0-9.75 4.365-9.75 9.75s4.365 9.75 9.75 9.75 9.75-4.365 9.75-9.75S17.385 2.25 12 2.25zM12.75 6a.75.75 0 00-1.5 0v.816a3.836 3.836 0 00-1.72.756c-.712.566-1.112 1.35-1.112 2.178 0 .829.4 1.612 1.113 2.178.516.412 1.108.682 1.719.787v2.905a3.799 3.799 0 001.72.756c.712.566 1.112 1.35 1.112 2.178 0 .829-.4 1.612-1.113 2.178a4.784 4.784 0 01-1.719.788v.816a.75.75 0 001.5 0v-.816a3.836 3.836 0 001.72-.756c.712-.566 1.112-1.35 1.112-2.178 0-.829-.4-1.612-1.113-2.178a4.784 4.784 0 01-1.719-.787V9.252a3.838 3.838 0 00-1.72-.756c-.712-.566-1.112-1.35-1.112-2.178 0-.829.4-1.612 1.113-2.178.516-.412 1.108-.682 1.719-.787V6z" clipRule="evenodd" /></svg>}
+            />
+            <SidebarItem 
                 view="chat" 
                 currentView={currentView}
                 label="Intelligence" 
@@ -372,6 +404,13 @@ const Dashboard: React.FC<DashboardProps> = ({
                 label="Prep Suite" 
                 onClick={() => handleSidebarClick('prep')}
                 icon={<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" className="w-5 h-5"><path d="M5.625 1.5c-1.036 0-1.875.84-1.875 1.875v17.25c0 1.035.84 1.875 1.875 1.875h12.75c1.035 0 1.875-.84 1.875-1.875V12.75A3.75 3.75 0 0016.5 9h-1.875a1.875 1.875 0 01-1.875-1.875V5.25A3.75 3.75 0 009 1.5H5.625z" /><path d="M12.971 1.816A5.23 5.23 0 0114.25 5.25v1.875c0 .207.168.375.375.375H16.5a5.23 5.23 0 013.434 1.279 9.768 9.768 0 00-6.963-6.963z" /></svg>}
+            />
+            <SidebarItem 
+                view="guides" 
+                currentView={currentView}
+                label="Guides" 
+                onClick={() => handleSidebarClick('guides')}
+                icon={<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" className="w-5 h-5"><path d="M11.25 4.533A9.707 9.707 0 006 3a9.735 9.735 0 00-3.25.555.75.75 0 00-.5.707v14.25a.75.75 0 001 .707A8.237 8.237 0 016 18.75c1.995 0 3.823.707 5.25 1.886V4.533zM12.75 20.636A8.214 8.214 0 0118 18.75c.966 0 1.89.166 2.75.47a.75.75 0 001-.708V4.262a.75.75 0 00-.5-.707A9.735 9.735 0 0018 3a9.707 9.707 0 00-5.25 1.533v16.103z" /></svg>}
             />
         </nav>
 
@@ -539,6 +578,116 @@ const Dashboard: React.FC<DashboardProps> = ({
                         </div>
                     )}
 
+                    {currentView === 'scholarships' && (
+                         <div className="max-w-7xl mx-auto animate-fade-in">
+                            <div className="mb-8">
+                                <h2 className="text-4xl font-bold text-brand-900 font-serif tracking-tight mb-3">Financial Aid & Funding</h2>
+                                <p className="text-slate-600 text-lg font-light">Explore scholarships matching your profile and academic goals.</p>
+                            </div>
+
+                            <div className="flex flex-col md:flex-row gap-6 mb-8">
+                                {/* Tabs */}
+                                <div className="flex bg-white border border-slate-200 rounded-lg p-1">
+                                    <button 
+                                        onClick={() => setScholarshipTab('all')}
+                                        className={`px-6 py-2 text-sm font-bold uppercase tracking-widest rounded-md transition-all ${scholarshipTab === 'all' ? 'bg-brand-700 text-white' : 'text-slate-500 hover:bg-slate-50'}`}
+                                    >
+                                        All Grants
+                                    </button>
+                                    <button 
+                                        onClick={() => setScholarshipTab('forYou')}
+                                        className={`px-6 py-2 text-sm font-bold uppercase tracking-widest rounded-md transition-all flex items-center gap-2 ${scholarshipTab === 'forYou' ? 'bg-accent-gold text-white' : 'text-slate-500 hover:bg-slate-50'}`}
+                                    >
+                                        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" className="w-3 h-3">
+                                            <path d="M10 8a3 3 0 100-6 3 3 0 000 6zM3.465 14.493a1.23 1.23 0 00.41 1.412A9.957 9.957 0 0010 18c2.31 0 4.438-.784 6.131-2.1.43-.333.604-.903.408-1.41a7.002 7.002 0 00-13.074.003z" />
+                                        </svg>
+                                        For You
+                                    </button>
+                                </div>
+                                
+                                {/* Filter Dropdown */}
+                                <select 
+                                    className="p-2 bg-white border border-slate-200 text-slate-700 font-medium text-sm outline-none focus:border-brand-500"
+                                    value={scholarshipFilter}
+                                    onChange={(e) => setScholarshipFilter(e.target.value)}
+                                >
+                                    <option value="All">All Tags</option>
+                                    <option value="Global">Global</option>
+                                    <option value="UK">UK Specific</option>
+                                    <option value="Masters">Master's Degree</option>
+                                    <option value="PhD">PhD / Research</option>
+                                    <option value="Women">Women in STEM</option>
+                                </select>
+                            </div>
+
+                            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                                {getScholarships().length > 0 ? getScholarships().map(sch => (
+                                    <div key={sch.id} className="bg-white border border-slate-200 p-6 shadow-sm hover:shadow-md hover:border-brand-300 transition-all flex flex-col group">
+                                        <div className="flex justify-between items-start mb-2">
+                                            <div className="bg-green-50 text-green-800 text-[10px] font-bold uppercase tracking-widest px-2 py-1 border border-green-100 inline-block mb-2">
+                                                {sch.amount}
+                                            </div>
+                                            <span className="text-slate-400 text-xs font-bold uppercase tracking-widest">Deadline: {sch.deadline}</span>
+                                        </div>
+                                        <h3 className="text-xl font-serif font-bold text-brand-900 mb-1 group-hover:text-brand-700 transition-colors">{sch.name}</h3>
+                                        <p className="text-xs text-accent-gold font-bold uppercase tracking-widest mb-4 font-heading">{sch.provider}</p>
+                                        <p className="text-slate-600 text-sm mb-6 flex-1 leading-relaxed">{sch.description}</p>
+                                        <div className="flex justify-between items-center pt-4 border-t border-slate-100 mt-auto">
+                                            <div className="flex gap-2">
+                                                {sch.tags.map(tag => (
+                                                    <span key={tag} className="text-[10px] bg-beige-100 text-slate-600 px-2 py-1 rounded-none border border-beige-200">{tag}</span>
+                                                ))}
+                                            </div>
+                                            <button className="text-brand-700 hover:text-brand-900 font-bold text-xs uppercase tracking-widest border-b-2 border-transparent hover:border-brand-700 transition-all pb-0.5">View Details</button>
+                                        </div>
+                                    </div>
+                                )) : (
+                                    <div className="col-span-full p-12 text-center bg-white border border-slate-200 border-dashed">
+                                        <p className="text-slate-400 font-medium">No scholarships found matching criteria.</p>
+                                    </div>
+                                )}
+                            </div>
+                         </div>
+                    )}
+
+                    {currentView === 'guides' && (
+                         <div className="max-w-7xl mx-auto animate-fade-in">
+                            <div className="mb-8">
+                                <h2 className="text-4xl font-bold text-brand-900 font-serif tracking-tight mb-3">Resource Library</h2>
+                                <p className="text-slate-600 text-lg font-light">Expert guides and strategies for navigating the admissions landscape.</p>
+                            </div>
+
+                            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+                                {MOCK_GUIDES.map(guide => (
+                                    <div key={guide.id} className="bg-white border border-slate-200 shadow-sm hover:shadow-lg transition-all group cursor-pointer overflow-hidden">
+                                        <div className="h-48 overflow-hidden relative">
+                                            <img src={guide.image} alt={guide.title} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-700" />
+                                            <div className="absolute top-4 left-4 bg-white/90 backdrop-blur-md px-3 py-1 text-[10px] font-bold uppercase tracking-widest text-brand-800 shadow-sm">
+                                                {guide.category}
+                                            </div>
+                                        </div>
+                                        <div className="p-6">
+                                            <div className="flex items-center gap-2 mb-3 text-slate-400 text-xs font-bold uppercase tracking-widest">
+                                                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" className="w-3 h-3">
+                                                    <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm.75-13a.75.75 0 00-1.5 0v5c0 .414.336.75.75.75h4a.75.75 0 000-1.5h-3.25V5z" clipRule="evenodd" />
+                                                </svg>
+                                                {guide.readTime}
+                                            </div>
+                                            <h3 className="text-xl font-bold font-serif text-brand-900 mb-3 group-hover:text-brand-600 transition-colors leading-tight">{guide.title}</h3>
+                                            <p className="text-slate-600 text-sm leading-relaxed mb-6">{guide.description}</p>
+                                            <span className="text-brand-700 text-xs font-bold uppercase tracking-widest flex items-center gap-2 group-hover:gap-3 transition-all">
+                                                Read Article
+                                                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" className="w-3 h-3">
+                                                    <path fillRule="evenodd" d="M3 10a.75.75 0 01.75-.75h10.638L10.23 5.29a.75.75 0 111.04-1.08l5.5 5.25a.75.75 0 010 1.08l-5.5 5.25a.75.75 0 11-1.04-1.08l4.158-3.96H3.75A.75.75 0 013 10z" clipRule="evenodd" />
+                                                </svg>
+                                            </span>
+                                        </div>
+                                    </div>
+                                ))}
+                            </div>
+                         </div>
+                    )}
+
                     {currentView === 'tracker' && (
                          <div className="max-w-7xl mx-auto animate-fade-in">
                             <div className="mb-12">
@@ -688,7 +837,7 @@ const Dashboard: React.FC<DashboardProps> = ({
                         </div>
                     )}
 
-                    {(currentView === 'forum' || currentView === 'guides') && (
+                    {currentView === 'forum' && (
                         <div className="flex flex-col items-center justify-center h-[60vh] text-center px-4">
                             <div className="w-32 h-32 bg-beige-100 flex items-center justify-center mb-8 border border-beige-200">
                                 <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1} stroke="currentColor" className="w-16 h-16 text-brand-300">

@@ -1,9 +1,12 @@
 
 export interface AuthUser {
   id: string;
-  name: string;
   email: string;
-  photoUrl?: string;
+  emailVerified: boolean;
+  name: string;
+  image?: string;
+  createdAt: Date;
+  updatedAt: Date;
   type: 'applicant' | 'mentor' | 'university';
 }
 
@@ -34,12 +37,20 @@ export interface Application {
 }
 
 export interface UserProfile {
-  // Auth details
-  email?: string;
+  // Identity
+  id: string;
+  email: string;
+  name: string;
   photoUrl?: string;
   
-  // App details
-  name: string;
+  // Demographics & Background
+  citizenship: string;
+  
+  // Academic Stats
+  gpa: string;
+  testScores: string;
+  
+  // Research Preferences
   degreeLevel: string;
   fieldOfStudy: string;
   budgetRange: string;
@@ -47,8 +58,10 @@ export interface UserProfile {
   keyMetrics: string[];
   vibe: string[];
   priorities: string;
+  
+  // State
   savedSchools: University[];
-  discardedSchools: string[]; // IDs of discarded schools
+  discardedSchools: string[]; 
 }
 
 export interface OnboardingQuestion {
@@ -75,7 +88,8 @@ export interface University {
   description: string;
   website: string;
   tags: string[];
-  logo?: string; // URL or placeholder color
+  logo?: string; // URL
+  images?: string[]; // Array of URLs
 }
 
 export interface Mentor {

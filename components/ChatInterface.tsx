@@ -20,14 +20,14 @@ interface ChatInterfaceProps {
 }
 
 const LOADING_PHRASES = [
-  "Crunching the whole internet...",
-  "Scouring university databases...",
-  "Reading student forums on Reddit...",
-  "Analyzing tuition costs...",
-  "Checking global rankings...",
-  "Looking for red flags...",
-  "Synthesizing authentic reviews...",
-  "Verifying research opportunities..."
+  "Consulting academic archives...",
+  "Analyzing global rankings...",
+  "Cross-referencing student forums...",
+  "Evaluating endowment opportunities...",
+  "Synthesizing campus sentiments...",
+  "Checking research outputs...",
+  "Verifying accreditation status...",
+  "Curating your shortlist..."
 ];
 
 const ChatInterface: React.FC<ChatInterfaceProps> = ({ 
@@ -124,7 +124,7 @@ const ChatInterface: React.FC<ChatInterfaceProps> = ({
     } catch (error) {
       setMessages(prev => prev.map(msg => 
         msg.id === loadingMsgId 
-          ? { ...msg, text: "Sorry, I encountered an error. Please try again.", isThinking: false } 
+          ? { ...msg, text: "My sincere apologies. I encountered a disruption in the archives. Please inquire again.", isThinking: false } 
           : msg
       ));
     } finally {
@@ -139,7 +139,7 @@ const ChatInterface: React.FC<ChatInterfaceProps> = ({
     const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
     
     if (!SpeechRecognition) {
-      alert("Your browser does not support voice input.");
+      alert("Voice input is unavailable on this browser.");
       return;
     }
 
@@ -167,14 +167,14 @@ const ChatInterface: React.FC<ChatInterfaceProps> = ({
     setMessages(prev => [...prev, {
       id: loadingMsgId,
       role: 'model',
-      text: "Updating research parameters...",
+      text: "Recalibrating research parameters...",
       timestamp: new Date(),
       isThinking: true
     }]);
 
     try {
         const response = await updateChatProfile(newProfile);
-        const text = response?.text || "Profile updated! What would you like to search for now?";
+        const text = response?.text || "Profile updated. How may I assist you with these new criteria?";
 
         setMessages(prev => prev.map(msg => 
             msg.id === loadingMsgId 
@@ -184,7 +184,7 @@ const ChatInterface: React.FC<ChatInterfaceProps> = ({
     } catch (error) {
         setMessages(prev => prev.map(msg => 
             msg.id === loadingMsgId 
-              ? { ...msg, text: "Profile saved locally. Please continue.", isThinking: false } 
+              ? { ...msg, text: "Preferences saved locally. Please proceed.", isThinking: false } 
               : msg
           ));
     } finally {
@@ -193,7 +193,7 @@ const ChatInterface: React.FC<ChatInterfaceProps> = ({
   };
 
   return (
-    <div className="flex flex-col h-full bg-slate-50 relative">
+    <div className="flex flex-col h-full bg-beige-50 relative font-sans">
       <EditProfileModal 
         isOpen={isEditModalOpen} 
         onClose={() => setIsEditModalOpen(false)} 
@@ -203,26 +203,26 @@ const ChatInterface: React.FC<ChatInterfaceProps> = ({
 
       {/* Header - Hide if embedded in dashboard to avoid double headers */}
       {!embeddedInDashboard && (
-        <header className="bg-white border-b border-slate-200 px-6 py-4 flex items-center justify-between sticky top-0 z-10">
+        <header className="bg-white/80 backdrop-blur-md border-b border-brown-100 px-6 py-4 flex items-center justify-between sticky top-0 z-10">
             <div className="flex items-center gap-3">
-            <div className="w-10 h-10 rounded-full bg-brand-100 flex items-center justify-center text-brand-600 font-bold text-lg">
-                US
+            <div className="w-10 h-10 rounded-sm bg-brand-700 flex items-center justify-center text-beige-100 font-serif font-bold text-xl">
+                G
             </div>
             <div>
-                <h1 className="font-bold text-slate-800 leading-tight">UniScout AI</h1>
-                <p className="text-xs text-slate-500">Researching for {profile.name}</p>
+                <h1 className="font-serif text-xl font-bold text-brand-900 leading-tight">Gradwyn</h1>
+                <p className="text-xs text-brown-500 font-heading uppercase tracking-wider">Researching for {profile.name}</p>
             </div>
             </div>
             <div className="flex items-center gap-3">
                 <button
                     onClick={onGoToDashboard}
-                    className="hidden md:block text-sm text-slate-500 hover:text-brand-600 font-medium transition-colors"
+                    className="hidden md:block text-sm text-brown-500 hover:text-brand-700 font-heading uppercase tracking-wide font-semibold transition-colors"
                 >
                     Skip to Dashboard
                 </button>
                 <button 
                     onClick={() => setIsEditModalOpen(true)}
-                    className="text-xs font-medium text-brand-600 bg-brand-50 hover:bg-brand-100 px-3 py-2 rounded-lg transition-colors"
+                    className="text-xs font-bold uppercase tracking-wider text-brand-700 bg-brand-50 hover:bg-brand-100 px-3 py-2 rounded-sm transition-colors font-heading"
                 >
                     Edit Prefs
                 </button>
@@ -231,15 +231,15 @@ const ChatInterface: React.FC<ChatInterfaceProps> = ({
       )}
 
       {/* Messages Area */}
-      <div className="flex-1 overflow-y-auto p-4 md:p-8 no-scrollbar">
+      <div className="flex-1 overflow-y-auto p-4 md:p-8 no-scrollbar bg-beige-100">
         <div className="max-w-4xl mx-auto">
             {messages.map((msg) => (
-                <div key={msg.id} className="flex flex-col mb-6">
+                <div key={msg.id} className="flex flex-col mb-8 animate-fade-in">
                     <MessageBubble message={msg} />
                     
                     {/* University Cards Recommendations */}
                     {msg.recommendations && msg.recommendations.length > 0 && (
-                        <div className="ml-0 md:ml-10 mt-2 flex overflow-x-auto gap-4 pb-4 no-scrollbar snap-x">
+                        <div className="ml-0 md:ml-12 mt-4 flex overflow-x-auto gap-5 pb-4 no-scrollbar snap-x">
                             {msg.recommendations.map(uni => {
                                 const isDiscarded = discardedSchools.includes(uni.id);
                                 const isSaved = savedSchools.some(s => s.id === uni.id);
@@ -267,13 +267,13 @@ const ChatInterface: React.FC<ChatInterfaceProps> = ({
 
       {/* Floating Go To Dashboard Button - Only show if not embedded and has saved schools */}
       {!embeddedInDashboard && savedSchools.length >= 2 && (
-         <div className="absolute bottom-24 left-0 right-0 flex justify-center pointer-events-none z-20">
+         <div className="absolute bottom-28 left-0 right-0 flex justify-center pointer-events-none z-20">
              <button 
                 onClick={onGoToDashboard}
-                className="pointer-events-auto bg-brand-600 text-white font-bold py-3 px-8 rounded-full shadow-xl hover:bg-brand-700 hover:scale-105 transition-all animate-bounce-in flex items-center gap-2"
+                className="pointer-events-auto bg-brand-700 text-beige-50 font-heading uppercase tracking-widest font-bold py-3 px-8 rounded-sm shadow-xl hover:bg-brand-800 hover:scale-105 transition-all animate-bounce-in flex items-center gap-2"
              >
-                <span>Go to Dashboard</span>
-                <span className="bg-white/20 px-2 py-0.5 rounded-full text-sm">{savedSchools.length} Saved</span>
+                <span>Open Dashboard</span>
+                <span className="bg-white/20 px-2 py-0.5 rounded-full text-sm font-sans normal-case">{savedSchools.length}</span>
                 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" className="w-5 h-5">
                     <path fillRule="evenodd" d="M3 10a.75.75 0 01.75-.75h10.638L10.23 5.29a.75.75 0 111.04-1.08l5.5 5.25a.75.75 0 010 1.08l-5.5 5.25a.75.75 0 11-1.04-1.08l4.158-3.96H3.75A.75.75 0 013 10z" clipRule="evenodd" />
                 </svg>
@@ -282,18 +282,18 @@ const ChatInterface: React.FC<ChatInterfaceProps> = ({
       )}
 
       {/* Input Area */}
-      <div className="bg-white border-t border-slate-200 p-4 md:p-6">
+      <div className="bg-white border-t border-brown-100 p-4 md:p-6">
         <div className="max-w-4xl mx-auto">
           <form 
             onSubmit={handleSendMessage}
-            className="relative flex items-center shadow-lg shadow-slate-200/50 rounded-2xl bg-white border border-slate-200 focus-within:border-brand-500 focus-within:ring-4 focus-within:ring-brand-100 transition-all"
+            className="relative flex items-center shadow-lg shadow-brown-900/5 rounded-sm bg-beige-50 border border-brown-200 focus-within:border-brand-500 focus-within:ring-2 focus-within:ring-brand-100 transition-all"
           >
             <input
               type="text"
               value={inputText}
               onChange={(e) => setInputText(e.target.value)}
-              placeholder="Ask about rankings, social life, or specific programs..."
-              className="w-full py-4 pl-6 pr-24 rounded-2xl outline-none text-slate-700 placeholder:text-slate-400 bg-transparent"
+              placeholder="Inquire about endowments, faculty prestige, or campus traditions..."
+              className="w-full py-4 pl-6 pr-24 rounded-sm outline-none text-brand-900 placeholder:text-brown-400 bg-transparent font-medium"
               disabled={isProcessing}
             />
             
@@ -302,7 +302,7 @@ const ChatInterface: React.FC<ChatInterfaceProps> = ({
                   type="button"
                   onClick={handleVoiceInput}
                   disabled={isProcessing}
-                  className={`p-2 rounded-xl transition-all ${isListening ? 'text-red-500 bg-red-50 animate-pulse' : 'text-slate-400 hover:text-brand-600 hover:bg-brand-50'}`}
+                  className={`p-2 rounded-sm transition-all ${isListening ? 'text-red-600 bg-red-50 animate-pulse' : 'text-brown-400 hover:text-brand-700 hover:bg-brand-50'}`}
                   title="Voice Input"
                 >
                   <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" className="w-5 h-5">
@@ -314,10 +314,10 @@ const ChatInterface: React.FC<ChatInterfaceProps> = ({
                 <button
                   type="submit"
                   disabled={!inputText.trim() || isProcessing}
-                  className={`p-2 rounded-xl transition-all
+                  className={`p-2 rounded-sm transition-all
                     ${!inputText.trim() || isProcessing 
-                      ? 'text-slate-300 bg-slate-50' 
-                      : 'text-white bg-brand-600 hover:bg-brand-700'}`}
+                      ? 'text-brown-300 bg-beige-100' 
+                      : 'text-beige-50 bg-brand-700 hover:bg-brand-800'}`}
                 >
                   <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" className="w-5 h-5">
                     <path d="M3.478 2.405a.75.75 0 00-.926.94l2.432 7.905H13.5a.75.75 0 010 1.5H4.984l-2.432 7.905a.75.75 0 00.926.94 60.519 60.519 0 0018.445-8.986.75.75 0 000-1.218A60.517 60.517 0 003.478 2.405z" />

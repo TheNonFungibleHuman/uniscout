@@ -4,25 +4,69 @@
     <meta charset="UTF-8" />
     <link rel="icon" type="image/svg+xml" href="https://picsum.photos/32/32" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>UniScout AI - Personalized University Researcher</title>
+    <title>Gradwyn - Elite University Research</title>
     <script src="https://cdn.tailwindcss.com"></script>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <!-- Google Fonts: Barlow Condensed (Headings), DM Serif Display (Logo/Headings), Libre Franklin (Body) -->
+    <link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@600;700;800&family=DM+Serif+Display&family=Libre+Franklin:wght@400;500;600;700&display=swap" rel="stylesheet">
+    
     <script>
       tailwind.config = {
         theme: {
           extend: {
             fontFamily: {
-              sans: ['Inter', 'sans-serif'],
+              sans: ['Libre Franklin', 'sans-serif'],
+              heading: ['Barlow Condensed', 'sans-serif'],
+              serif: ['DM Serif Display', 'serif'],
             },
             colors: {
               brand: {
-                50: '#eff6ff',
-                100: '#dbeafe',
-                500: '#3b82f6',
-                600: '#2563eb',
-                700: '#1d4ed8',
-                900: '#1e3a8a',
+                50: '#eff3ee',
+                100: '#dce5da',
+                200: '#b8cbb5',
+                300: '#8ca987',
+                400: '#65855f',
+                500: '#476641',
+                600: '#354d31',
+                700: '#162714', // Main Dark Green
+                800: '#122011',
+                900: '#0b140a',
+              },
+              beige: {
+                 50: '#fdfcfb',
+                 100: '#F6F1E9', // Main Background
+                 200: '#e8e0d3',
+                 300: '#dacdbb',
+                 400: '#cbb8a0',
+                 500: '#bba285',
+              },
+              accent: {
+                 olive: '#52583C',
+                 rust: '#C4462D',
+                 gold: '#A98756',
+              },
+              slate: {
+                50: '#fafaf9',
+                100: '#f5f5f4',
+                200: '#e7e5e4',
+                300: '#d6d3d1',
+                400: '#a8a29e',
+                500: '#78716c',
+                600: '#57534e',
+                700: '#44403c',
+                800: '#292524',
+                900: '#1c1917',
               }
+            },
+            borderRadius: {
+                'none': '0',
+                'sm': '0',
+                DEFAULT: '0',
+                'md': '0',
+                'lg': '0',
+                'xl': '0',
+                '2xl': '0',
+                '3xl': '0',
+                'full': '9999px', // Keep full for circles (avatars)
             }
           }
         }
@@ -30,8 +74,21 @@
     </script>
     <style>
       body {
-        font-family: 'Inter', sans-serif;
-        background-color: #f8fafc;
+        font-family: 'Libre Franklin', sans-serif;
+        background-color: #F6F1E9;
+        color: #162714;
+      }
+      h1, h2, h3, h4, h5, h6 {
+        color: #162714;
+      }
+      .font-heading {
+        font-family: 'Barlow Condensed', sans-serif;
+        font-weight: 700; /* Ensure bold */
+        text-transform: uppercase;
+        letter-spacing: 0.05em;
+      }
+      .font-serif {
+        font-family: 'DM Serif Display', serif;
       }
       /* Hide scrollbar for Chrome, Safari and Opera */
       .no-scrollbar::-webkit-scrollbar {
@@ -41,6 +98,12 @@
       .no-scrollbar {
           -ms-overflow-style: none;  /* IE and Edge */
           scrollbar-width: none;  /* Firefox */
+      }
+      
+      /* Custom Selection Color */
+      ::selection {
+        background-color: #A98756;
+        color: #ffffff;
       }
     </style>
   <script type="importmap">

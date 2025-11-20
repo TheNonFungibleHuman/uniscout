@@ -1,22 +1,32 @@
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { ONBOARDING_STEPS } from '../constants';
 import { UserProfile } from '../types';
 
 interface OnboardingProps {
   onComplete: (profile: UserProfile) => void;
+  initialName?: string;
 }
 
-const Onboarding: React.FC<OnboardingProps> = ({ onComplete }) => {
+const Onboarding: React.FC<OnboardingProps> = ({ onComplete, initialName = '' }) => {
   const [currentStep, setCurrentStep] = useState(0);
   const [profile, setProfile] = useState<Partial<UserProfile>>({
     preferredLocations: [],
-    vibe: []
+    vibe: [],
+    name: initialName
   });
-  const [inputValue, setInputValue] = useState('');
+  const [inputValue, setInputValue] = useState(initialName);
 
   const question = ONBOARDING_STEPS[currentStep];
   const isLastStep = currentStep === ONBOARDING_STEPS.length - 1;
+
+  // If initialName is provided, and we are on the name step (index 0), ensure input is populated
+  useEffect(() => {
+      if (currentStep === 0 && initialName && !inputValue) {
+          setInputValue(initialName);
+          // Auto-advance could be annoying if they want to change it, so we just pre-fill
+      }
+  }, [initialName, currentStep]);
 
   const handleNext = () => {
     // Save current input for text fields

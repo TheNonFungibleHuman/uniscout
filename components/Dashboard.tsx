@@ -11,22 +11,21 @@ interface DashboardProps {
   onDiscardSchool: (id: string) => void;
   renderChat: () => React.ReactNode;
   onUpdateProfile: (newProfile: UserProfile) => void;
+  onLogout: () => void;
 }
 
 type DashboardView = 'schools' | 'mentors' | 'chat' | 'prep' | 'forum' | 'guides';
 
-const Dashboard: React.FC<DashboardProps> = ({ profile, savedSchools, onDiscardSchool, renderChat, onUpdateProfile }) => {
-  const [currentView, setCurrentView] = useState<DashboardView>('schools');
-  const [selectedSchool, setSelectedSchool] = useState<University | null>(null);
-  const [isEditModalOpen, setIsEditModalOpen] = useState(false);
-
-  // If user has no saved schools, show some recommendations from "database"
-  const displaySchools = savedSchools.length > 0 ? savedSchools : MOCK_DATABASE_UNIVERSITIES;
-  const isFallback = savedSchools.length === 0;
-
-  const SidebarItem: React.FC<{ view: DashboardView; label: string; icon: React.ReactNode }> = ({ view, label, icon }) => (
+// Extracted components to prevent re-mounting on every render
+const SidebarItem: React.FC<{ 
+  view: DashboardView; 
+  currentView: DashboardView; 
+  label: string; 
+  icon: React.ReactNode; 
+  onClick: () => void 
+}> = ({ view, currentView, label, icon, onClick }) => (
     <button 
-        onClick={() => { setCurrentView(view); setSelectedSchool(null); }}
+        onClick={onClick}
         className={`w-full flex items-center gap-3 px-4 py-3 rounded-xl transition-all font-medium mb-1
             ${currentView === view 
                 ? 'bg-brand-50 text-brand-600 shadow-sm' 
@@ -35,88 +34,102 @@ const Dashboard: React.FC<DashboardProps> = ({ profile, savedSchools, onDiscardS
         {icon}
         <span>{label}</span>
     </button>
-  );
+);
 
-  const SchoolProfileView = ({ uni }: { uni: University }) => (
-      <div className="bg-white rounded-2xl shadow-sm border border-slate-200 overflow-hidden animate-fade-in">
-          <div className="h-40 bg-gradient-to-r from-brand-600 to-indigo-700 p-6 relative">
-             <button 
-                onClick={() => setSelectedSchool(null)}
-                className="absolute top-4 left-4 bg-white/20 hover:bg-white/30 text-white p-2 rounded-full transition-colors backdrop-blur-sm"
-             >
-                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" className="w-5 h-5">
-                    <path fillRule="evenodd" d="M17 10a.75.75 0 01-.75.75H5.612l4.158 3.96a.75.75 0 11-1.04 1.08l-5.5-5.25a.75.75 0 010-1.08l5.5-5.25a.75.75 0 111.04 1.08L5.612 9.25H16.25A.75.75 0 0117 10z" clipRule="evenodd" />
+const SchoolProfileView = ({ uni, onClose, profile }: { uni: University; onClose: () => void; profile: UserProfile }) => (
+  <div className="bg-white rounded-2xl shadow-sm border border-slate-200 overflow-hidden animate-fade-in">
+      <div className="h-40 bg-gradient-to-r from-brand-600 to-indigo-700 p-6 relative">
+         <button 
+            onClick={onClose}
+            className="absolute top-4 left-4 bg-white/20 hover:bg-white/30 text-white p-2 rounded-full transition-colors backdrop-blur-sm"
+         >
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" className="w-5 h-5">
+                <path fillRule="evenodd" d="M17 10a.75.75 0 01-.75.75H5.612l4.158 3.96a.75.75 0 11-1.04 1.08l-5.5-5.25a.75.75 0 010-1.08l5.5-5.25a.75.75 0 111.04 1.08L5.612 9.25H16.25A.75.75 0 0117 10z" clipRule="evenodd" />
+            </svg>
+         </button>
+         <div className="absolute bottom-6 left-6">
+             <h2 className="text-3xl font-bold text-white">{uni.name}</h2>
+             <p className="text-brand-100 flex items-center gap-1 mt-1">
+                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" className="w-4 h-4">
+                    <path fillRule="evenodd" d="M9.69 18.933l.003.001C9.89 19.02 10 19 10 19s.11.02.308-.066l.002-.001.006-.003.018-.008a5.741 5.741 0 00.281-.14c.186-.096.446-.24.757-.433.62-.384 1.445-.966 2.274-1.765C15.302 14.988 17 12.493 17 9A7 7 0 103 9c0 3.492 1.698 5.988 3.355 7.62.829.799 1.654 1.38 2.274 1.766a11.121 11.121 0 00.757.432l.018.009.006.003zM10 11.25a2.25 2.25 0 100-4.5 2.25 2.25 0 000 4.5z" clipRule="evenodd" />
                 </svg>
-             </button>
-             <div className="absolute bottom-6 left-6">
-                 <h2 className="text-3xl font-bold text-white">{uni.name}</h2>
-                 <p className="text-brand-100 flex items-center gap-1 mt-1">
-                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" className="w-4 h-4">
-                        <path fillRule="evenodd" d="M9.69 18.933l.003.001C9.89 19.02 10 19 10 19s.11.02.308-.066l.002-.001.006-.003.018-.008a5.741 5.741 0 00.281-.14c.186-.096.446-.24.757-.433.62-.384 1.445-.966 2.274-1.765C15.302 14.988 17 12.493 17 9A7 7 0 103 9c0 3.492 1.698 5.988 3.355 7.62.829.799 1.654 1.38 2.274 1.766a11.121 11.121 0 00.757.432l.018.009.006.003zM10 11.25a2.25 2.25 0 100-4.5 2.25 2.25 0 000 4.5z" clipRule="evenodd" />
-                    </svg>
-                    {uni.location}
-                 </p>
-             </div>
-             <div className="absolute bottom-6 right-6 bg-white/20 backdrop-blur-md text-white px-4 py-2 rounded-lg border border-white/30">
-                <span className="block text-xs font-medium opacity-80">Match Score</span>
-                <span className="text-xl font-bold">{uni.matchScore}%</span>
-             </div>
-          </div>
-          <div className="p-8 grid grid-cols-1 lg:grid-cols-3 gap-8">
-             <div className="lg:col-span-2 space-y-6">
-                <section>
-                    <h3 className="text-xl font-bold text-slate-800 mb-3">Overview</h3>
-                    <p className="text-slate-600 leading-relaxed">{uni.description} This university is known for its vibrant campus life and strong academic standing. Students report high satisfaction with faculty engagement and career support services.</p>
-                </section>
-                <section>
-                    <h3 className="text-xl font-bold text-slate-800 mb-3">Why it fits you</h3>
-                    <div className="flex flex-wrap gap-2">
-                        {profile.keyMetrics.map(m => (
-                            <span key={m} className="bg-green-50 text-green-700 border border-green-200 px-3 py-1 rounded-full text-sm font-medium flex items-center gap-1">
-                                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" className="w-4 h-4">
-                                    <path fillRule="evenodd" d="M16.704 4.153a.75.75 0 01.143 1.052l-8 10.5a.75.75 0 01-1.127.075l-4.5-4.5a.75.75 0 011.06-1.06l3.894 3.893 7.48-9.817a.75.75 0 011.05-.143z" clipRule="evenodd" />
-                                </svg>
-                                Strong {m.split(' ')[0]}
-                            </span>
-                        ))}
-                    </div>
-                </section>
-                <div className="flex gap-4 mt-8">
-                    <a href={uni.website} target="_blank" rel="noreferrer" className="bg-brand-600 text-white px-6 py-3 rounded-xl font-bold hover:bg-brand-700 transition-colors">
-                        Visit Official Website
-                    </a>
-                    <button className="bg-slate-100 text-slate-700 px-6 py-3 rounded-xl font-bold hover:bg-slate-200 transition-colors">
-                        Application Requirements
-                    </button>
-                </div>
-             </div>
-             <div className="space-y-6">
-                <div className="bg-slate-50 p-5 rounded-xl border border-slate-200">
-                    <h4 className="font-bold text-slate-800 mb-4">Quick Stats</h4>
-                    <ul className="space-y-3 text-sm">
-                        <li className="flex justify-between border-b border-slate-200 pb-2">
-                            <span className="text-slate-500">Tuition</span>
-                            <span className="font-medium text-slate-900">{uni.tuition}</span>
-                        </li>
-                         <li className="flex justify-between border-b border-slate-200 pb-2">
-                            <span className="text-slate-500">Enrollment</span>
-                            <span className="font-medium text-slate-900">15,000+</span>
-                        </li>
-                         <li className="flex justify-between border-b border-slate-200 pb-2">
-                            <span className="text-slate-500">Acceptance Rate</span>
-                            <span className="font-medium text-slate-900">~12%</span>
-                        </li>
-                    </ul>
-                </div>
-                <div className="bg-indigo-50 p-5 rounded-xl border border-indigo-100">
-                    <h4 className="font-bold text-indigo-900 mb-2">Connect with Mentors</h4>
-                    <p className="text-xs text-indigo-700 mb-4">We found 3 mentors from {uni.name}.</p>
-                    <button onClick={() => setCurrentView('mentors')} className="w-full py-2 bg-indigo-200 text-indigo-800 rounded-lg text-sm font-bold hover:bg-indigo-300">View Mentors</button>
-                </div>
-             </div>
-          </div>
+                {uni.location}
+             </p>
+         </div>
+         <div className="absolute bottom-6 right-6 bg-white/20 backdrop-blur-md text-white px-4 py-2 rounded-lg border border-white/30">
+            <span className="block text-xs font-medium opacity-80">Match Score</span>
+            <span className="text-xl font-bold">{uni.matchScore}%</span>
+         </div>
       </div>
-  );
+      <div className="p-8 grid grid-cols-1 lg:grid-cols-3 gap-8">
+         <div className="lg:col-span-2 space-y-6">
+            <section>
+                <h3 className="text-xl font-bold text-slate-800 mb-3">Overview</h3>
+                <p className="text-slate-600 leading-relaxed">{uni.description} This university is known for its vibrant campus life and strong academic standing. Students report high satisfaction with faculty engagement and career support services.</p>
+            </section>
+            <section>
+                <h3 className="text-xl font-bold text-slate-800 mb-3">Why it fits you</h3>
+                <div className="flex flex-wrap gap-2">
+                    {profile.keyMetrics.map(m => (
+                        <span key={m} className="bg-green-50 text-green-700 border border-green-200 px-3 py-1 rounded-full text-sm font-medium flex items-center gap-1">
+                            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" className="w-4 h-4">
+                                <path fillRule="evenodd" d="M16.704 4.153a.75.75 0 01.143 1.052l-8 10.5a.75.75 0 01-1.127.075l-4.5-4.5a.75.75 0 011.06-1.06l3.894 3.893 7.48-9.817a.75.75 0 011.05-.143z" clipRule="evenodd" />
+                            </svg>
+                            Strong {m.split(' ')[0]}
+                        </span>
+                    ))}
+                </div>
+            </section>
+            <div className="flex gap-4 mt-8">
+                <a href={uni.website} target="_blank" rel="noreferrer" className="bg-brand-600 text-white px-6 py-3 rounded-xl font-bold hover:bg-brand-700 transition-colors">
+                    Visit Official Website
+                </a>
+                <button className="bg-slate-100 text-slate-700 px-6 py-3 rounded-xl font-bold hover:bg-slate-200 transition-colors">
+                    Application Requirements
+                </button>
+            </div>
+         </div>
+         <div className="space-y-6">
+            <div className="bg-slate-50 p-5 rounded-xl border border-slate-200">
+                <h4 className="font-bold text-slate-800 mb-4">Quick Stats</h4>
+                <ul className="space-y-3 text-sm">
+                    <li className="flex justify-between border-b border-slate-200 pb-2">
+                        <span className="text-slate-500">Tuition</span>
+                        <span className="font-medium text-slate-900">{uni.tuition}</span>
+                    </li>
+                     <li className="flex justify-between border-b border-slate-200 pb-2">
+                        <span className="text-slate-500">Enrollment</span>
+                        <span className="font-medium text-slate-900">15,000+</span>
+                    </li>
+                     <li className="flex justify-between border-b border-slate-200 pb-2">
+                        <span className="text-slate-500">Acceptance Rate</span>
+                        <span className="font-medium text-slate-900">~12%</span>
+                    </li>
+                </ul>
+            </div>
+            <div className="bg-indigo-50 p-5 rounded-xl border border-indigo-100">
+                <h4 className="font-bold text-indigo-900 mb-2">Connect with Mentors</h4>
+                <p className="text-xs text-indigo-700 mb-4">We found 3 mentors from {uni.name}.</p>
+                <button className="w-full py-2 bg-indigo-200 text-indigo-800 rounded-lg text-sm font-bold hover:bg-indigo-300">View Mentors</button>
+            </div>
+         </div>
+      </div>
+  </div>
+);
+
+const Dashboard: React.FC<DashboardProps> = ({ profile, savedSchools, onDiscardSchool, renderChat, onUpdateProfile, onLogout }) => {
+  const [currentView, setCurrentView] = useState<DashboardView>('schools');
+  const [selectedSchool, setSelectedSchool] = useState<University | null>(null);
+  const [isEditModalOpen, setIsEditModalOpen] = useState(false);
+
+  // If user has no saved schools, show some recommendations from "database"
+  const displaySchools = savedSchools.length > 0 ? savedSchools : MOCK_DATABASE_UNIVERSITIES;
+  const isFallback = savedSchools.length === 0;
+
+  const handleSidebarClick = (view: DashboardView) => {
+      setCurrentView(view);
+      setSelectedSchool(null);
+  };
 
   return (
     <div className="flex h-screen bg-slate-50">
@@ -128,36 +141,46 @@ const Dashboard: React.FC<DashboardProps> = ({ profile, savedSchools, onDiscardS
       />
 
       {/* Sidebar */}
-      <aside className="w-64 bg-white border-r border-slate-200 flex flex-col h-full hidden md:flex">
+      <aside className="w-64 bg-white border-r border-slate-200 flex flex-col h-full hidden md:flex z-20 shadow-sm">
          <div className="p-6">
             <div className="flex items-center gap-3 mb-8">
-                <div className="w-8 h-8 rounded-full bg-brand-600 flex items-center justify-center text-white font-bold text-sm">US</div>
-                <span className="font-bold text-lg tracking-tight">UniScout Hub</span>
+                <div className="w-8 h-8 rounded-lg bg-brand-600 flex items-center justify-center text-white font-bold text-sm shadow-brand-200 shadow-md">US</div>
+                <span className="font-bold text-lg tracking-tight text-slate-800">UniScout Hub</span>
             </div>
             <nav className="space-y-2">
                 <SidebarItem 
-                    view="schools" 
+                    view="schools"
+                    currentView={currentView} 
                     label="My Schools" 
+                    onClick={() => handleSidebarClick('schools')}
                     icon={<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" className="w-5 h-5"><path d="M11.7 2.805a.75.75 0 01.6 0A60.65 60.65 0 0122.83 8.72a.75.75 0 01-.231 1.337 49.949 49.949 0 00-9.902 3.912l-.003.002-.34.18a.75.75 0 01-.707 0A50.009 50.009 0 001.402 10.06a.75.75 0 01-.23-1.337A60.653 60.653 0 0111.7 2.805z" /><path d="M13.06 15.473a48.45 48.45 0 017.666-3.282c.134 1.414.22 2.843.255 4.285a.75.75 0 01-.46.71 47.878 47.878 0 00-8.105 4.342.75.75 0 01-.832 0 47.877 47.877 0 00-8.104-4.342.75.75 0 01-.461-.71c.035-1.442.121-2.87.255-4.286A48.4 48.4 0 0110.94 15.473a.75.75 0 002.12 0z" /><path d="M4.462 19.462c.42-.419.753-.89 1-1.394.453.213.902.434 1.347.661a6.743 6.743 0 01-1.286 1.794.75.75 0 11-1.06-1.06z" /></svg>}
                 />
                 <SidebarItem 
                     view="mentors" 
+                    currentView={currentView}
                     label="Find Mentors" 
+                    onClick={() => handleSidebarClick('mentors')}
                     icon={<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" className="w-5 h-5"><path fillRule="evenodd" d="M7.5 6a4.5 4.5 0 119 0 4.5 4.5 0 01-9 0zM3.751 20.105a8.25 8.25 0 0116.498 0 .75.75 0 01-.437.695A18.683 18.683 0 0112 22.5c-2.786 0-5.433-.602-7.812-1.7a.75.75 0 01-.437-.695z" clipRule="evenodd" /></svg>}
                 />
                 <SidebarItem 
                     view="chat" 
+                    currentView={currentView}
                     label="AI Assistant" 
+                    onClick={() => handleSidebarClick('chat')}
                     icon={<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" className="w-5 h-5"><path fillRule="evenodd" d="M4.804 21.644A6.707 6.707 0 006 21.75a6.721 6.721 0 003.583-1.029c.774.182 1.584.279 2.417.279 5.322 0 9.75-3.97 9.75-9 0-5.03-4.428-9-9.75-9s-9.75 3.97-9.75 9c0 2.409 1.025 4.587 2.674 6.192.232.226.277.428.254.543a3.73 3.73 0 01-.814 1.686.75.75 0 00.44 1.223zM8.25 10.875a1.125 1.125 0 100 2.25 1.125 1.125 0 000-2.25zM10.875 12a1.125 1.125 0 112.25 0 1.125 1.125 0 01-2.25 0zm4.875-1.125a1.125 1.125 0 100 2.25 1.125 1.125 0 000-2.25z" clipRule="evenodd" /></svg>}
                 />
                 <SidebarItem 
                     view="prep" 
+                    currentView={currentView}
                     label="App Prep" 
+                    onClick={() => handleSidebarClick('prep')}
                     icon={<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" className="w-5 h-5"><path d="M5.625 1.5c-1.036 0-1.875.84-1.875 1.875v17.25c0 1.035.84 1.875 1.875 1.875h12.75c1.035 0 1.875-.84 1.875-1.875V12.75A3.75 3.75 0 0016.5 9h-1.875a1.875 1.875 0 01-1.875-1.875V5.25A3.75 3.75 0 009 1.5H5.625z" /><path d="M12.971 1.816A5.23 5.23 0 0114.25 5.25v1.875c0 .207.168.375.375.375H16.5a5.23 5.23 0 013.434 1.279 9.768 9.768 0 00-6.963-6.963z" /></svg>}
                 />
                 <SidebarItem 
                     view="forum" 
+                    currentView={currentView}
                     label="Community" 
+                    onClick={() => handleSidebarClick('forum')}
                     icon={<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" className="w-5 h-5"><path fillRule="evenodd" d="M8.25 6.75a3.75 3.75 0 117.5 0 3.75 3.75 0 01-7.5 0zM15.75 9.75a3 3 0 116 0 3 3 0 01-6 0zM2.25 9.75a3 3 0 116 0 3 3 0 01-6 0zM6.31 15.117A6.745 6.745 0 0112 12a6.745 6.745 0 016.709 7.498.75.75 0 01-.372.568A12.696 12.696 0 0112 21.75c-2.305 0-4.47-.612-6.337-1.684a.75.75 0 01-.372-.568 6.787 6.787 0 011.019-4.38z" clipRule="evenodd" /><path d="M5.082 14.254a6.741 6.741 0 00-2.817.557.75.75 0 01-.568-.372A6.786 6.786 0 014.36 6.05m15.28 8.204a6.741 6.741 0 002.817.557.75.75 0 00.568-.372 6.786 6.786 0 00-2.697-8.394" /></svg>}
                 />
             </nav>
@@ -165,10 +188,14 @@ const Dashboard: React.FC<DashboardProps> = ({ profile, savedSchools, onDiscardS
          <div className="mt-auto p-6 border-t border-slate-100">
              <button 
                onClick={() => setIsEditModalOpen(true)}
-               className="w-full flex items-center gap-3 hover:bg-slate-50 p-2 rounded-lg transition-colors text-left"
+               className="w-full flex items-center gap-3 hover:bg-slate-50 p-2 rounded-lg transition-colors text-left mb-2"
              >
-                 <div className="w-10 h-10 rounded-full bg-slate-200 flex-shrink-0 overflow-hidden">
-                    <img src={`https://ui-avatars.com/api/?name=${profile.name}&background=random`} alt="User" />
+                 <div className="w-10 h-10 rounded-full bg-slate-200 flex-shrink-0 overflow-hidden border border-slate-100">
+                    <img 
+                        src={profile.photoUrl || `https://ui-avatars.com/api/?name=${profile.name || 'User'}&background=random`} 
+                        alt="User" 
+                        className="w-full h-full object-cover"
+                    />
                  </div>
                  <div className="flex-1 min-w-0">
                      <p className="text-sm font-bold text-slate-800 truncate">{profile.name}</p>
@@ -179,6 +206,16 @@ const Dashboard: React.FC<DashboardProps> = ({ profile, savedSchools, onDiscardS
                         </svg>
                      </div>
                  </div>
+             </button>
+             <button 
+                onClick={onLogout}
+                className="w-full flex items-center justify-center gap-2 text-xs font-bold text-slate-400 hover:text-red-500 py-2 transition-colors"
+             >
+                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" className="w-3 h-3">
+                    <path fillRule="evenodd" d="M3 4.25A2.25 2.25 0 015.25 2h5.5A2.25 2.25 0 0113 4.25v2a.75.75 0 01-1.5 0v-2a.75.75 0 00-.75-.75h-5.5a.75.75 0 00-.75.75v11.5c0 .414.336.75.75.75h5.5a.75.75 0 00.75-.75v-2a.75.75 0 011.5 0v2A2.25 2.25 0 0110.75 18h-5.5A2.25 2.25 0 013 15.75V4.25z" clipRule="evenodd" />
+                    <path fillRule="evenodd" d="M19 10a.75.75 0 00-.75-.75H8.704l1.048-.943a.75.75 0 10-1.004-1.114l-2.5 2.25a.75.75 0 000 1.114l2.5 2.25a.75.75 0 101.004-1.114l-1.048-.943h9.546A.75.75 0 0019 10z" clipRule="evenodd" />
+                </svg>
+                Sign Out
              </button>
          </div>
       </aside>
@@ -195,8 +232,8 @@ const Dashboard: React.FC<DashboardProps> = ({ profile, savedSchools, onDiscardS
                  <button onClick={() => setCurrentView('chat')} className={`p-2 rounded ${currentView === 'chat' ? 'bg-brand-100 text-brand-600' : 'text-slate-500'}`}>
                     <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" className="w-5 h-5"><path fillRule="evenodd" d="M10 2c-2.236 0-4.43.18-6.57.524C1.993 2.755 1 4.014 1 5.426v5.148c0 1.413.993 2.67 2.43 2.902.848.137 1.705.248 2.57.331v3.443a.75.75 0 001.28.53l3.58-3.579a.78.78 0 01.527-.224 41.202 41.202 0 003.444-.33c1.436-.23 2.429-1.487 2.429-2.902V5.426c0-1.413-.993-2.67-2.43-2.902A41.289 41.289 0 0010 2zM2.5 5.426c0-.728.496-1.377 1.183-1.488C6.117 3.45 8.043 3.326 10 3.326c1.957 0 3.883.124 6.317.612.687.111 1.183.76 1.183 1.488v5.148c0 .728-.496 1.377-1.183 1.488-2.434.488-4.36.612-6.317.612a.75.75 0 01-.52-.209l-3.03 3.03v-2.43a.75.75 0 00-.719-.746 39.702 39.702 0 01-2.03-.227c-.687-.111-1.183-.76-1.183-1.488V5.426z" clipRule="evenodd" /></svg>
                  </button>
-                 <button onClick={() => setIsEditModalOpen(true)} className={`p-2 rounded text-slate-500`}>
-                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" className="w-5 h-5"><path d="M5 4a1 1 0 00-2 0v7.268a2 2 0 000 3.464V16a1 1 0 102 0v-1.268a2 2 0 000-3.464V4zM11 4a1 1 0 10-2 0v1.268a2 2 0 000 3.464V16a1 1 0 102 0V8.732a2 2 0 000-3.464V4zM16 3a1 1 0 011 1v7.268a2 2 0 010 3.464V16a1 1 0 11-2 0v-1.268a2 2 0 010-3.464V4a1 1 0 011-1z" /></svg>
+                 <button onClick={onLogout} className={`p-2 rounded text-red-500 bg-red-50`}>
+                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" className="w-5 h-5"><path fillRule="evenodd" d="M3 4.25A2.25 2.25 0 015.25 2h5.5A2.25 2.25 0 0113 4.25v2a.75.75 0 01-1.5 0v-2a.75.75 0 00-.75-.75h-5.5a.75.75 0 00-.75.75v11.5c0 .414.336.75.75.75h5.5a.75.75 0 00.75-.75v-2a.75.75 0 011.5 0v2A2.25 2.25 0 0110.75 18h-5.5A2.25 2.25 0 013 15.75V4.25z" clipRule="evenodd" /><path fillRule="evenodd" d="M19 10a.75.75 0 00-.75-.75H8.704l1.048-.943a.75.75 0 10-1.004-1.114l-2.5 2.25a.75.75 0 000 1.114l2.5 2.25a.75.75 0 101.004-1.114l-1.048-.943h9.546A.75.75 0 0019 10z" clipRule="evenodd" /></svg>
                  </button>
               </div>
           </div>
@@ -204,7 +241,7 @@ const Dashboard: React.FC<DashboardProps> = ({ profile, savedSchools, onDiscardS
           {/* View Content */}
           <div className="flex-1 overflow-y-auto p-4 md:p-8">
               {selectedSchool ? (
-                  <SchoolProfileView uni={selectedSchool} />
+                  <SchoolProfileView uni={selectedSchool} onClose={() => setSelectedSchool(null)} profile={profile} />
               ) : (
                   <>
                     {currentView === 'schools' && (

@@ -8,7 +8,8 @@ import { sendMessageToGemini, updateChatProfile } from '../services/geminiServic
 
 interface ChatInterfaceProps {
   profile: UserProfile;
-  initialMessages: ChatMessage[];
+  messages: ChatMessage[];
+  setMessages: React.Dispatch<React.SetStateAction<ChatMessage[]>>;
   onUpdateProfile: (newProfile: UserProfile) => void;
   onSaveSchool: (school: University) => void;
   onDiscardSchool: (schoolId: string) => void;
@@ -31,7 +32,8 @@ const LOADING_PHRASES = [
 
 const ChatInterface: React.FC<ChatInterfaceProps> = ({ 
     profile, 
-    initialMessages, 
+    messages,
+    setMessages, 
     onUpdateProfile,
     onSaveSchool,
     onDiscardSchool,
@@ -40,7 +42,6 @@ const ChatInterface: React.FC<ChatInterfaceProps> = ({
     onGoToDashboard,
     embeddedInDashboard = false
 }) => {
-  const [messages, setMessages] = useState<ChatMessage[]>(initialMessages);
   const [inputText, setInputText] = useState('');
   const [isProcessing, setIsProcessing] = useState(false);
   const [isListening, setIsListening] = useState(false);
@@ -79,7 +80,7 @@ const ChatInterface: React.FC<ChatInterfaceProps> = ({
     return () => {
       if (loadingIntervalRef.current) clearInterval(loadingIntervalRef.current);
     };
-  }, [isProcessing]);
+  }, [isProcessing, setMessages]);
 
   const handleSendMessage = async (e?: React.FormEvent) => {
     e?.preventDefault();

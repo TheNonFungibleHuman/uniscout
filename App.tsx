@@ -3,15 +3,21 @@ import React, { useState } from 'react';
 import Onboarding from './components/Onboarding';
 import ChatInterface from './components/ChatInterface';
 import Dashboard from './components/Dashboard';
-import { UserProfile, ChatMessage, University } from './types';
+import LandingPage from './components/LandingPage';
+import LoginPage from './components/LoginPage';
+import { UserProfile, ChatMessage, University, AuthUser } from './types';
 import { generateWelcomeMessage, initializeChatSession } from './services/geminiService';
 
-type AppView = 'onboarding' | 'chat' | 'dashboard';
+type AppView = 'landing' | 'login' | 'onboarding' | 'chat' | 'dashboard';
 
 const App: React.FC = () => {
-  const [view, setView] = useState<AppView>('onboarding');
+  const [view, setView] = useState<AppView>('landing');
+  const [authUser, setAuthUser] = useState<AuthUser | null>(null);
   const [profile, setProfile] = useState<UserProfile | null>(null);
-  const [initialMessages, setInitialMessages] = useState<ChatMessage[]>([]);
+  
+  // Lifted Chat State so it persists between Main View and Dashboard
+  const [messages, setMessages] = useState<ChatMessage[]>([]);
+  
   const [isLoadingWelcome, setIsLoadingWelcome] = useState(false);
   const [isTransitioningToDashboard, setIsTransitioningToDashboard] = useState(false);
   
@@ -33,38 +39,61 @@ const App: React.FC = () => {
     );
   }
 
-  const handleOnboardingComplete = async (userProfile: UserProfile) => {
-    setProfile({ ...userProfile, savedSchools: [], discardedSchools: [] });
-    setIsLoadingWelcome(true);
+  const handleLoginSuccess = (user: AuthUser) => {
+    setAuthUser(user);
+    if (user.type === 'applicant') {
+        setView('onboarding');
+    }
+  };
 
-    // Initialize chat logic but defer the visual transition
-    initializeChatSession(userProfile);
+  const handleLogout = () => {
+    setAuthUser(null);
+    setProfile(null);
+    setSavedSchools([]);
+    setMessages([]);
+    setView('landing');
+  };
+
+  const handleOnboardingComplete = async (userProfile: UserProfile) => {
+    const fullProfile: UserProfile = {
+        ...userProfile,
+        email: authUser?.email,
+        photoUrl: authUser?.photoUrl,
+        savedSchools: [],
+        discardedSchools: []
+    };
+
+    setProfile(fullProfile);
+    setIsLoadingWelcome(true); // Start loading
+
+    // Initialize chat logic
+    initializeChatSession(fullProfile);
 
     try {
-        const response = await generateWelcomeMessage(userProfile);
+        const response = await generateWelcomeMessage(fullProfile);
         
         const welcomeMsg: ChatMessage = {
             id: 'welcome-msg',
             role: 'model',
             text: response.text,
             sources: response.sources,
-            recommendations: response.recommendations, // Ensure initial recs are captured
+            recommendations: response.recommendations,
             timestamp: new Date()
         };
         
-        setInitialMessages([welcomeMsg]);
+        setMessages([welcomeMsg]);
         setView('chat');
     } catch (error) {
         console.error("Failed to generate welcome:", error);
-        setInitialMessages([{
+        setMessages([{
             id: 'error-fallback',
             role: 'model',
-            text: `Welcome ${userProfile.name}! I'm ready to start researching universities for you. What would you like to know first?`,
+            text: `Welcome ${fullProfile.name}! I'm ready to start researching universities for you. What would you like to know first?`,
             timestamp: new Date()
         }]);
         setView('chat');
     } finally {
-        setIsLoadingWelcome(false);
+        setIsLoadingWelcome(false); // Stop loading
     }
   };
 
@@ -81,7 +110,6 @@ const App: React.FC = () => {
 
   const handleDiscardSchool = (schoolId: string) => {
       setDiscardedSchools(prev => [...prev, schoolId]);
-      // Also remove from saved if it was there
       setSavedSchools(prev => prev.filter(s => s.id !== schoolId));
   };
 
@@ -93,13 +121,20 @@ const App: React.FC = () => {
       }, 2000);
   };
 
-  if (!profile && view === 'onboarding') {
-    return <Onboarding onComplete={handleOnboardingComplete} />;
+  // --- RENDER LOGIC ---
+
+  if (view === 'landing') {
+    return <LandingPage onGetStarted={() => setView('login')} />;
   }
 
+  if (view === 'login') {
+    return <LoginPage onLoginSuccess={handleLoginSuccess} onBack={() => setView('landing')} />;
+  }
+
+  // MOVED UP: Check loading BEFORE checking onboarding view to ensure spinner shows
   if (isLoadingWelcome) {
     return (
-      <div className="h-screen w-full flex flex-col items-center justify-center bg-slate-50 text-slate-800 space-y-6">
+      <div className="h-screen w-full flex flex-col items-center justify-center bg-slate-50 text-slate-800 space-y-6 animate-fade-in">
         <div className="relative">
             <div className="w-16 h-16 border-4 border-brand-200 border-t-brand-600 rounded-full animate-spin"></div>
         </div>
@@ -111,9 +146,13 @@ const App: React.FC = () => {
     );
   }
 
+  if (view === 'onboarding') {
+    return <Onboarding onComplete={handleOnboardingComplete} initialName={authUser?.name} />;
+  }
+
   if (isTransitioningToDashboard) {
     return (
-      <div className="h-screen w-full flex flex-col items-center justify-center bg-indigo-50 text-indigo-900 space-y-6">
+      <div className="h-screen w-full flex flex-col items-center justify-center bg-indigo-50 text-indigo-900 space-y-6 animate-fade-in">
         <div className="w-20 h-20 bg-white rounded-full flex items-center justify-center shadow-lg animate-bounce">
              <span className="text-3xl">🎓</span>
         </div>
@@ -132,16 +171,18 @@ const App: React.FC = () => {
               savedSchools={savedSchools}
               onDiscardSchool={handleDiscardSchool}
               onUpdateProfile={handleUpdateProfile}
+              onLogout={handleLogout}
               renderChat={() => (
                   <ChatInterface 
                     profile={profile} 
-                    initialMessages={initialMessages} 
+                    messages={messages} 
+                    setMessages={setMessages}
                     onUpdateProfile={handleUpdateProfile}
                     onSaveSchool={handleSaveSchool}
                     onDiscardSchool={handleDiscardSchool}
                     savedSchools={savedSchools}
                     discardedSchools={discardedSchools}
-                    onGoToDashboard={() => {}} // No-op in dashboard
+                    onGoToDashboard={() => {}}
                     embeddedInDashboard={true}
                 />
               )}
@@ -153,7 +194,8 @@ const App: React.FC = () => {
     return (
         <ChatInterface 
             profile={profile} 
-            initialMessages={initialMessages} 
+            messages={messages}
+            setMessages={setMessages}
             onUpdateProfile={handleUpdateProfile}
             onSaveSchool={handleSaveSchool}
             onDiscardSchool={handleDiscardSchool}

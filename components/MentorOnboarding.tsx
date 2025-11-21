@@ -7,17 +7,30 @@ interface MentorOnboardingProps {
   initialName?: string;
   initialEmail?: string;
   initialPhoto?: string;
+  initialProfile?: MentorProfile;
+  onCancel?: () => void;
 }
 
-const MentorOnboarding: React.FC<MentorOnboardingProps> = ({ onComplete, initialName = '', initialEmail = '', initialPhoto = '' }) => {
+const MentorOnboarding: React.FC<MentorOnboardingProps> = ({ 
+    onComplete, 
+    initialName = '', 
+    initialEmail = '', 
+    initialPhoto = '', 
+    initialProfile,
+    onCancel 
+}) => {
   const [step, setStep] = useState(1);
   const [formData, setFormData] = useState<Partial<MentorProfile>>({
-    name: initialName,
-    email: initialEmail,
-    photoUrl: initialPhoto,
-    studentsGuided: 0,
-    isAvailable: true,
-    tags: []
+    name: initialProfile?.name || initialName,
+    email: initialProfile?.email || initialEmail,
+    photoUrl: initialProfile?.photoUrl || initialPhoto,
+    university: initialProfile?.university || '',
+    major: initialProfile?.major || '',
+    bio: initialProfile?.bio || '',
+    linkedin: initialProfile?.linkedin || '',
+    studentsGuided: initialProfile?.studentsGuided || 0,
+    isAvailable: initialProfile?.isAvailable ?? true,
+    tags: initialProfile?.tags || []
   });
   const [error, setError] = useState<string | null>(null);
 
@@ -69,7 +82,7 @@ const MentorOnboarding: React.FC<MentorOnboardingProps> = ({ onComplete, initial
         
         // Complete
         const finalProfile: MentorProfile = {
-            id: Date.now().toString(),
+            id: initialProfile?.id || Date.now().toString(),
             name: formData.name!,
             photoUrl: formData.photoUrl!,
             university: formData.university!,
@@ -78,8 +91,8 @@ const MentorOnboarding: React.FC<MentorOnboardingProps> = ({ onComplete, initial
             email: formData.email!,
             linkedin: formData.linkedin!,
             isAvailable: formData.isAvailable ?? true,
-            studentsGuided: 0,
-            tags: [formData.major!, "Alumni"] // Default tags
+            studentsGuided: initialProfile?.studentsGuided || 0,
+            tags: formData.tags && formData.tags.length > 0 ? formData.tags : [formData.major!, "Alumni"]
         };
         onComplete(finalProfile);
     }
@@ -94,7 +107,9 @@ const MentorOnboarding: React.FC<MentorOnboardingProps> = ({ onComplete, initial
 
         <div className="p-8 md:p-12">
              <div className="mb-8 text-center">
-                <span className="text-xs font-bold uppercase tracking-widest text-brand-600 mb-2 block">Mentor Profile Setup</span>
+                <span className="text-xs font-bold uppercase tracking-widest text-brand-600 mb-2 block">
+                    {initialProfile ? 'Update Profile' : 'Mentor Profile Setup'}
+                </span>
                 <h2 className="text-3xl font-serif font-bold text-slate-900">
                     {step === 1 && "Identity & Presence"}
                     {step === 2 && "Academic Background"}
@@ -237,18 +252,29 @@ const MentorOnboarding: React.FC<MentorOnboardingProps> = ({ onComplete, initial
                 )}
              </div>
 
-             <div className="flex justify-between mt-10 pt-6 border-t border-slate-100">
-                <button 
-                    onClick={() => step > 1 && setStep(s => s - 1)}
-                    className={`px-6 py-3 text-slate-500 font-bold uppercase tracking-wider text-sm ${step === 1 ? 'opacity-0 pointer-events-none' : 'hover:text-slate-800'}`}
-                >
-                    Back
-                </button>
+             <div className="flex justify-between mt-10 pt-6 border-t border-slate-100 items-center">
+                <div className="flex gap-4">
+                     {onCancel && (
+                        <button 
+                            onClick={onCancel}
+                            className="text-slate-400 font-bold uppercase tracking-wider text-sm hover:text-red-600"
+                        >
+                            Cancel
+                        </button>
+                     )}
+                     <button 
+                        onClick={() => step > 1 && setStep(s => s - 1)}
+                        className={`text-slate-500 font-bold uppercase tracking-wider text-sm hover:text-slate-800 ${step === 1 ? 'opacity-0 pointer-events-none' : ''}`}
+                    >
+                        Back
+                    </button>
+                </div>
+               
                 <button 
                     onClick={handleNext}
                     className="px-8 py-3 bg-brand-700 text-white font-bold uppercase tracking-widest text-sm hover:bg-brand-800 transition-colors shadow-lg"
                 >
-                    {step === 4 ? 'Create Profile' : 'Next Step'}
+                    {step === 4 ? (initialProfile ? 'Save Changes' : 'Create Profile') : 'Next Step'}
                 </button>
              </div>
         </div>

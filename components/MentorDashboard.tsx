@@ -1,3 +1,4 @@
+
 import React, { useState } from 'react';
 import { MentorProfile } from '../types';
 import MentorOnboarding from './MentorOnboarding'; 
@@ -45,14 +46,13 @@ const MentorDashboard: React.FC<MentorDashboardProps> = ({ profile, onUpdateProf
                    </button>
                    
                    <MentorOnboarding 
-                        initialName={profile.name}
-                        initialEmail={profile.email}
-                        initialPhoto={profile.photoUrl}
+                        initialProfile={profile}
                         onComplete={(updated) => {
                             // Preserve the original ID when updating
                             onUpdateProfile({ ...profile, ...updated, id: profile.id }); 
                             setIsEditing(false);
                         }}
+                        onCancel={() => setIsEditing(false)}
                    />
                </div>
            </div>

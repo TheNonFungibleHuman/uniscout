@@ -104,9 +104,12 @@ export const MOCK_MENTORS: Mentor[] = [
     role: "Alumni & Research Lead",
     university: "Stanford University",
     image: "https://images.unsplash.com/photo-1573496359142-b8d87734a5a2?auto=format&fit=crop&w=150&h=150",
-    bio: "PhD in Computer Science. I can help with navigating research grants and lab placements.",
+    bio: "PhD in Computer Science. Happy to answer questions about research grants and finding lab placements at Stanford.",
     availability: "Mon, Wed 2pm-5pm EST",
-    tags: ["STEM", "Research", "PhD"]
+    isAvailable: true,
+    tags: ["STEM", "Research", "PhD"],
+    email: "sarah.chen@alumni.stanford.edu",
+    linkedin: "https://linkedin.com/in/sarahchen-demo"
   },
   {
     id: 'm2',
@@ -114,9 +117,12 @@ export const MOCK_MENTORS: Mentor[] = [
     role: "Senior Student Ambassador",
     university: "University of Manchester",
     image: "https://images.unsplash.com/photo-1566492031773-4f4e44671857?auto=format&fit=crop&w=150&h=150",
-    bio: "Final year Engineering student. Ask me about finding housing and the international student experience.",
+    bio: "Final year Engineering student. Ask me about finding housing, student societies, and the international student experience in the UK.",
     availability: "Fri 10am-1pm GMT",
-    tags: ["Engineering", "Student Life", "International"]
+    isAvailable: true,
+    tags: ["Engineering", "Student Life", "International"],
+    email: "marcus.j@student.manchester.ac.uk",
+    linkedin: "https://linkedin.com/in/marcusj-demo"
   },
   {
     id: 'm3',
@@ -124,9 +130,12 @@ export const MOCK_MENTORS: Mentor[] = [
     role: "Admissions Consultant",
     university: "Columbia University",
     image: "https://images.unsplash.com/photo-1580489944761-15a19d654956?auto=format&fit=crop&w=150&h=150",
-    bio: "Former admissions officer. I specialize in essay review and interview prep for Ivy League schools.",
+    bio: "Former admissions officer. I can provide insights on essay writing and interview prep for Ivy League schools.",
     availability: "Tue, Thu 4pm-7pm EST",
-    tags: ["Admissions", "Essay Review", "Liberal Arts"]
+    isAvailable: false,
+    tags: ["Admissions", "Essay Review", "Liberal Arts"],
+    email: "elena.rodriguez@columbia.edu",
+    linkedin: "https://linkedin.com/in/elenar-demo"
   },
   {
     id: 'm4',
@@ -134,9 +143,12 @@ export const MOCK_MENTORS: Mentor[] = [
     role: "Graduate Mentor",
     university: "University of Cape Town",
     image: "https://images.unsplash.com/photo-1539571696357-5a69c17a67c6?auto=format&fit=crop&w=150&h=150",
-    bio: "Focusing on sustainable development. Happy to chat about scholarships in Africa.",
+    bio: "Focusing on sustainable development. Reach out if you have questions about scholarships and living in Cape Town.",
     availability: "Sat 9am-12pm SAST",
-    tags: ["Development", "Scholarships", "Africa"]
+    isAvailable: true,
+    tags: ["Development", "Scholarships", "Africa"],
+    email: "akwasi.mensah@uct.ac.za",
+    linkedin: "https://linkedin.com/in/akwasim-demo"
   }
 ];
 
@@ -148,7 +160,7 @@ export const MOCK_SCHOLARSHIPS: Scholarship[] = [
         amount: 'Full Tuition + Stipend',
         deadline: 'Oct 15, 2025',
         location: 'USA',
-        tags: ['Global', 'Graduate', 'All Fields'],
+        tags: ['Global', 'Masters', 'PhD', 'Fully-funded'],
         description: 'Enables graduate students, young professionals and artists from abroad to study and conduct research in the United States.'
     },
     {
@@ -158,8 +170,38 @@ export const MOCK_SCHOLARSHIPS: Scholarship[] = [
         amount: 'Full Funding',
         deadline: 'Nov 02, 2025',
         location: 'UK',
-        tags: ['UK', 'Masters', 'Leadership'],
+        tags: ['UK', 'Masters', 'Leadership', 'Fully-funded'],
         description: 'Chevening is the UK government’s international awards program aimed at developing global leaders.'
+    },
+    {
+        id: 'sch-ba1',
+        name: 'Ashinaga Africa Initiative',
+        provider: 'Ashinaga Foundation',
+        amount: 'Full Funding',
+        deadline: 'Jan 20, 2026',
+        location: 'Global',
+        tags: ['Africa Specific', 'Bachelors', 'Fully-funded', 'Leadership'],
+        description: 'An international leadership program that cultivates the next generation of leaders to contribute to the development of sub-Saharan Africa. Covers tuition, accommodation, and travel.'
+    },
+    {
+        id: 'sch-ba2',
+        name: 'Mastercard Foundation Scholars Program',
+        provider: 'Mastercard Foundation',
+        amount: 'Full Funding',
+        deadline: 'Dec 01, 2025',
+        location: 'USA, Canada, Africa',
+        tags: ['Africa Specific', 'Bachelors', 'Masters', 'Fully-funded'],
+        description: 'Provides talented young people from economically disadvantaged communities, particularly in Africa, with access to quality university education.'
+    },
+    {
+        id: 'sch-ba3',
+        name: 'Reach Oxford Scholarship',
+        provider: 'University of Oxford',
+        amount: 'Tuition + Living',
+        deadline: 'Feb 15, 2026',
+        location: 'UK',
+        tags: ['UK', 'Bachelors', 'Fully-funded', 'Need-Based'],
+        description: 'Offered to students from low-income countries who, for political or financial reasons, or because suitable educational facilities do not exist, cannot study for a degree in their own countries.'
     },
     {
         id: 'sch3',
@@ -168,8 +210,18 @@ export const MOCK_SCHOLARSHIPS: Scholarship[] = [
         amount: 'Full Tuition + Living',
         deadline: 'Oct 01, 2025',
         location: 'UK',
-        tags: ['Oxford', 'Postgraduate', 'Global'],
+        tags: ['UK', 'Masters', 'PhD', 'Fully-funded'],
         description: 'The oldest (first awarded in 1902) and perhaps the most prestigious international scholarship program, enabling young people from around the world to study at the University of Oxford.'
+    },
+    {
+        id: 'sch-ba4',
+        name: 'York University International Entrance',
+        provider: 'York University',
+        amount: '$35,000/year',
+        deadline: 'Jan 15, 2026',
+        location: 'Canada',
+        tags: ['Canada', 'Bachelors', 'Part-funded'],
+        description: 'Scholarships for international applicants with excellent academic records admitted to undergraduate degree programs.'
     },
     {
         id: 'sch4',
@@ -178,7 +230,7 @@ export const MOCK_SCHOLARSHIPS: Scholarship[] = [
         amount: 'Full Cost',
         deadline: 'Dec 05, 2025',
         location: 'UK',
-        tags: ['Cambridge', 'PhD', 'Social Leadership'],
+        tags: ['UK', 'PhD', 'Masters', 'Fully-funded'],
         description: 'Applicants must intend to undertake a full-time postgraduate degree at the University of Cambridge and show a commitment to improving the lives of others.'
     },
     {
@@ -188,7 +240,7 @@ export const MOCK_SCHOLARSHIPS: Scholarship[] = [
         amount: '€1,000/month + Travel',
         deadline: 'Jan 15, 2026',
         location: 'Europe',
-        tags: ['EU', 'Masters', 'Mobility'],
+        tags: ['Europe', 'Masters', 'Fully-funded'],
         description: 'High-level integrated study programs at master level. The program is designed and delivered by an international partnership of higher education institutions.'
     },
     {
@@ -198,7 +250,7 @@ export const MOCK_SCHOLARSHIPS: Scholarship[] = [
         amount: 'Full Funding',
         deadline: 'Oct 09, 2025',
         location: 'USA',
-        tags: ['Stanford', 'Graduate', 'Innovation'],
+        tags: ['USA', 'Masters', 'PhD', 'Fully-funded'],
         description: 'Cultivates and supports a multidisciplinary and multicultural community of graduate students across Stanford University.'
     },
     {
@@ -208,7 +260,7 @@ export const MOCK_SCHOLARSHIPS: Scholarship[] = [
         amount: '$18,000 - $30,000',
         deadline: 'Nov 15, 2025',
         location: 'USA',
-        tags: ['Women', 'Research', 'Graduate'],
+        tags: ['USA', 'Women', 'Masters', 'PhD', 'Part-funded'],
         description: 'Support for women pursuing full-time graduate or postdoctoral study in the United States who are not U.S. citizens or permanent residents.'
     },
     {
@@ -218,7 +270,7 @@ export const MOCK_SCHOLARSHIPS: Scholarship[] = [
         amount: 'Full Funding',
         deadline: 'Sep 19, 2025',
         location: 'Asia',
-        tags: ['China', 'Masters', 'Leadership'],
+        tags: ['Asia', 'Masters', 'Fully-funded'],
         description: 'Designed to prepare the next generation of global leaders. Scholars pursue a one-year Master’s degree at Tsinghua University in Beijing.'
     },
     {
@@ -228,7 +280,7 @@ export const MOCK_SCHOLARSHIPS: Scholarship[] = [
         amount: '$50,000/year',
         deadline: 'Nov 01, 2025',
         location: 'Canada',
-        tags: ['PhD', 'Research', 'Canada'],
+        tags: ['Canada', 'PhD', 'Research', 'Part-funded'],
         description: 'Attracts and retains world-class doctoral students and establishes Canada as a global center of excellence in research and higher learning.'
     },
     {
@@ -238,7 +290,7 @@ export const MOCK_SCHOLARSHIPS: Scholarship[] = [
         amount: '50% Grant / 50% Loan',
         deadline: 'Mar 31, 2026',
         location: 'Global',
-        tags: ['Development', 'Need-Based', 'Developing Countries'],
+        tags: ['Global', 'Masters', 'PhD', 'Need-Based', 'Part-funded'],
         description: 'Provides a limited number of scholarships each year for postgraduate studies to outstanding students from select developing countries.'
     }
 ];
@@ -287,16 +339,27 @@ export const MOCK_GUIDES: Guide[] = [
 ];
 
 // Reliable high-quality architectural images
-const UNI_IMAGES = [
-    "https://images.unsplash.com/photo-1562774053-701939374585?q=80&w=800&auto=format&fit=crop", // College Hall
-    "https://images.unsplash.com/photo-1592280771884-4284b19273f2?q=80&w=800&auto=format&fit=crop", // Library
-    "https://images.unsplash.com/photo-1498243691581-b145c3f54a5a?q=80&w=800&auto=format&fit=crop", // Campus Green
-    "https://images.unsplash.com/photo-1541339907198-e08756dedf3f?q=80&w=800&auto=format&fit=crop", // Graduation
-    "https://images.unsplash.com/photo-1523050854058-8df90110c9f1?q=80&w=800&auto=format&fit=crop", // Classroom
-    "https://images.unsplash.com/photo-1564981797816-1043664bf78d?q=80&w=800&auto=format&fit=crop", // MIT Dome
-    "https://images.unsplash.com/photo-1580659446629-284e3dd498d7?q=80&w=800&auto=format&fit=crop", // Oxford
-    "https://images.unsplash.com/photo-1622396090064-2c895861e3f4?q=80&w=800&auto=format&fit=crop", // Toronto
-    "https://images.unsplash.com/photo-1576764698177-20604ec432c9?q=80&w=800&auto=format&fit=crop"  // Cape Town
+export const UNI_IMAGES = [
+    "https://images.unsplash.com/photo-1562774053-701939374585?q=80&w=800&auto=format&fit=crop",
+    "https://images.unsplash.com/photo-1592280771884-4284b19273f2?q=80&w=800&auto=format&fit=crop",
+    "https://images.unsplash.com/photo-1498243691581-b145c3f54a5a?q=80&w=800&auto=format&fit=crop",
+    "https://images.unsplash.com/photo-1541339907198-e08756dedf3f?q=80&w=800&auto=format&fit=crop",
+    "https://images.unsplash.com/photo-1523050854058-8df90110c9f1?q=80&w=800&auto=format&fit=crop",
+    "https://images.unsplash.com/photo-1564981797816-1043664bf78d?q=80&w=800&auto=format&fit=crop",
+    "https://images.unsplash.com/photo-1580659446629-284e3dd498d7?q=80&w=800&auto=format&fit=crop",
+    "https://images.unsplash.com/photo-1622396090064-2c895861e3f4?q=80&w=800&auto=format&fit=crop",
+    "https://images.unsplash.com/photo-1576764698177-20604ec432c9?q=80&w=800&auto=format&fit=crop",
+    "https://images.unsplash.com/photo-1590579491624-f98f36d4c763?q=80&w=800&auto=format&fit=crop",
+    "https://images.unsplash.com/photo-1617634667039-8e4cb277ab46?q=80&w=800&auto=format&fit=crop",
+    "https://images.unsplash.com/photo-1590082870347-b23722c05d3f?q=80&w=800&auto=format&fit=crop",
+    "https://images.unsplash.com/photo-1568792923760-d70635a89fdc?q=80&w=800&auto=format&fit=crop",
+    "https://images.unsplash.com/photo-1525921429624-479b6a26d84d?q=80&w=800&auto=format&fit=crop",
+    "https://images.unsplash.com/photo-1462536943532-57a629f6cc60?q=80&w=800&auto=format&fit=crop",
+    "https://images.unsplash.com/photo-1565514020176-8002c77e7cfa?q=80&w=800&auto=format&fit=crop",
+    "https://images.unsplash.com/photo-1504042535685-d1a5a072f324?q=80&w=800&auto=format&fit=crop",
+    "https://images.unsplash.com/photo-1558452020-f06610f5c724?q=80&w=800&auto=format&fit=crop",
+    "https://images.unsplash.com/photo-1492538368677-f6e0afe31dcc?q=80&w=800&auto=format&fit=crop",
+    "https://images.unsplash.com/photo-1560526860-42eb5f78b3d5?q=80&w=800&auto=format&fit=crop"
 ];
 
 export const MOCK_DATABASE_UNIVERSITIES: University[] = [

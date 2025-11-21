@@ -1,16 +1,18 @@
 
 import React, { useState, useEffect } from 'react';
 import Onboarding from './components/Onboarding';
+import MentorOnboarding from './components/MentorOnboarding';
 import ChatInterface from './components/ChatInterface';
 import Dashboard from './components/Dashboard';
+import MentorDashboard from './components/MentorDashboard';
 import LandingPage from './components/LandingPage';
 import LoginPage from './components/LoginPage';
 import LoadingScreen from './components/LoadingScreen';
-import { UserProfile, ChatMessage, University, AuthUser, Application } from './types';
+import { UserProfile, ChatMessage, University, AuthUser, Application, MentorProfile } from './types';
 import { generateWelcomeMessage, initializeChatSession } from './services/geminiService';
 import { authClient } from './lib/auth';
 
-type AppView = 'landing' | 'login' | 'onboarding' | 'chat' | 'dashboard';
+type AppView = 'landing' | 'login' | 'onboarding' | 'mentor-onboarding' | 'chat' | 'dashboard' | 'mentor-dashboard';
 
 const PROFILE_ANALYSIS_MESSAGES = [
     "Consulting global academic archives...",
@@ -33,7 +35,10 @@ const DASHBOARD_BUILD_MESSAGES = [
 const App: React.FC = () => {
   const { data: sessionUser, isPending: isSessionPending } = authClient.useSession();
   const [view, setView] = useState<AppView>('landing');
+  const [selectedRole, setSelectedRole] = useState<'applicant' | 'mentor' | 'university'>('applicant');
+  
   const [profile, setProfile] = useState<UserProfile | null>(null);
+  const [mentorProfile, setMentorProfile] = useState<MentorProfile | null>(null);
   
   // Lifted Chat State
   const [messages, setMessages] = useState<ChatMessage[]>([]);
@@ -50,32 +55,43 @@ const App: React.FC = () => {
   useEffect(() => {
     if (!isSessionPending) {
         if (sessionUser) {
-            // Attempt to restore profile from local storage
-            const savedProfileStr = localStorage.getItem('gradwyn_profile');
-            const savedSchoolsStr = localStorage.getItem('gradwyn_savedSchools');
-            const savedAppsStr = localStorage.getItem('gradwyn_applications');
-            
-            if (savedProfileStr) {
-                try {
-                    const parsedProfile = JSON.parse(savedProfileStr);
-                    setProfile(parsedProfile);
-                    
-                    if (savedSchoolsStr) setSavedSchools(JSON.parse(savedSchoolsStr));
-                    if (savedAppsStr) setApplications(JSON.parse(savedAppsStr).map((app: any) => ({
-                        ...app,
-                        lastUpdated: new Date(app.lastUpdated),
-                        submittedDate: app.submittedDate ? new Date(app.submittedDate) : undefined
-                    })));
-                    
-                    // If we have a profile, default to dashboard to avoid "starting again"
-                    setView('dashboard');
-                } catch (e) {
-                    console.error("Failed to restore session", e);
-                    setView('onboarding');
+            if (sessionUser.type === 'mentor') {
+                // Mentor Flow
+                const savedMentorStr = localStorage.getItem(`gradwyn_mentor_${sessionUser.id}`);
+                if (savedMentorStr) {
+                    setMentorProfile(JSON.parse(savedMentorStr));
+                    setView('mentor-dashboard');
+                } else {
+                    setView('mentor-onboarding');
                 }
             } else {
-                // User logged in but no profile
-                setView('onboarding');
+                // Applicant OR University Flow (University routed to applicant dashboard for demo)
+                const savedProfileStr = localStorage.getItem('gradwyn_profile');
+                const savedSchoolsStr = localStorage.getItem('gradwyn_savedSchools');
+                const savedAppsStr = localStorage.getItem('gradwyn_applications');
+                
+                if (savedProfileStr) {
+                    try {
+                        const parsedProfile = JSON.parse(savedProfileStr);
+                        setProfile(parsedProfile);
+                        
+                        if (savedSchoolsStr) setSavedSchools(JSON.parse(savedSchoolsStr));
+                        if (savedAppsStr) setApplications(JSON.parse(savedAppsStr).map((app: any) => ({
+                            ...app,
+                            lastUpdated: new Date(app.lastUpdated),
+                            submittedDate: app.submittedDate ? new Date(app.submittedDate) : undefined
+                        })));
+                        
+                        // If we have a profile, default to dashboard to avoid "starting again"
+                        setView('dashboard');
+                    } catch (e) {
+                        console.error("Failed to restore session", e);
+                        setView('onboarding');
+                    }
+                } else {
+                    // User logged in but no profile
+                    setView('onboarding');
+                }
             }
         } else {
             setView('landing');
@@ -89,6 +105,12 @@ const App: React.FC = () => {
           localStorage.setItem('gradwyn_profile', JSON.stringify(profile));
       }
   }, [profile]);
+  
+  useEffect(() => {
+      if (mentorProfile && sessionUser) {
+          localStorage.setItem(`gradwyn_mentor_${sessionUser.id}`, JSON.stringify(mentorProfile));
+      }
+  }, [mentorProfile, sessionUser]);
 
   useEffect(() => {
       if (savedSchools.length > 0) {
@@ -116,11 +138,20 @@ const App: React.FC = () => {
     );
   }
 
+  const handleRoleSelect = (role: 'applicant' | 'mentor' | 'university') => {
+      setSelectedRole(role);
+      setView('login');
+  };
+
   const handleLoginSuccess = (user: AuthUser) => {
-    // Auth state is handled by useSession hook, but we can force view update if needed
-    if (user.type === 'applicant') {
-        // Check if we already have a profile in state (handled by effect), if not go onboarding
+    // Check type and redirect
+    if (user.type === 'mentor') {
+        if (!mentorProfile) setView('mentor-onboarding');
+        else setView('mentor-dashboard');
+    } else {
+        // Handle 'university' type by sending them to applicant flow for this demo
         if (!profile) setView('onboarding');
+        else setView('dashboard');
     }
   };
 
@@ -128,14 +159,16 @@ const App: React.FC = () => {
     await authClient.signOut();
     // Clear State
     setProfile(null);
+    setMentorProfile(null);
     setSavedSchools([]);
     setApplications([]);
     setMessages([]);
     setDiscardedSchools([]);
-    // Clear Local Storage
+    // Clear Local Storage (Optional: Keep specific user data, but clear session keys)
     localStorage.removeItem('gradwyn_profile');
     localStorage.removeItem('gradwyn_savedSchools');
     localStorage.removeItem('gradwyn_applications');
+    localStorage.removeItem('gradwyn_user_role'); // Clear preferred role
     
     setView('landing');
   };
@@ -152,6 +185,15 @@ const App: React.FC = () => {
 
     setProfile(fullProfile);
     startAnalysisFlow(fullProfile);
+  };
+  
+  const handleMentorOnboardingComplete = (mProfile: MentorProfile) => {
+      const fullProfile: MentorProfile = {
+          ...mProfile,
+          id: sessionUser?.id || Date.now().toString(),
+      };
+      setMentorProfile(fullProfile);
+      setView('mentor-dashboard');
   };
 
   // Trigger the AI analysis and switch to chat view
@@ -198,6 +240,7 @@ const App: React.FC = () => {
   };
 
   const handleSaveSchool = (school: University) => {
+      if (!school) return;
       setSavedSchools(prev => {
           if (prev.some(s => s.id === school.id)) return prev;
           return [...prev, school];
@@ -217,7 +260,11 @@ const App: React.FC = () => {
           }
           return [...prev, app];
       });
-      handleSaveSchool(app.university);
+      
+      // Only save school if it exists (scholarship applications do not have a university property)
+      if (app.university) {
+          handleSaveSchool(app.university);
+      }
   };
 
   const handleWithdrawApplication = (appId: string) => {
@@ -238,15 +285,27 @@ const App: React.FC = () => {
   }
 
   if (view === 'landing') {
-    return <LandingPage onGetStarted={() => setView('login')} />;
+    return <LandingPage onGetStarted={handleRoleSelect} />;
   }
 
   if (view === 'login') {
-    return <LoginPage onLoginSuccess={handleLoginSuccess} onBack={() => setView('landing')} />;
+    return <LoginPage 
+        initialRole={selectedRole}
+        onLoginSuccess={handleLoginSuccess} 
+        onBack={() => setView('landing')} 
+    />;
   }
 
   if (isLoadingWelcome) {
     return <LoadingScreen messages={PROFILE_ANALYSIS_MESSAGES} />;
+  }
+  
+  if (view === 'mentor-onboarding') {
+      return <MentorOnboarding onComplete={handleMentorOnboardingComplete} initialName={sessionUser?.name} initialEmail={sessionUser?.email} initialPhoto={sessionUser?.image} />;
+  }
+  
+  if (view === 'mentor-dashboard' && mentorProfile) {
+      return <MentorDashboard profile={mentorProfile} onUpdateProfile={setMentorProfile} onLogout={handleLogout} />;
   }
 
   if (view === 'onboarding') {

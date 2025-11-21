@@ -39,6 +39,78 @@ const SidebarItem: React.FC<{
     </button>
 );
 
+const ScholarshipDetailModal = ({
+    scholarship,
+    onClose,
+    onApply
+}: {
+    scholarship: Scholarship;
+    onClose: () => void;
+    onApply: (scholarship: Scholarship) => void;
+}) => {
+    return (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm animate-fade-in">
+            <div className="bg-white rounded-2xl shadow-2xl w-full max-w-2xl max-h-[90vh] overflow-y-auto flex flex-col relative">
+                <button onClick={onClose} className="absolute top-4 right-4 text-slate-400 hover:text-slate-600 p-2 z-10">
+                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor" className="w-6 h-6">
+                        <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
+                    </svg>
+                </button>
+
+                <div className="h-32 bg-accent-gold relative overflow-hidden shrink-0">
+                    <div className="absolute inset-0 bg-black/10"></div>
+                    <div className="absolute bottom-0 left-0 p-8">
+                        <h2 className="text-3xl font-bold text-white font-serif">{scholarship.name}</h2>
+                        <p className="text-white/80 font-heading uppercase tracking-widest text-sm font-bold">{scholarship.provider}</p>
+                    </div>
+                </div>
+
+                <div className="p-8 space-y-6">
+                    <div className="flex flex-wrap gap-4 text-sm">
+                        <div className="bg-green-50 text-green-800 px-4 py-2 rounded-lg font-bold border border-green-100">
+                            {scholarship.amount}
+                        </div>
+                        <div className="bg-slate-50 text-slate-600 px-4 py-2 rounded-lg font-bold border border-slate-200">
+                            Deadline: {scholarship.deadline}
+                        </div>
+                        {scholarship.location && (
+                            <div className="bg-slate-50 text-slate-600 px-4 py-2 rounded-lg font-bold border border-slate-200">
+                                {scholarship.location}
+                            </div>
+                        )}
+                    </div>
+
+                    <div>
+                        <h3 className="font-bold text-slate-800 mb-2 text-lg">Description</h3>
+                        <p className="text-slate-600 leading-relaxed">{scholarship.description}</p>
+                    </div>
+
+                    <div>
+                         <h3 className="font-bold text-slate-800 mb-2 text-lg">Eligibility & Tags</h3>
+                         <div className="flex flex-wrap gap-2">
+                             {scholarship.tags.map(tag => (
+                                 <span key={tag} className="text-xs bg-beige-100 text-slate-700 px-3 py-1 rounded-full font-medium border border-beige-200">
+                                     {tag}
+                                 </span>
+                             ))}
+                         </div>
+                    </div>
+                </div>
+
+                <div className="p-6 border-t border-slate-100 bg-slate-50 flex justify-end gap-4 sticky bottom-0">
+                    <button onClick={onClose} className="px-6 py-3 font-bold text-slate-500 hover:text-slate-800">Close</button>
+                    <button 
+                        onClick={() => onApply(scholarship)}
+                        className="px-8 py-3 bg-brand-700 text-white font-bold rounded-lg shadow-lg hover:bg-brand-800 transition-all hover:translate-y-[-1px]"
+                    >
+                        Apply Now
+                    </button>
+                </div>
+            </div>
+        </div>
+    )
+}
+
 const SchoolProfileView = ({ 
     uni, 
     onClose, 
@@ -230,6 +302,8 @@ const Dashboard: React.FC<DashboardProps> = ({
 }) => {
   const [currentView, setCurrentView] = useState<DashboardView>('schools');
   const [selectedSchool, setSelectedSchool] = useState<University | null>(null);
+  const [selectedScholarship, setSelectedScholarship] = useState<Scholarship | null>(null); // New state for scholarship modal
+
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   
@@ -237,10 +311,14 @@ const Dashboard: React.FC<DashboardProps> = ({
   const [scholarshipTab, setScholarshipTab] = useState<'all' | 'forYou'>('all');
   const [scholarshipFilter, setScholarshipFilter] = useState<string>('All');
   
+  // Tracker State
+  const [trackerTab, setTrackerTab] = useState<'universities' | 'scholarships'>('universities');
+
   // Application Modal State
   const [isAppModalOpen, setIsAppModalOpen] = useState(false);
   const [currentApp, setCurrentApp] = useState<Application | null>(null);
   const [appUniversity, setAppUniversity] = useState<University | null>(null);
+  const [appScholarship, setAppScholarship] = useState<Scholarship | null>(null); // New state for scholarship app
 
   // Search State
   const [searchQuery, setSearchQuery] = useState('');
@@ -286,23 +364,43 @@ const Dashboard: React.FC<DashboardProps> = ({
 
   const handleStartApplication = (uni: University) => {
       // Check if we already have an application
-      const existingApp = applications.find(a => a.university.id === uni.id);
+      const existingApp = applications.find(a => a.university?.id === uni.id);
       
       if (existingApp) {
           setCurrentApp(existingApp);
           setAppUniversity(null);
+          setAppScholarship(null);
       } else {
           setCurrentApp(null);
           setAppUniversity(uni);
+          setAppScholarship(null);
       }
       
       setIsAppModalOpen(true);
       setSelectedSchool(null); // Close profile view if open
   };
+  
+  const handleStartScholarshipApplication = (scholarship: Scholarship) => {
+      const existingApp = applications.find(a => a.scholarship?.id === scholarship.id);
+
+      if (existingApp) {
+          setCurrentApp(existingApp);
+          setAppScholarship(null);
+          setAppUniversity(null);
+      } else {
+          setCurrentApp(null);
+          setAppScholarship(scholarship);
+          setAppUniversity(null);
+      }
+
+      setIsAppModalOpen(true);
+      setSelectedScholarship(null);
+  };
 
   const handleResumeApplication = (app: Application) => {
       setCurrentApp(app);
       setAppUniversity(null);
+      setAppScholarship(null);
       setIsAppModalOpen(true);
   };
 
@@ -313,6 +411,7 @@ const Dashboard: React.FC<DashboardProps> = ({
   const handleSidebarClick = (view: DashboardView) => {
       setCurrentView(view);
       setSelectedSchool(null);
+      setSelectedScholarship(null);
       setIsMobileMenuOpen(false); // Close menu on mobile
   };
 
@@ -326,13 +425,19 @@ const Dashboard: React.FC<DashboardProps> = ({
   const getScholarships = () => {
       let filtered = MOCK_SCHOLARSHIPS;
       
-      // For You Logic: Simple check against location or keywords matching profile
+      // For You Logic: Strict match on Degree Level + loose match on location/keywords
       if (scholarshipTab === 'forYou') {
+          // Normalize the profile degree to match common tag formats
+          const userDegreeTag = profile.degreeLevel === "Bachelor's" 
+              ? "Bachelors" 
+              : profile.degreeLevel === "Master's" 
+                  ? "Masters" 
+                  : profile.degreeLevel;
+
           filtered = filtered.filter(sch => {
+              const hasDegreeMatch = sch.tags.some(t => t === userDegreeTag || t === 'All Fields');
               const locationMatch = profile.preferredLocations.some(loc => sch.location?.includes(loc) || sch.tags.some(t => t.includes(loc)));
-              const degreeMatch = sch.tags.some(t => profile.degreeLevel.includes(t));
-              const generalTagMatch = sch.tags.includes('Global') || sch.tags.includes('All Fields');
-              return locationMatch || degreeMatch || generalTagMatch;
+              return hasDegreeMatch || (locationMatch && hasDegreeMatch);
           });
       }
 
@@ -342,13 +447,20 @@ const Dashboard: React.FC<DashboardProps> = ({
 
       return filtered;
   };
+  
+  // Filter applications for tracker
+  const displayedApplications = applications.filter(app => {
+      if (trackerTab === 'universities') return app.type === 'university' || (!app.type && app.university); // Handle legacy
+      if (trackerTab === 'scholarships') return app.type === 'scholarship';
+      return true;
+  });
 
   const SidebarContent = () => (
     <div className="flex flex-col h-full bg-white border-r border-slate-200">
         <div className="p-8 border-b border-slate-200 bg-beige-100">
             <div className="flex items-center justify-between mb-8">
                 <div className="flex items-center gap-3">
-                    <div className="w-10 h-10 bg-brand-700 flex items-center justify-center text-white font-serif font-bold text-xl shadow-lg">G</div>
+                    <div className="w-10 h-10 bg-brand-900 flex items-center justify-center text-white font-serif font-bold text-xl shadow-lg">G</div>
                     <span className="font-serif font-bold text-2xl tracking-tight text-brand-900">Gradwyn</span>
                 </div>
                 {/* Close button for mobile only */}
@@ -391,7 +503,7 @@ const Dashboard: React.FC<DashboardProps> = ({
                 currentView={currentView}
                 label="Scholarships" 
                 onClick={() => handleSidebarClick('scholarships')}
-                icon={<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" className="w-5 h-5"><path d="M10.464 8.746c.227-.18.497-.311.786-.394v2.795a2.252 2.252 0 01-.786-.393c-.394-.313-.546-.681-.546-1.004 0-.324.152-.691.546-1.004zM12.75 15.662v-2.824c.347.085.664.228.921.421.427.32.579.686.579.991 0 .305-.152.671-.579.991a2.534 2.534 0 01-.921.42z" /><path fillRule="evenodd" d="M12 2.25c-5.385 0-9.75 4.365-9.75 9.75s4.365 9.75 9.75 9.75 9.75-4.365 9.75-9.75S17.385 2.25 12 2.25zM12.75 6a.75.75 0 00-1.5 0v.816a3.836 3.836 0 00-1.72.756c-.712.566-1.112 1.35-1.112 2.178 0 .829.4 1.612 1.113 2.178.516.412 1.108.682 1.719.787v2.905a3.799 3.799 0 001.72.756c.712.566 1.112 1.35 1.112 2.178 0 .829-.4 1.612-1.113 2.178a4.784 4.784 0 01-1.719.788v.816a.75.75 0 001.5 0v-.816a3.836 3.836 0 001.72-.756c.712-.566 1.112-1.35 1.112-2.178 0-.829-.4-1.612-1.113-2.178a4.784 4.784 0 01-1.719-.787V9.252a3.838 3.838 0 00-1.72-.756c-.712-.566-1.112-1.35-1.112-2.178 0-.829.4-1.612 1.113-2.178.516-.412 1.108-.682 1.719-.787V6z" clipRule="evenodd" /></svg>}
+                icon={<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" className="w-5 h-5"><path d="M10.464 8.746c.227-.18.497-.311.786-.394v2.795a2.252 2.252 0 01-.786-.393c-.394-.313-.546-.681-.546-1.004 0-.324.152-.691.546-1.004zM12.75 15.662v-2.824c.347.085.664.228.921.421.427.32.579.686.579.991 0 .305-.152.671-.579.991a2.534 2.534 0 01-.921.42z" /><path fillRule="evenodd" d="M12 2.25c-5.385 0-9.75 4.365-9.75 9.75s4.365 9.75 9.75 9.75 9.75-4.365 9.75-9.75S17.385 2.25 12 2.25zM12.75 6a.75.75 0 00-1.5 0v.816a3.836 3.836 0 00-1.72.756c-.712.566-1.112 1.35-1.112 2.178 0 .829.4 1.612 1.113 2.178.516.412 1.108.682 1.719.787v2.905a3.799 3.799 0 001.72.756c.712.566 1.112 1.35 1.112 2.178 0 .829-.4 1.612-1.113 2.178a4.784 4.784 0 01-1.719.788v.816a.75.75 0 001.5 0v-.816a3.836 3.836 0 001.72-.756c.712-.566 1.112-1.35 1.112-2.178 0-.829.4-1.612 1.113-2.178a4.784 4.784 0 01-1.719-.787V9.252a3.838 3.838 0 00-1.72-.756c-.712-.566-1.112-1.35-1.112-2.178 0-.829.4-1.612 1.113-2.178.516-.412 1.108-.682 1.719-.787V6z" clipRule="evenodd" /></svg>}
             />
             <SidebarItem 
                 view="chat" 
@@ -459,9 +571,18 @@ const Dashboard: React.FC<DashboardProps> = ({
          onClose={() => setIsAppModalOpen(false)}
          application={currentApp}
          university={appUniversity}
+         scholarship={appScholarship}
          userProfile={profile}
          onSave={onUpdateApplication}
       />
+
+      {selectedScholarship && (
+          <ScholarshipDetailModal 
+             scholarship={selectedScholarship}
+             onClose={() => setSelectedScholarship(null)}
+             onApply={handleStartScholarshipApplication}
+          />
+      )}
 
       {/* Mobile Menu Backdrop */}
       {isMobileMenuOpen && (
@@ -614,10 +735,13 @@ const Dashboard: React.FC<DashboardProps> = ({
                                     onChange={(e) => setScholarshipFilter(e.target.value)}
                                 >
                                     <option value="All">All Tags</option>
-                                    <option value="Global">Global</option>
-                                    <option value="UK">UK Specific</option>
-                                    <option value="Masters">Master's Degree</option>
+                                    <option value="Bachelors">Bachelor's</option>
+                                    <option value="Masters">Master's</option>
                                     <option value="PhD">PhD / Research</option>
+                                    <option value="Africa Specific">Africa Specific</option>
+                                    <option value="Fully-funded">Fully Funded</option>
+                                    <option value="Part-funded">Part Funded</option>
+                                    <option value="Global">Global</option>
                                     <option value="Women">Women in STEM</option>
                                 </select>
                             </div>
@@ -635,12 +759,25 @@ const Dashboard: React.FC<DashboardProps> = ({
                                         <p className="text-xs text-accent-gold font-bold uppercase tracking-widest mb-4 font-heading">{sch.provider}</p>
                                         <p className="text-slate-600 text-sm mb-6 flex-1 leading-relaxed">{sch.description}</p>
                                         <div className="flex justify-between items-center pt-4 border-t border-slate-100 mt-auto">
-                                            <div className="flex gap-2">
-                                                {sch.tags.map(tag => (
+                                            <div className="flex gap-2 flex-wrap">
+                                                {sch.tags.slice(0, 3).map(tag => (
                                                     <span key={tag} className="text-[10px] bg-beige-100 text-slate-600 px-2 py-1 rounded-none border border-beige-200">{tag}</span>
                                                 ))}
                                             </div>
-                                            <button className="text-brand-700 hover:text-brand-900 font-bold text-xs uppercase tracking-widest border-b-2 border-transparent hover:border-brand-700 transition-all pb-0.5">View Details</button>
+                                            <div className="flex gap-2">
+                                                <button 
+                                                    onClick={() => handleStartScholarshipApplication(sch)}
+                                                    className="text-white bg-brand-700 hover:bg-brand-800 px-3 py-1.5 font-bold text-xs uppercase tracking-widest transition-colors"
+                                                >
+                                                    Apply
+                                                </button>
+                                                <button 
+                                                    onClick={() => setSelectedScholarship(sch)}
+                                                    className="text-brand-700 hover:text-brand-900 font-bold text-xs uppercase tracking-widest border-b-2 border-transparent hover:border-brand-700 transition-all pb-0.5"
+                                                >
+                                                    Details
+                                                </button>
+                                            </div>
                                         </div>
                                     </div>
                                 )) : (
@@ -692,84 +829,103 @@ const Dashboard: React.FC<DashboardProps> = ({
 
                     {currentView === 'tracker' && (
                          <div className="max-w-7xl mx-auto animate-fade-in">
-                            <div className="mb-12">
+                            <div className="mb-8">
                                 <h2 className="text-4xl font-bold text-brand-900 font-serif tracking-tight mb-3">Candidacy Tracker</h2>
                                 <p className="text-slate-600 text-lg font-light">Monitor the status of your active applications.</p>
                             </div>
 
-                            {applications.length === 0 ? (
+                            {/* Tracker Tabs */}
+                            <div className="flex gap-4 mb-8 border-b border-slate-200">
+                                <button
+                                    onClick={() => setTrackerTab('universities')}
+                                    className={`pb-3 px-2 text-sm font-bold uppercase tracking-widest transition-all relative
+                                        ${trackerTab === 'universities' ? 'text-brand-700' : 'text-slate-400 hover:text-slate-600'}`}
+                                >
+                                    Universities
+                                    {trackerTab === 'universities' && <div className="absolute bottom-0 left-0 w-full h-1 bg-brand-700"></div>}
+                                </button>
+                                <button
+                                    onClick={() => setTrackerTab('scholarships')}
+                                    className={`pb-3 px-2 text-sm font-bold uppercase tracking-widest transition-all relative
+                                        ${trackerTab === 'scholarships' ? 'text-brand-700' : 'text-slate-400 hover:text-slate-600'}`}
+                                >
+                                    Scholarships
+                                    {trackerTab === 'scholarships' && <div className="absolute bottom-0 left-0 w-full h-1 bg-brand-700"></div>}
+                                </button>
+                            </div>
+
+                            {displayedApplications.length === 0 ? (
                                 <div className="bg-white border border-slate-200 p-20 text-center shadow-sm">
                                     <div className="w-24 h-24 bg-beige-100 text-brand-400 flex items-center justify-center mx-auto mb-8 border border-beige-200">
                                         <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1} stroke="currentColor" className="w-12 h-12">
                                             <path strokeLinecap="round" strokeLinejoin="round" d="M19.5 14.25v-2.625a3.375 3.375 0 00-3.375-3.375h-1.5A1.125 1.125 0 0113.5 7.125v-1.5a3.375 3.375 0 00-3.375-3.375H8.25m2.25 0H5.625c-.621 0-1.125.504-1.125 1.125v17.25c0 .621.504 1.125 1.125 1.125h12.75c.621 0 1.125-.504 1.125-1.125V11.25a9 9 0 00-9-9z" />
                                         </svg>
                                     </div>
-                                    <h3 className="text-2xl font-bold text-brand-900 mb-3 font-serif">No Applications Initiated</h3>
-                                    <p className="text-slate-500 mb-8 max-w-md mx-auto">Begin an application from an Institution's profile page.</p>
+                                    <h3 className="text-2xl font-bold text-brand-900 mb-3 font-serif">No {trackerTab === 'universities' ? 'University' : 'Scholarship'} Applications</h3>
+                                    <p className="text-slate-500 mb-8 max-w-md mx-auto">
+                                        Begin an application from the {trackerTab === 'universities' ? 'Institutions' : 'Scholarships'} page.
+                                    </p>
                                     <button 
-                                        onClick={() => handleSidebarClick('schools')}
+                                        onClick={() => handleSidebarClick(trackerTab === 'universities' ? 'schools' : 'scholarships')}
                                         className="px-10 py-4 bg-brand-700 text-white font-bold font-heading uppercase tracking-widest hover:bg-brand-800 transition-colors"
                                     >
-                                        Browse Institutions
+                                        Browse {trackerTab === 'universities' ? 'Institutions' : 'Opportunities'}
                                     </button>
                                 </div>
                             ) : (
                                 <div className="space-y-6">
-                                    {applications.map(app => (
-                                        <div key={app.id} className="bg-white border border-slate-200 p-8 shadow-sm hover:shadow-md transition-shadow flex flex-col md:flex-row gap-10 items-start md:items-center group">
-                                            <div className="w-20 h-20 bg-brand-900 text-white flex items-center justify-center font-serif font-bold text-3xl shrink-0 shadow-md">
-                                                {app.university.name.substring(0, 2).toUpperCase()}
-                                            </div>
-                                            
-                                            <div className="flex-1 w-full">
-                                                <div className="flex justify-between items-start mb-4">
-                                                    <div>
-                                                        <h3 className="text-2xl font-bold text-brand-900 font-serif group-hover:text-brand-700 transition-colors">{app.university.name}</h3>
-                                                        <p className="text-slate-400 text-xs uppercase tracking-widest mt-1 font-heading">Last activity: {app.lastUpdated.toLocaleDateString()}</p>
-                                                    </div>
-                                                    <div className={`px-4 py-1 text-[10px] font-bold uppercase tracking-widest border
-                                                        ${app.status === 'submitted' ? 'bg-green-50 text-green-800 border-green-200' : 'bg-beige-100 text-brand-800 border-brand-200'}`}>
-                                                        {app.status.replace('_', ' ')}
-                                                    </div>
+                                    {displayedApplications.map(app => {
+                                        const entityName = app.university?.name || app.scholarship?.name || "Unknown Application";
+                                        const entityInitials = entityName.substring(0, 2).toUpperCase();
+                                        const isScholarshipApp = app.type === 'scholarship';
+
+                                        return (
+                                            <div key={app.id} className="bg-white border border-slate-200 p-8 shadow-sm hover:shadow-md transition-shadow flex flex-col md:flex-row gap-10 items-start md:items-center group">
+                                                <div className={`w-20 h-20 flex items-center justify-center font-serif font-bold text-3xl shrink-0 shadow-md ${isScholarshipApp ? 'bg-accent-gold text-white' : 'bg-brand-900 text-white'}`}>
+                                                    {entityInitials}
                                                 </div>
                                                 
-                                                <div className="space-y-3">
-                                                    <div className="flex justify-between text-xs font-bold text-slate-500 font-heading uppercase tracking-widest">
-                                                        <span>Completion</span>
-                                                        <span>{app.progress}%</span>
+                                                <div className="flex-1 w-full">
+                                                    <div className="flex justify-between items-start mb-4">
+                                                        <h3 className="text-xl font-bold text-slate-900 font-serif">{entityName}</h3>
+                                                        <span className={`px-3 py-1 text-xs font-bold uppercase tracking-widest border ${
+                                                            app.status === 'submitted' ? 'bg-green-50 text-green-700 border-green-200' :
+                                                            app.status === 'draft' ? 'bg-slate-50 text-slate-600 border-slate-200' :
+                                                            'bg-brand-50 text-brand-700 border-brand-200'
+                                                        }`}>
+                                                            {app.status.replace('_', ' ')}
+                                                        </span>
                                                     </div>
-                                                    <div className="w-full bg-slate-100 h-1.5 overflow-hidden">
-                                                        <div className="bg-brand-700 h-full transition-all duration-500" style={{ width: `${app.progress}%` }}></div>
+                                                    
+                                                    <div className="w-full bg-slate-100 h-2 rounded-full mb-4 overflow-hidden">
+                                                        <div className="bg-brand-600 h-full rounded-full transition-all duration-500" style={{ width: `${app.progress}%` }}></div>
+                                                    </div>
+                                                    
+                                                    <div className="flex justify-between text-xs text-slate-500 font-medium mb-6">
+                                                        <span>Progress: {app.progress}%</span>
+                                                        <span>Last Updated: {app.lastUpdated.toLocaleDateString()}</span>
+                                                    </div>
+                                                    
+                                                    <div className="flex gap-4">
+                                                        {app.status !== 'submitted' && (
+                                                            <button 
+                                                                onClick={() => handleResumeApplication(app)}
+                                                                className="text-brand-700 font-bold text-sm uppercase tracking-wider hover:text-brand-900 hover:underline underline-offset-4"
+                                                            >
+                                                                Resume Application
+                                                            </button>
+                                                        )}
+                                                        <button 
+                                                            onClick={() => onWithdrawApplication(app.id)}
+                                                            className="text-slate-400 font-bold text-sm uppercase tracking-wider hover:text-red-600"
+                                                        >
+                                                            Withdraw
+                                                        </button>
                                                     </div>
                                                 </div>
                                             </div>
-                                            
-                                            <div className="flex md:flex-col gap-4 w-full md:w-auto">
-                                                {app.status === 'draft' && (
-                                                    <button 
-                                                        onClick={() => handleResumeApplication(app)}
-                                                        className="flex-1 md:w-36 px-6 py-3 bg-brand-700 text-white font-heading font-bold text-xs uppercase tracking-widest hover:bg-brand-800 transition-colors text-center"
-                                                    >
-                                                        Resume
-                                                    </button>
-                                                )}
-                                                {app.status === 'submitted' && (
-                                                     <button 
-                                                     disabled
-                                                     className="flex-1 md:w-36 px-6 py-3 bg-slate-100 text-slate-400 font-heading font-bold text-xs uppercase tracking-widest cursor-not-allowed text-center"
-                                                 >
-                                                     Submitted
-                                                 </button>
-                                                )}
-                                                <button 
-                                                    onClick={() => onWithdrawApplication(app.id)}
-                                                    className="px-6 py-2 text-slate-400 hover:text-accent-rust font-heading font-bold text-xs uppercase tracking-widest transition-colors"
-                                                >
-                                                    Withdraw
-                                                </button>
-                                            </div>
-                                        </div>
-                                    ))}
+                                        );
+                                    })}
                                 </div>
                             )}
                          </div>
@@ -777,24 +933,53 @@ const Dashboard: React.FC<DashboardProps> = ({
 
                     {currentView === 'mentors' && (
                         <div className="max-w-7xl mx-auto animate-fade-in">
-                             <div className="mb-12">
+                            <div className="mb-8">
                                 <h2 className="text-4xl font-bold text-brand-900 font-serif tracking-tight mb-3">Mentorship Network</h2>
-                                <p className="text-slate-600 text-lg font-light">Connect with distinguished alumni and scholars.</p>
+                                <p className="text-slate-600 text-lg font-light">Connect with alumni and current students for guidance.</p>
                             </div>
-                            <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+                            
+                            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
                                 {MOCK_MENTORS.map(mentor => (
-                                    <div key={mentor.id} className="bg-white border border-slate-200 p-10 flex flex-col sm:flex-row gap-8 hover:border-brand-300 hover:shadow-lg transition-all group">
-                                        <img src={mentor.image} alt={mentor.name} className="w-24 h-24 object-cover shadow-md grayscale group-hover:grayscale-0 transition-all duration-500" />
-                                        <div>
-                                            <h3 className="font-bold text-2xl text-brand-900 font-serif mb-1">{mentor.name}</h3>
-                                            <p className="text-accent-gold text-xs font-bold mb-4 uppercase tracking-widest font-heading">{mentor.role}</p>
-                                            <p className="text-slate-600 text-sm mb-6 leading-relaxed">{mentor.bio}</p>
+                                    <div key={mentor.id} className="bg-white border border-slate-200 flex flex-col group hover:border-brand-500 transition-all shadow-sm hover:shadow-lg">
+                                        <div className="p-6 flex items-start gap-4 border-b border-slate-100">
+                                            <img src={mentor.image} alt={mentor.name} className="w-16 h-16 object-cover border border-slate-200" />
+                                            <div>
+                                                <h3 className="text-lg font-bold text-brand-900 font-serif leading-tight">{mentor.name}</h3>
+                                                <p className="text-xs text-slate-500 uppercase tracking-wider font-bold mt-1">{mentor.role}</p>
+                                                <p className="text-xs text-accent-gold font-bold mt-1">{mentor.university}</p>
+                                            </div>
+                                        </div>
+                                        <div className="p-6 flex-1">
+                                            <p className="text-slate-600 text-sm leading-relaxed mb-4">{mentor.bio}</p>
                                             <div className="flex flex-wrap gap-2 mb-6">
                                                 {mentor.tags.map(tag => (
-                                                    <span key={tag} className="text-[10px] bg-beige-100 text-brand-800 px-3 py-1 uppercase tracking-widest font-bold border border-beige-200">{tag}</span>
+                                                    <span key={tag} className="text-[10px] bg-beige-100 text-slate-600 px-2 py-1 border border-beige-200">{tag}</span>
                                                 ))}
                                             </div>
-                                            <button className="text-xs font-bold text-brand-700 hover:text-brand-900 uppercase tracking-widest font-heading border-b-2 border-brand-200 hover:border-brand-700 pb-1 transition-colors">Request Consultation</button>
+                                            <div className="flex items-center gap-2 text-xs text-slate-500 font-medium mb-6">
+                                                <span className={`w-2 h-2 rounded-full ${mentor.isAvailable ? 'bg-green-500' : 'bg-slate-300'}`}></span>
+                                                {mentor.isAvailable ? `Available: ${mentor.availability}` : 'Currently Unavailable'}
+                                            </div>
+                                        </div>
+                                        <div className="p-4 bg-slate-50 border-t border-slate-200 flex justify-between items-center">
+                                            <a 
+                                                href={mentor.linkedin} 
+                                                target="_blank" 
+                                                rel="noreferrer"
+                                                className="text-brand-700 text-xs font-bold uppercase tracking-widest hover:underline"
+                                            >
+                                                LinkedIn
+                                            </a>
+                                            {mentor.isAvailable ? (
+                                                 <a href={`mailto:${mentor.email}`} className="bg-brand-700 text-white px-4 py-2 text-xs font-bold uppercase tracking-widest hover:bg-brand-800 transition-colors">
+                                                    Contact
+                                                </a>
+                                            ) : (
+                                                <button disabled className="bg-slate-200 text-slate-400 px-4 py-2 text-xs font-bold uppercase tracking-widest cursor-not-allowed">
+                                                    Busy
+                                                </button>
+                                            )}
+                                           
                                         </div>
                                     </div>
                                 ))}
@@ -803,51 +988,21 @@ const Dashboard: React.FC<DashboardProps> = ({
                     )}
 
                     {currentView === 'chat' && (
-                        <div className="h-full border border-slate-200 shadow-2xl bg-white flex flex-col">
-                            {renderChat()}
+                        <div className="h-full flex flex-col">
+                             {/* The Chat Interface handles its own layout, we just render it here */}
+                             {renderChat()}
                         </div>
                     )}
-
+                    
                     {currentView === 'prep' && (
-                        <div className="max-w-6xl mx-auto animate-fade-in">
-                            <div className="mb-12">
-                                <h2 className="text-4xl font-bold text-brand-900 font-serif tracking-tight mb-3">Preparation Suite</h2>
-                                <p className="text-slate-600 text-lg font-light">Advanced tools for a competitive application.</p>
-                            </div>
-                            <div className="grid grid-cols-1 md:grid-cols-2 gap-10">
-                                <div className="bg-white border border-slate-200 p-12 text-center hover:border-brand-700 transition-colors cursor-pointer group shadow-sm">
-                                    <div className="w-20 h-20 bg-brand-50 text-brand-900 flex items-center justify-center mx-auto mb-8 group-hover:bg-brand-900 group-hover:text-white transition-colors">
-                                        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="w-10 h-10">
-                                            <path strokeLinecap="round" strokeLinejoin="round" d="M16.862 4.487l1.687-1.688a1.875 1.875 0 112.652 2.652L10.582 16.07a4.5 4.5 0 01-1.897 1.13L6 18l.8-2.685a4.5 4.5 0 011.13-1.897l8.932-8.931zm0 0L19.5 7.125M18 14v4.75A2.25 2.25 0 0115.75 21H5.25A2.25 2.25 0 013 18.75V8.25A2.25 2.25 0 015.25 6H10" />
-                                        </svg>
-                                    </div>
-                                    <h3 className="text-3xl font-bold text-brand-900 mb-4 font-serif">Essay Review</h3>
-                                    <p className="text-slate-600 mb-8 leading-relaxed text-lg">Receive deep learning analysis on your personal statement's narrative arc and rhetorical impact.</p>
-                                    <span className="text-brand-700 font-bold font-heading uppercase tracking-widest text-sm border-b-2 border-transparent group-hover:border-brand-700 pb-1 transition-all">Begin Analysis</span>
-                                </div>
-                                <div className="bg-white border border-slate-200 p-12 text-center hover:border-accent-gold transition-colors cursor-pointer group shadow-sm">
-                                    <div className="w-20 h-20 bg-beige-100 text-accent-gold flex items-center justify-center mx-auto mb-8 group-hover:bg-accent-gold group-hover:text-white transition-colors">
-                                        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="w-10 h-10">
-                                            <path strokeLinecap="round" strokeLinejoin="round" d="M15.75 6a3.75 3.75 0 11-7.5 0 3.75 3.75 0 017.5 0zM4.501 20.118a7.5 7.5 0 0114.998 0A17.933 17.933 0 0112 21.75c-2.676 0-5.216-.584-7.499-1.632z" />
-                                        </svg>
-                                    </div>
-                                    <h3 className="text-3xl font-bold text-brand-900 mb-4 font-serif">Interview Simulation</h3>
-                                    <p className="text-slate-600 mb-8 leading-relaxed text-lg">Practice with an AI admissions officer trained on specific university interview protocols.</p>
-                                    <span className="text-accent-gold font-bold font-heading uppercase tracking-widest text-sm border-b-2 border-transparent group-hover:border-accent-gold pb-1 transition-all">Start Simulation</span>
-                                </div>
-                            </div>
-                        </div>
-                    )}
-
-                    {currentView === 'forum' && (
-                        <div className="flex flex-col items-center justify-center h-[60vh] text-center px-4">
-                            <div className="w-32 h-32 bg-beige-100 flex items-center justify-center mb-8 border border-beige-200">
-                                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1} stroke="currentColor" className="w-16 h-16 text-brand-300">
-                                    <path strokeLinecap="round" strokeLinejoin="round" d="M11.42 15.17L17.25 21A2.652 2.652 0 0021 17.25l-5.877-5.877M11.42 15.17l2.496-3.03c.317-.384.74-.626 1.208-.766M11.42 15.17l-4.655 5.653a2.548 2.548 0 11-3.586-3.586l6.837-5.63m5.108-.233c.55-.164 1.163-.188 1.743-.063m.002 0a9.003 9.003 0 00-1.535-1.533l-3.876-3.88a1 1 0 00-1.415 1.415l.001.001m.001 0l3.29 3.29a.5.5 0 00.718 0z" />
+                        <div className="max-w-4xl mx-auto text-center py-20">
+                            <div className="w-24 h-24 bg-brand-100 text-brand-500 mx-auto flex items-center justify-center rounded-full mb-6">
+                                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="w-12 h-12">
+                                    <path strokeLinecap="round" strokeLinejoin="round" d="M12 6.042A8.967 8.967 0 006 3.75c-1.052 0-2.062.18-3 .512v14.25A8.987 8.987 0 016 18c2.305 0 4.408.867 6 2.292m0-14.25a8.966 8.966 0 016-2.292c1.052 0 2.062.18 3 .512v14.25A8.987 8.987 0 0018 18a8.967 8.967 0 00-6 2.292m0-14.25v14.25" />
                                 </svg>
                             </div>
-                            <h3 className="text-3xl font-bold text-brand-900 mb-4 font-serif">Coming Soon</h3>
-                            <p className="text-slate-500 max-w-md text-lg">We are currently curating this section with our academic partners.</p>
+                            <h2 className="text-3xl font-bold text-brand-900 font-serif mb-4">Preparation Suite Coming Soon</h2>
+                            <p className="text-slate-600 max-w-md mx-auto">We are building a comprehensive suite of tools including interview simulators, standardized test prep planners, and document editors.</p>
                         </div>
                     )}
                   </>

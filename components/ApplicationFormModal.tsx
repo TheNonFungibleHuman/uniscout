@@ -1,12 +1,13 @@
 
 import React, { useState, useEffect } from 'react';
-import { Application, University, UserProfile } from '../types';
+import { Application, University, Scholarship, UserProfile } from '../types';
 
 interface ApplicationFormModalProps {
   isOpen: boolean;
   onClose: () => void;
   application: Application | null;
-  university: University | null; // Fallback if creating new
+  university: University | null; 
+  scholarship?: Scholarship | null; // Added support for scholarship
   userProfile: UserProfile;
   onSave: (app: Application) => void;
 }
@@ -23,6 +24,7 @@ const ApplicationFormModal: React.FC<ApplicationFormModalProps> = ({
   onClose, 
   application, 
   university,
+  scholarship,
   userProfile,
   onSave 
 }) => {
@@ -55,19 +57,24 @@ const ApplicationFormModal: React.FC<ApplicationFormModalProps> = ({
         setCurrentStep(1);
       }
     }
-  }, [isOpen, application, userProfile, university]);
+  }, [isOpen, application, userProfile, university, scholarship]);
 
   if (!isOpen) return null;
 
-  const targetUni = application?.university || university;
-  if (!targetUni) return null;
+  // Determine target entity (University or Scholarship)
+  const isScholarship = !!scholarship || application?.type === 'scholarship';
+  const targetName = isScholarship ? (application?.scholarship?.name || scholarship?.name) : (application?.university?.name || university?.name);
+
+  if (!targetName) return null;
 
   const handleSaveAndClose = () => {
     const progress = Math.round(((currentStep - 1) / STEPS.length) * 100);
     
     const updatedApp: Application = {
       id: application?.id || Date.now().toString(),
-      university: targetUni,
+      type: isScholarship ? 'scholarship' : 'university',
+      university: isScholarship ? undefined : (application?.university || university!),
+      scholarship: isScholarship ? (application?.scholarship || scholarship!) : undefined,
       status: 'draft',
       lastUpdated: new Date(),
       progress: progress === 0 ? 10 : progress, // Minimum 10% if started
@@ -82,7 +89,9 @@ const ApplicationFormModal: React.FC<ApplicationFormModalProps> = ({
   const handleSubmit = () => {
     const updatedApp: Application = {
       id: application?.id || Date.now().toString(),
-      university: targetUni,
+      type: isScholarship ? 'scholarship' : 'university',
+      university: isScholarship ? undefined : (application?.university || university!),
+      scholarship: isScholarship ? (application?.scholarship || scholarship!) : undefined,
       status: 'submitted',
       submittedDate: new Date(),
       lastUpdated: new Date(),
@@ -120,8 +129,10 @@ const ApplicationFormModal: React.FC<ApplicationFormModalProps> = ({
                             </svg>
                         </button>
                         <div>
-                            <p className="text-xs font-bold text-brand-600 uppercase tracking-wider">Application Draft</p>
-                            <h1 className="text-xl font-bold text-slate-800">{targetUni.name}</h1>
+                            <p className="text-xs font-bold text-brand-600 uppercase tracking-wider">
+                                {isScholarship ? 'Scholarship Application' : 'University Application'}
+                            </p>
+                            <h1 className="text-xl font-bold text-slate-800">{targetName}</h1>
                         </div>
                     </div>
                     <div className="flex items-center gap-3">
@@ -171,7 +182,7 @@ const ApplicationFormModal: React.FC<ApplicationFormModalProps> = ({
                                     <label className="block text-sm font-bold text-slate-700 mb-2">Full Legal Name</label>
                                     <input 
                                         type="text" 
-                                        className="w-full p-4 rounded-xl border border-slate-200 focus:border-brand-500 focus:ring-4 focus:ring-brand-50 outline-none transition-all bg-slate-50 focus:bg-white"
+                                        className="w-full p-4 rounded-xl border border-slate-200 focus:border-brand-500 focus:ring-4 focus:ring-brand-50 outline-none transition-all bg-white text-slate-900"
                                         value={formData.personal?.fullName || ''}
                                         onChange={e => updateField('personal', 'fullName', e.target.value)}
                                     />
@@ -181,7 +192,7 @@ const ApplicationFormModal: React.FC<ApplicationFormModalProps> = ({
                                         <label className="block text-sm font-bold text-slate-700 mb-2">Email Address</label>
                                         <input 
                                             type="email" 
-                                            className="w-full p-4 rounded-xl border border-slate-200 focus:border-brand-500 focus:ring-4 focus:ring-brand-50 outline-none transition-all bg-slate-50 focus:bg-white"
+                                            className="w-full p-4 rounded-xl border border-slate-200 focus:border-brand-500 focus:ring-4 focus:ring-brand-50 outline-none transition-all bg-white text-slate-900"
                                             value={formData.personal?.email || ''}
                                             onChange={e => updateField('personal', 'email', e.target.value)}
                                         />
@@ -190,7 +201,7 @@ const ApplicationFormModal: React.FC<ApplicationFormModalProps> = ({
                                         <label className="block text-sm font-bold text-slate-700 mb-2">Phone Number</label>
                                         <input 
                                             type="tel" 
-                                            className="w-full p-4 rounded-xl border border-slate-200 focus:border-brand-500 focus:ring-4 focus:ring-brand-50 outline-none transition-all bg-slate-50 focus:bg-white"
+                                            className="w-full p-4 rounded-xl border border-slate-200 focus:border-brand-500 focus:ring-4 focus:ring-brand-50 outline-none transition-all bg-white text-slate-900"
                                             placeholder="+1 (555) 000-0000"
                                             value={formData.personal?.phone || ''}
                                             onChange={e => updateField('personal', 'phone', e.target.value)}
@@ -200,7 +211,7 @@ const ApplicationFormModal: React.FC<ApplicationFormModalProps> = ({
                                 <div>
                                     <label className="block text-sm font-bold text-slate-700 mb-2">Mailing Address</label>
                                     <textarea 
-                                        className="w-full p-4 rounded-xl border border-slate-200 focus:border-brand-500 focus:ring-4 focus:ring-brand-50 outline-none transition-all bg-slate-50 focus:bg-white h-32 resize-none"
+                                        className="w-full p-4 rounded-xl border border-slate-200 focus:border-brand-500 focus:ring-4 focus:ring-brand-50 outline-none transition-all bg-white text-slate-900 h-32 resize-none"
                                         placeholder="Street Address, City, State, Zip Code, Country"
                                         value={formData.personal?.address || ''}
                                         onChange={e => updateField('personal', 'address', e.target.value)}
@@ -221,7 +232,7 @@ const ApplicationFormModal: React.FC<ApplicationFormModalProps> = ({
                                     <label className="block text-sm font-bold text-slate-700 mb-2">Intended Major</label>
                                     <input 
                                         type="text" 
-                                        className="w-full p-4 rounded-xl border border-slate-200 focus:border-brand-500 focus:ring-4 focus:ring-brand-50 outline-none transition-all bg-slate-50 focus:bg-white"
+                                        className="w-full p-4 rounded-xl border border-slate-200 focus:border-brand-500 focus:ring-4 focus:ring-brand-50 outline-none transition-all bg-white text-slate-900"
                                         value={formData.academic?.major || ''}
                                         onChange={e => updateField('academic', 'major', e.target.value)}
                                     />
@@ -230,7 +241,7 @@ const ApplicationFormModal: React.FC<ApplicationFormModalProps> = ({
                                     <label className="block text-sm font-bold text-slate-700 mb-2">Current GPA</label>
                                     <input 
                                         type="text" 
-                                        className="w-full p-4 rounded-xl border border-slate-200 focus:border-brand-500 focus:ring-4 focus:ring-brand-50 outline-none transition-all bg-slate-50 focus:bg-white"
+                                        className="w-full p-4 rounded-xl border border-slate-200 focus:border-brand-500 focus:ring-4 focus:ring-brand-50 outline-none transition-all bg-white text-slate-900"
                                         placeholder="e.g. 3.8/4.0 (or N/A)"
                                         value={formData.academic?.gpa || ''}
                                         onChange={e => updateField('academic', 'gpa', e.target.value)}
@@ -252,15 +263,20 @@ const ApplicationFormModal: React.FC<ApplicationFormModalProps> = ({
                     {currentStep === 3 && (
                         <div className="space-y-6 animate-fade-in h-full flex flex-col">
                              <div>
-                                <h2 className="text-2xl font-bold text-slate-800 mb-2">Personal Statement</h2>
+                                <h2 className="text-2xl font-bold text-slate-800 mb-2">
+                                    {isScholarship ? 'Statement of Purpose' : 'Personal Statement'}
+                                </h2>
                                 <p className="text-slate-500">This is your chance to tell your story.</p>
                             </div>
                             <div className="bg-indigo-50 border border-indigo-100 p-4 rounded-xl text-indigo-900 text-sm leading-relaxed">
                                 <strong className="block mb-1 font-bold">Prompt:</strong> 
-                                Why do you want to study at {targetUni.name} and how will this degree help you achieve your future goals?
+                                {isScholarship 
+                                    ? `Explain why you are an ideal candidate for the ${targetName} and how this funding will impact your academic journey.`
+                                    : `Why do you want to study at ${targetName} and how will this degree help you achieve your future goals?`
+                                }
                             </div>
                             <textarea 
-                                className="flex-1 w-full p-6 rounded-xl border border-slate-200 focus:border-brand-500 focus:ring-4 focus:ring-brand-50 outline-none resize-none text-lg leading-relaxed transition-all font-serif text-slate-700"
+                                className="flex-1 w-full p-6 rounded-xl border border-slate-200 focus:border-brand-500 focus:ring-4 focus:ring-brand-50 outline-none resize-none text-lg leading-relaxed transition-all font-serif bg-white text-slate-900"
                                 placeholder="Start writing your essay here..."
                                 value={formData.essay}
                                 onChange={e => setFormData(prev => ({ ...prev, essay: e.target.value }))}
@@ -283,7 +299,7 @@ const ApplicationFormModal: React.FC<ApplicationFormModalProps> = ({
                             </div>
                             <div className="text-center max-w-md">
                                 <h2 className="text-3xl font-bold text-slate-800 mb-3">Ready to Submit?</h2>
-                                <p className="text-slate-500 text-lg mb-8">Please review your application details one last time before sending it to the admissions office.</p>
+                                <p className="text-slate-500 text-lg mb-8">Please review your application details one last time before sending it.</p>
                             </div>
 
                             <div className="w-full bg-slate-50 rounded-2xl p-6 border border-slate-200 space-y-4 max-w-lg">

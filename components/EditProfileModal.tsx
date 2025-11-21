@@ -38,7 +38,7 @@ const EditProfileModal: React.FC<EditProfileModalProps> = ({ isOpen, onClose, pr
               type="text" 
               value={formData.fieldOfStudy} 
               onChange={(e) => setFormData({...formData, fieldOfStudy: e.target.value})}
-              className="w-full p-3 rounded-lg border border-slate-200 focus:border-brand-500 outline-none"
+              className="w-full p-3 rounded-lg border border-slate-200 focus:border-brand-500 outline-none bg-white text-slate-900"
             />
           </div>
 
@@ -47,7 +47,7 @@ const EditProfileModal: React.FC<EditProfileModalProps> = ({ isOpen, onClose, pr
             <select 
               value={formData.budgetRange}
               onChange={(e) => setFormData({...formData, budgetRange: e.target.value})}
-              className="w-full p-3 rounded-lg border border-slate-200 focus:border-brand-500 outline-none bg-white"
+              className="w-full p-3 rounded-lg border border-slate-200 focus:border-brand-500 outline-none bg-white text-slate-900"
             >
               {["Under $15k", "$15k - $30k", "$30k - $50k", "$50k+", "Full Scholarship Required"].map(opt => (
                 <option key={opt} value={opt}>{opt}</option>
@@ -126,7 +126,7 @@ const EditProfileModal: React.FC<EditProfileModalProps> = ({ isOpen, onClose, pr
               value={formData.priorities || ''} 
               onChange={(e) => setFormData({...formData, priorities: e.target.value})}
               placeholder="E.g. Need a debate team, strong accessibility support, or specific internship programs..."
-              className="w-full p-3 rounded-lg border border-slate-200 focus:border-brand-500 outline-none min-h-[100px]"
+              className="w-full p-3 rounded-lg border border-slate-200 focus:border-brand-500 outline-none min-h-[100px] bg-white text-slate-900"
             />
           </div>
         </div>

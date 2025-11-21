@@ -1,0 +1,260 @@
+
+import React, { useState } from 'react';
+import { MentorProfile } from '../types';
+
+interface MentorOnboardingProps {
+  onComplete: (profile: MentorProfile) => void;
+  initialName?: string;
+  initialEmail?: string;
+  initialPhoto?: string;
+}
+
+const MentorOnboarding: React.FC<MentorOnboardingProps> = ({ onComplete, initialName = '', initialEmail = '', initialPhoto = '' }) => {
+  const [step, setStep] = useState(1);
+  const [formData, setFormData] = useState<Partial<MentorProfile>>({
+    name: initialName,
+    email: initialEmail,
+    photoUrl: initialPhoto,
+    studentsGuided: 0,
+    isAvailable: true,
+    tags: []
+  });
+  const [error, setError] = useState<string | null>(null);
+
+  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    if (e.target.files && e.target.files[0]) {
+        const reader = new FileReader();
+        reader.onload = (ev) => {
+            setFormData(prev => ({ ...prev, photoUrl: ev.target?.result as string }));
+        };
+        reader.readAsDataURL(e.target.files[0]);
+    }
+  };
+
+  const handleNext = () => {
+    setError(null);
+    if (step === 1) {
+        if (!formData.name) {
+            setError("Display Name is required.");
+            return;
+        }
+        if (!formData.photoUrl) {
+            setError("Headshot is required. Please upload an image or provide a URL.");
+            return;
+        }
+        setStep(2);
+    } else if (step === 2) {
+        if (!formData.university || !formData.major) {
+            setError("University and Major/Role are required.");
+            return;
+        }
+        setStep(3);
+    } else if (step === 3) {
+        if (!formData.bio) {
+            setError("Bio is required.");
+            return;
+        }
+        setStep(4);
+    } else if (step === 4) {
+        // URL Validation for LinkedIn
+        const linkedinRegex = /^(http(s)?:\/\/)?([\w]+\.)?linkedin\.com\/(pub|in|profile)/;
+        if (!formData.linkedin || !linkedinRegex.test(formData.linkedin)) {
+            setError("Please enter a valid LinkedIn URL.");
+            return;
+        }
+        if (!formData.email) {
+            setError("Email is required.");
+            return;
+        }
+        
+        // Complete
+        const finalProfile: MentorProfile = {
+            id: Date.now().toString(),
+            name: formData.name!,
+            photoUrl: formData.photoUrl!,
+            university: formData.university!,
+            major: formData.major!,
+            bio: formData.bio!,
+            email: formData.email!,
+            linkedin: formData.linkedin!,
+            isAvailable: formData.isAvailable ?? true,
+            studentsGuided: 0,
+            tags: [formData.major!, "Alumni"] // Default tags
+        };
+        onComplete(finalProfile);
+    }
+  };
+
+  return (
+    <div className="min-h-screen bg-beige-50 flex flex-col items-center justify-center p-4 font-sans">
+      <div className="w-full max-w-xl bg-white shadow-xl rounded-none border border-slate-200 overflow-hidden">
+        <div className="h-1.5 bg-slate-100 w-full">
+            <div className="h-full bg-brand-700 transition-all duration-500" style={{ width: `${(step / 4) * 100}%` }}></div>
+        </div>
+
+        <div className="p-8 md:p-12">
+             <div className="mb-8 text-center">
+                <span className="text-xs font-bold uppercase tracking-widest text-brand-600 mb-2 block">Mentor Profile Setup</span>
+                <h2 className="text-3xl font-serif font-bold text-slate-900">
+                    {step === 1 && "Identity & Presence"}
+                    {step === 2 && "Academic Background"}
+                    {step === 3 && "Your Story"}
+                    {step === 4 && "Contact & Visibility"}
+                </h2>
+             </div>
+
+             {error && (
+                <div className="mb-6 bg-red-50 text-red-700 border border-red-200 p-3 text-sm font-bold rounded-none">
+                    {error}
+                </div>
+             )}
+
+             <div className="min-h-[200px]">
+                {step === 1 && (
+                    <div className="space-y-5">
+                        <div>
+                            <label className="block text-sm font-bold text-slate-700 mb-2 uppercase tracking-wider">Display Name</label>
+                            <input 
+                                type="text" 
+                                value={formData.name || ''}
+                                onChange={(e) => setFormData({...formData, name: e.target.value})}
+                                className="w-full p-4 border border-slate-300 focus:border-brand-600 outline-none bg-white"
+                                placeholder="e.g. Dr. Jane Doe"
+                            />
+                        </div>
+                        <div>
+                            <label className="block text-sm font-bold text-slate-700 mb-2 uppercase tracking-wider">Headshot</label>
+                            
+                            <div className="flex items-center gap-4 mb-3">
+                                <div className="w-20 h-20 bg-slate-100 border border-slate-300 overflow-hidden shrink-0">
+                                    {formData.photoUrl ? (
+                                        <img src={formData.photoUrl} alt="Preview" className="w-full h-full object-cover" />
+                                    ) : (
+                                        <div className="w-full h-full flex items-center justify-center text-slate-400">
+                                            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" className="w-8 h-8">
+                                                <path fillRule="evenodd" d="M1 8a2 2 0 012-2h.93a2 2 0 001.664-.89l.812-1.22A2 2 0 018.07 3h3.86a2 2 0 011.664.89l.812 1.22A2 2 0 0016.07 6H17a2 2 0 012 2v10a2 2 0 01-2 2H3a2 2 0 01-2-2V8zm13.5 3a4.5 4.5 0 11-9 0 4.5 4.5 0 019 0zM10 14a3 3 0 100-6 3 3 0 000 6z" clipRule="evenodd" />
+                                            </svg>
+                                        </div>
+                                    )}
+                                </div>
+                                <div className="flex-1">
+                                    <label className="cursor-pointer bg-brand-50 hover:bg-brand-100 text-brand-700 text-xs font-bold uppercase tracking-widest px-4 py-2 transition-colors border border-brand-200 block w-max mb-2">
+                                        Upload Photo
+                                        <input type="file" accept="image/*" className="hidden" onChange={handleFileChange} />
+                                    </label>
+                                    <p className="text-[10px] text-slate-400">Recommended: Square JPG/PNG, max 2MB</p>
+                                </div>
+                            </div>
+                            <input 
+                                type="text" 
+                                value={formData.photoUrl || ''}
+                                onChange={(e) => setFormData({...formData, photoUrl: e.target.value})}
+                                className="w-full p-3 border border-slate-300 focus:border-brand-600 outline-none bg-white text-xs"
+                                placeholder="Or paste image URL directly..."
+                            />
+                        </div>
+                    </div>
+                )}
+
+                {step === 2 && (
+                     <div className="space-y-5">
+                        <div>
+                            <label className="block text-sm font-bold text-slate-700 mb-2 uppercase tracking-wider">University / Institution</label>
+                            <input 
+                                type="text" 
+                                value={formData.university || ''}
+                                onChange={(e) => setFormData({...formData, university: e.target.value})}
+                                className="w-full p-4 border border-slate-300 focus:border-brand-600 outline-none bg-white"
+                                placeholder="e.g. Stanford University"
+                            />
+                        </div>
+                        <div>
+                            <label className="block text-sm font-bold text-slate-700 mb-2 uppercase tracking-wider">Major / Professional Role</label>
+                            <input 
+                                type="text" 
+                                value={formData.major || ''}
+                                onChange={(e) => setFormData({...formData, major: e.target.value})}
+                                className="w-full p-4 border border-slate-300 focus:border-brand-600 outline-none bg-white"
+                                placeholder="e.g. Computer Science, Admissions Officer"
+                            />
+                        </div>
+                    </div>
+                )}
+
+                {step === 3 && (
+                    <div>
+                         <label className="block text-sm font-bold text-slate-700 mb-2 uppercase tracking-wider">Short Bio</label>
+                         <textarea 
+                            value={formData.bio || ''}
+                            onChange={(e) => setFormData({...formData, bio: e.target.value})}
+                            className="w-full p-4 border border-slate-300 focus:border-brand-600 outline-none bg-white h-40 resize-none"
+                            placeholder="Tell students about your experience and how you can help them..."
+                        />
+                    </div>
+                )}
+
+                {step === 4 && (
+                    <div className="space-y-5">
+                         <div>
+                            <label className="block text-sm font-bold text-slate-700 mb-2 uppercase tracking-wider">Contact Email</label>
+                            <input 
+                                type="email" 
+                                value={formData.email || ''}
+                                onChange={(e) => setFormData({...formData, email: e.target.value})}
+                                className="w-full p-4 border border-slate-300 focus:border-brand-600 outline-none bg-white"
+                            />
+                        </div>
+                        <div>
+                            <label className="block text-sm font-bold text-slate-700 mb-2 uppercase tracking-wider">LinkedIn Profile URL</label>
+                            <input 
+                                type="text" 
+                                value={formData.linkedin || ''}
+                                onChange={(e) => setFormData({...formData, linkedin: e.target.value})}
+                                className="w-full p-4 border border-slate-300 focus:border-brand-600 outline-none bg-white"
+                                placeholder="https://linkedin.com/in/..."
+                            />
+                        </div>
+                        <div className="pt-4 border-t border-slate-100">
+                            <label className="flex items-center gap-3 cursor-pointer">
+                                <div className="relative">
+                                    <input 
+                                        type="checkbox" 
+                                        className="sr-only peer"
+                                        checked={formData.isAvailable}
+                                        onChange={(e) => setFormData({...formData, isAvailable: e.target.checked})}
+                                    />
+                                    <div className="w-11 h-6 bg-slate-200 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-brand-600"></div>
+                                </div>
+                                <span className="text-sm font-bold text-slate-700 uppercase tracking-wider">
+                                    Accepting New Students
+                                </span>
+                            </label>
+                            <p className="text-xs text-slate-500 mt-2 ml-14">
+                                If disabled, you will not appear in student searches.
+                            </p>
+                        </div>
+                    </div>
+                )}
+             </div>
+
+             <div className="flex justify-between mt-10 pt-6 border-t border-slate-100">
+                <button 
+                    onClick={() => step > 1 && setStep(s => s - 1)}
+                    className={`px-6 py-3 text-slate-500 font-bold uppercase tracking-wider text-sm ${step === 1 ? 'opacity-0 pointer-events-none' : 'hover:text-slate-800'}`}
+                >
+                    Back
+                </button>
+                <button 
+                    onClick={handleNext}
+                    className="px-8 py-3 bg-brand-700 text-white font-bold uppercase tracking-widest text-sm hover:bg-brand-800 transition-colors shadow-lg"
+                >
+                    {step === 4 ? 'Create Profile' : 'Next Step'}
+                </button>
+             </div>
+        </div>
+      </div>
+    </div>
+  );
+};
+
+export default MentorOnboarding;

@@ -9,6 +9,7 @@ interface MentorOnboardingProps {
   initialPhoto?: string;
   initialProfile?: MentorProfile;
   onCancel?: () => void;
+  onBack?: () => void;
 }
 
 const MentorOnboarding: React.FC<MentorOnboardingProps> = ({ 
@@ -17,7 +18,8 @@ const MentorOnboarding: React.FC<MentorOnboardingProps> = ({
     initialEmail = '', 
     initialPhoto = '', 
     initialProfile,
-    onCancel 
+    onCancel,
+    onBack
 }) => {
   const [step, setStep] = useState(1);
   const [formData, setFormData] = useState<Partial<MentorProfile>>({
@@ -263,8 +265,11 @@ const MentorOnboarding: React.FC<MentorOnboardingProps> = ({
                         </button>
                      )}
                      <button 
-                        onClick={() => step > 1 && setStep(s => s - 1)}
-                        className={`text-slate-500 font-bold uppercase tracking-wider text-sm hover:text-slate-800 ${step === 1 ? 'opacity-0 pointer-events-none' : ''}`}
+                        onClick={() => {
+                            if (step > 1) setStep(s => s - 1);
+                            else if (onBack) onBack();
+                        }}
+                        className={`text-slate-500 font-bold uppercase tracking-wider text-sm hover:text-slate-800 ${step === 1 && !onBack ? 'opacity-0 pointer-events-none' : ''}`}
                     >
                         Back
                     </button>

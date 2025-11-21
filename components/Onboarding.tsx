@@ -6,9 +6,10 @@ import { UserProfile } from '../types';
 interface OnboardingProps {
   onComplete: (profile: UserProfile) => void;
   initialName?: string;
+  onExit?: () => void;
 }
 
-const Onboarding: React.FC<OnboardingProps> = ({ onComplete, initialName = '' }) => {
+const Onboarding: React.FC<OnboardingProps> = ({ onComplete, initialName = '', onExit }) => {
   const [currentStep, setCurrentStep] = useState(0);
   const [profile, setProfile] = useState<Partial<UserProfile>>({
     preferredLocations: [],
@@ -80,7 +81,11 @@ const Onboarding: React.FC<OnboardingProps> = ({ onComplete, initialName = '' })
   };
 
   const handleBack = () => {
-    if (currentStep > 0) setCurrentStep(prev => prev - 1);
+    if (currentStep > 0) {
+        setCurrentStep(prev => prev - 1);
+    } else if (onExit) {
+        onExit();
+    }
   };
 
   const isNextDisabled = () => {
@@ -169,9 +174,9 @@ const Onboarding: React.FC<OnboardingProps> = ({ onComplete, initialName = '' })
         <div className="flex justify-between mt-8 pt-6 border-t border-slate-100">
           <button
             onClick={handleBack}
-            disabled={currentStep === 0}
+            disabled={currentStep === 0 && !onExit}
             className={`px-6 py-3 rounded-lg font-medium transition-colors
-              ${currentStep === 0 ? 'opacity-0 pointer-events-none' : 'text-slate-500 hover:text-slate-800'}`}
+              ${currentStep === 0 && !onExit ? 'opacity-0 pointer-events-none' : 'text-slate-500 hover:text-slate-800'}`}
           >
             Back
           </button>

@@ -1,3 +1,4 @@
+
 import React, { useState, useRef, useEffect } from 'react';
 import { ChatMessage, UserProfile, University } from '../types';
 import MessageBubble from './MessageBubble';
@@ -251,6 +252,24 @@ const ChatInterface: React.FC<ChatInterfaceProps> = ({
             <div ref={messagesEndRef} />
         </div>
       </div>
+
+      {/* Floating Dashboard Button */}
+      {!embeddedInDashboard && savedSchools.length >= 2 && (
+         <div className="fixed bottom-24 right-6 z-20 animate-fade-in-up">
+            <button 
+                onClick={onGoToDashboard}
+                className="bg-brand-700 hover:bg-brand-800 text-white px-6 py-4 rounded-full font-bold shadow-2xl border-2 border-white flex items-center gap-3 transition-transform hover:scale-105 group"
+            >
+                <span className="font-heading uppercase tracking-widest text-sm">Go to Dashboard</span>
+                <span className="bg-white text-brand-900 w-6 h-6 rounded-full flex items-center justify-center text-xs font-bold group-hover:bg-brand-100">
+                    {savedSchools.length}
+                </span>
+                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" className="w-5 h-5">
+                    <path fillRule="evenodd" d="M3 10a.75.75 0 01.75-.75h10.638L10.23 5.29a.75.75 0 111.04-1.08l5.5 5.25a.75.75 0 010 1.08l-5.5 5.25a.75.75 0 11-1.04-1.08l4.158-3.96H3.75A.75.75 0 013 10z" clipRule="evenodd" />
+                </svg>
+            </button>
+         </div>
+      )}
 
       {/* Input Area */}
       <div className="p-4 md:p-6 bg-white border-t border-slate-200 z-10">

@@ -14,7 +14,9 @@ export type ApplicationStatus = 'draft' | 'submitted' | 'under_review' | 'accept
 
 export interface Application {
   id: string;
-  university: University;
+  type: 'university' | 'scholarship';
+  university?: University;
+  scholarship?: Scholarship;
   status: ApplicationStatus;
   submittedDate?: Date;
   lastUpdated: Date;
@@ -59,6 +61,20 @@ export interface UserProfile {
   discardedSchools: string[]; 
 }
 
+export interface MentorProfile {
+  id: string;
+  name: string;
+  photoUrl: string;
+  university: string;
+  major: string; // Functions as "Role" or "Field"
+  bio: string;
+  email: string;
+  linkedin: string;
+  isAvailable: boolean;
+  studentsGuided: number;
+  tags: string[];
+}
+
 export interface OnboardingQuestion {
   id: keyof UserProfile;
   question: string;
@@ -95,7 +111,10 @@ export interface Mentor {
   image: string;
   bio: string;
   availability: string;
+  isAvailable: boolean; // Added for filtering
   tags: string[];
+  email: string;
+  linkedin: string;
 }
 
 export interface ChatMessage {

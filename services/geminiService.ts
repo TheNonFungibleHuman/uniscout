@@ -1,6 +1,7 @@
 
 import { GoogleGenAI, Chat, GroundingChunk } from "@google/genai";
 import { UserProfile, GroundingSource, University } from "../types";
+import { UNI_IMAGES } from "../constants";
 
 const apiKey = process.env.API_KEY || '';
 const ai = new GoogleGenAI({ apiKey });
@@ -95,16 +96,36 @@ export const sendMessageToGemini = async (message: string): Promise<{ text: stri
         const jsonStr = jsonMatch[1];
         const parsed = JSON.parse(jsonStr);
         if (Array.isArray(parsed)) {
-            recommendations = parsed.map((u: any) => ({
-                id: u.name.replace(/\s+/g, '-').toLowerCase() + '-' + Date.now() + Math.random().toString(36).substr(2, 5),
-                name: u.name,
-                location: u.location || "Unknown Location",
-                matchScore: u.matchScore || 80,
-                tuition: u.tuition || "Contact for rates",
-                description: u.description || "",
-                website: u.website || "#",
-                tags: u.tags || []
-            }));
+            recommendations = parsed.map((u: any) => {
+                // Generate a deterministic but unique hash code from the string
+                // This ensures the same university always gets the same image,
+                // but different universities get different images.
+                const str = u.name;
+                let hash = 0;
+                for (let i = 0; i < str.length; i++) {
+                    hash = str.charCodeAt(i) + ((hash << 5) - hash);
+                }
+                
+                // Use absolute value of hash to map to image array index
+                const index = Math.abs(hash) % UNI_IMAGES.length;
+                const index2 = (index + 5) % UNI_IMAGES.length; // Get a second distinct image
+
+                const image1 = UNI_IMAGES[index];
+                const image2 = UNI_IMAGES[index2];
+
+                return {
+                    id: u.name.replace(/\s+/g, '-').toLowerCase() + '-' + Date.now() + Math.random().toString(36).substr(2, 5),
+                    name: u.name,
+                    location: u.location || "Unknown Location",
+                    matchScore: u.matchScore || 80,
+                    tuition: u.tuition || "Contact for rates",
+                    description: u.description || "",
+                    website: u.website || "#",
+                    tags: u.tags || [],
+                    // Inject images if missing to ensure cards always look good
+                    images: u.images && u.images.length > 0 ? u.images : [image1, image2]
+                };
+            });
         }
         
         // 2. Remove the JSON block from the text

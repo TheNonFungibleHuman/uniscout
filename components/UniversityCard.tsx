@@ -1,3 +1,4 @@
+
 import React, { useState } from 'react';
 import { University } from '../types';
 
@@ -31,8 +32,8 @@ const UniversityCard: React.FC<UniversityCardProps> = ({
   const scoreColorClass = university.matchScore >= 90 ? 'text-brand-700 border-brand-700' : 
                      university.matchScore >= 80 ? 'text-accent-olive border-accent-olive' : 'text-accent-gold border-accent-gold';
   
-  // Fallback logic: If error, use a nice gradient pattern instead of a broken image
-  const showFallback = imgError || !university.images || university.images.length === 0;
+  // Fallback image from Unsplash if primary fails
+  const fallbackImage = "https://images.unsplash.com/photo-1523050854058-8df90110c9f1?q=80&w=800&auto=format&fit=crop";
 
   // Fallback logo logic
   const fallbackLogo = `https://ui-avatars.com/api/?name=${encodeURIComponent(university.name)}&background=f6f1e9&color=162714&size=128&font-size=0.33&bold=true`;
@@ -46,18 +47,12 @@ const UniversityCard: React.FC<UniversityCardProps> = ({
       <div className="h-40 relative overflow-hidden bg-slate-200">
          <div className="absolute inset-0 bg-brand-900/20 group-hover:bg-brand-900/0 transition-colors z-10"></div>
          
-         {showFallback ? (
-             <div className="w-full h-full bg-gradient-to-br from-brand-800 to-brand-600 flex items-center justify-center">
-                 <span className="text-brand-200 font-serif opacity-20 text-6xl font-bold">G</span>
-             </div>
-         ) : (
-            <img 
-                src={university.images![0]} 
-                alt={university.name} 
-                className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105" 
-                onError={() => setImgError(true)}
-            />
-         )}
+         <img 
+            src={(!imgError && university.images && university.images.length > 0) ? university.images[0] : fallbackImage} 
+            alt={university.name} 
+            className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105" 
+            onError={() => setImgError(true)}
+         />
          
          {/* Match Score Badge */}
          <div className="absolute top-0 right-0 bg-beige-100 px-3 py-1.5 border-b border-l border-brand-700 z-20 shadow-sm">

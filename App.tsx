@@ -301,7 +301,13 @@ const App: React.FC = () => {
   }
   
   if (view === 'mentor-onboarding') {
-      return <MentorOnboarding onComplete={handleMentorOnboardingComplete} initialName={sessionUser?.name} initialEmail={sessionUser?.email} initialPhoto={sessionUser?.image} />;
+      return <MentorOnboarding 
+        onComplete={handleMentorOnboardingComplete} 
+        initialName={sessionUser?.name} 
+        initialEmail={sessionUser?.email} 
+        initialPhoto={sessionUser?.image} 
+        onBack={() => setView('login')}
+      />;
   }
   
   if (view === 'mentor-dashboard' && mentorProfile) {
@@ -309,7 +315,11 @@ const App: React.FC = () => {
   }
 
   if (view === 'onboarding') {
-    return <Onboarding onComplete={handleOnboardingComplete} initialName={sessionUser?.name} />;
+    return <Onboarding 
+      onComplete={handleOnboardingComplete} 
+      initialName={sessionUser?.name} 
+      onExit={() => setView('login')} 
+    />;
   }
 
   if (isTransitioningToDashboard) {

@@ -1,5 +1,6 @@
 
 import React, { useState, useEffect } from 'react';
+import { SpeedInsights } from '@vercel/speed-insights/react';
 import Onboarding from './components/Onboarding';
 import MentorOnboarding from './components/MentorOnboarding';
 import ChatInterface from './components/ChatInterface';
@@ -281,98 +282,148 @@ const App: React.FC = () => {
 
   // Loading State for Session Check
   if (isSessionPending) {
-      return <div className="h-screen bg-beige-100"></div>;
+      return (
+        <>
+          <div className="h-screen bg-beige-100"></div>
+          <SpeedInsights />
+        </>
+      );
   }
 
   if (view === 'landing') {
-    return <LandingPage onGetStarted={handleRoleSelect} />;
+    return (
+      <>
+        <LandingPage onGetStarted={handleRoleSelect} />
+        <SpeedInsights />
+      </>
+    );
   }
 
   if (view === 'login') {
-    return <LoginPage 
-        initialRole={selectedRole}
-        onLoginSuccess={handleLoginSuccess} 
-        onBack={() => setView('landing')} 
-    />;
+    return (
+      <>
+        <LoginPage 
+            initialRole={selectedRole}
+            onLoginSuccess={handleLoginSuccess} 
+            onBack={() => setView('landing')} 
+        />
+        <SpeedInsights />
+      </>
+    );
   }
 
   if (isLoadingWelcome) {
-    return <LoadingScreen messages={PROFILE_ANALYSIS_MESSAGES} />;
+    return (
+      <>
+        <LoadingScreen messages={PROFILE_ANALYSIS_MESSAGES} />
+        <SpeedInsights />
+      </>
+    );
   }
   
   if (view === 'mentor-onboarding') {
-      return <MentorOnboarding 
-        onComplete={handleMentorOnboardingComplete} 
-        initialName={sessionUser?.name} 
-        initialEmail={sessionUser?.email} 
-        initialPhoto={sessionUser?.image} 
-        onBack={() => setView('login')}
-      />;
+      return (
+        <>
+          <MentorOnboarding 
+            onComplete={handleMentorOnboardingComplete} 
+            initialName={sessionUser?.name} 
+            initialEmail={sessionUser?.email} 
+            initialPhoto={sessionUser?.image} 
+            onBack={() => setView('login')}
+          />
+          <SpeedInsights />
+        </>
+      );
   }
   
   if (view === 'mentor-dashboard' && mentorProfile) {
-      return <MentorDashboard profile={mentorProfile} onUpdateProfile={setMentorProfile} onLogout={handleLogout} />;
+      return (
+        <>
+          <MentorDashboard profile={mentorProfile} onUpdateProfile={setMentorProfile} onLogout={handleLogout} />
+          <SpeedInsights />
+        </>
+      );
   }
 
   if (view === 'onboarding') {
-    return <Onboarding 
-      onComplete={handleOnboardingComplete} 
-      initialName={sessionUser?.name} 
-      onExit={() => setView('login')} 
-    />;
+    return (
+      <>
+        <Onboarding 
+          onComplete={handleOnboardingComplete} 
+          initialName={sessionUser?.name} 
+          onExit={() => setView('login')} 
+        />
+        <SpeedInsights />
+      </>
+    );
   }
 
   if (isTransitioningToDashboard) {
-    return <LoadingScreen messages={DASHBOARD_BUILD_MESSAGES} />;
+    return (
+      <>
+        <LoadingScreen messages={DASHBOARD_BUILD_MESSAGES} />
+        <SpeedInsights />
+      </>
+    );
   }
 
   if (view === 'dashboard' && profile) {
       return (
-          <Dashboard 
-              profile={profile} 
-              savedSchools={savedSchools}
-              applications={applications}
-              onDiscardSchool={handleDiscardSchool}
-              onSaveSchool={handleSaveSchool}
-              onUpdateApplication={handleUpdateApplication}
-              onWithdrawApplication={handleWithdrawApplication}
-              onUpdateProfile={handleFullProfileRefresh}
-              onLogout={handleLogout}
-              renderChat={() => (
-                  <ChatInterface 
-                    profile={profile} 
-                    messages={messages} 
-                    setMessages={setMessages}
-                    onUpdateProfile={handleFullProfileRefresh}
-                    onSaveSchool={handleSaveSchool}
-                    onDiscardSchool={handleDiscardSchool}
-                    savedSchools={savedSchools}
-                    discardedSchools={discardedSchools}
-                    onGoToDashboard={() => {}}
-                    embeddedInDashboard={true}
-                />
-              )}
-          />
+          <>
+            <Dashboard 
+                profile={profile} 
+                savedSchools={savedSchools}
+                applications={applications}
+                onDiscardSchool={handleDiscardSchool}
+                onSaveSchool={handleSaveSchool}
+                onUpdateApplication={handleUpdateApplication}
+                onWithdrawApplication={handleWithdrawApplication}
+                onUpdateProfile={handleFullProfileRefresh}
+                onLogout={handleLogout}
+                renderChat={() => (
+                    <ChatInterface 
+                      profile={profile} 
+                      messages={messages} 
+                      setMessages={setMessages}
+                      onUpdateProfile={handleFullProfileRefresh}
+                      onSaveSchool={handleSaveSchool}
+                      onDiscardSchool={handleDiscardSchool}
+                      savedSchools={savedSchools}
+                      discardedSchools={discardedSchools}
+                      onGoToDashboard={() => {}}
+                      embeddedInDashboard={true}
+                  />
+                )}
+            />
+            <SpeedInsights />
+          </>
       )
   }
 
   if (profile) {
     return (
-        <ChatInterface 
-            profile={profile} 
-            messages={messages}
-            setMessages={setMessages}
-            onUpdateProfile={handleFullProfileRefresh}
-            onSaveSchool={handleSaveSchool}
-            onDiscardSchool={handleDiscardSchool}
-            savedSchools={savedSchools}
-            discardedSchools={discardedSchools}
-            onGoToDashboard={handleGoToDashboard}
-        />
+        <>
+          <ChatInterface 
+              profile={profile} 
+              messages={messages}
+              setMessages={setMessages}
+              onUpdateProfile={handleFullProfileRefresh}
+              onSaveSchool={handleSaveSchool}
+              onDiscardSchool={handleDiscardSchool}
+              savedSchools={savedSchools}
+              discardedSchools={discardedSchools}
+              onGoToDashboard={handleGoToDashboard}
+          />
+          <SpeedInsights />
+        </>
     );
   }
 
-  return null;
+  return (
+    <>
+      <SpeedInsights />
+    </>
+  );
 };
 
 export default App;

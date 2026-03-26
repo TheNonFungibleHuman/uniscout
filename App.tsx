@@ -1,6 +1,5 @@
 
 import React, { useState, useEffect } from 'react';
-import { SpeedInsights } from '@vercel/speed-insights/react';
 import Onboarding from './components/Onboarding';
 import MentorOnboarding from './components/MentorOnboarding';
 import ChatInterface from './components/ChatInterface';
@@ -12,6 +11,8 @@ import LoadingScreen from './components/LoadingScreen';
 import { UserProfile, ChatMessage, University, AuthUser, Application, MentorProfile } from './types';
 import { generateWelcomeMessage, initializeChatSession } from './services/geminiService';
 import { authClient } from './lib/auth';
+import { db } from './firebase';
+import { doc, getDoc, setDoc } from 'firebase/firestore';
 
 type AppView = 'landing' | 'login' | 'onboarding' | 'mentor-onboarding' | 'chat' | 'dashboard' | 'mentor-dashboard';
 
@@ -40,6 +41,7 @@ const App: React.FC = () => {
   
   const [profile, setProfile] = useState<UserProfile | null>(null);
   const [mentorProfile, setMentorProfile] = useState<MentorProfile | null>(null);
+  const [userRole, setUserRole] = useState<'applicant' | 'mentor' | 'university' | null>(null);
   
   // Lifted Chat State
   const [messages, setMessages] = useState<ChatMessage[]>([]);
@@ -52,48 +54,65 @@ const App: React.FC = () => {
   const [discardedSchools, setDiscardedSchools] = useState<string[]>([]);
   const [applications, setApplications] = useState<Application[]>([]);
 
+  const [isFetchingProfile, setIsFetchingProfile] = useState(false);
+
   // Handle Persistence & Auth State
   useEffect(() => {
     if (!isSessionPending) {
         if (sessionUser) {
-            if (sessionUser.type === 'mentor') {
-                // Mentor Flow
-                const savedMentorStr = localStorage.getItem(`gradwyn_mentor_${sessionUser.id}`);
-                if (savedMentorStr) {
-                    setMentorProfile(JSON.parse(savedMentorStr));
-                    setView('mentor-dashboard');
-                } else {
-                    setView('mentor-onboarding');
-                }
-            } else {
-                // Applicant OR University Flow (University routed to applicant dashboard for demo)
-                const savedProfileStr = localStorage.getItem('gradwyn_profile');
-                const savedSchoolsStr = localStorage.getItem('gradwyn_savedSchools');
-                const savedAppsStr = localStorage.getItem('gradwyn_applications');
-                
-                if (savedProfileStr) {
-                    try {
-                        const parsedProfile = JSON.parse(savedProfileStr);
-                        setProfile(parsedProfile);
+            const fetchUserData = async () => {
+                setIsFetchingProfile(true);
+                try {
+                    const userDocRef = doc(db, 'users', sessionUser.id);
+                    const docSnap = await getDoc(userDocRef);
+                    
+                    if (docSnap.exists()) {
+                        const data = docSnap.data();
+                        const role = data.role || sessionUser.type;
+                        setUserRole(role);
                         
-                        if (savedSchoolsStr) setSavedSchools(JSON.parse(savedSchoolsStr));
-                        if (savedAppsStr) setApplications(JSON.parse(savedAppsStr).map((app: any) => ({
-                            ...app,
-                            lastUpdated: new Date(app.lastUpdated),
-                            submittedDate: app.submittedDate ? new Date(app.submittedDate) : undefined
-                        })));
-                        
-                        // If we have a profile, default to dashboard to avoid "starting again"
-                        setView('dashboard');
-                    } catch (e) {
-                        console.error("Failed to restore session", e);
-                        setView('onboarding');
+                        if (role === 'mentor') {
+                            if (data.bio && data.university) {
+                                setMentorProfile(data as MentorProfile);
+                                setView('mentor-dashboard');
+                            } else {
+                                setView('mentor-onboarding');
+                            }
+                        } else {
+                            if (data.profile) setProfile(data.profile as UserProfile);
+                            if (data.savedSchools) setSavedSchools(data.savedSchools);
+                            if (data.discardedSchools) setDiscardedSchools(data.discardedSchools);
+                            if (data.applications) {
+                                setApplications(data.applications.map((app: any) => ({
+                                    ...app,
+                                    lastUpdated: new Date(app.lastUpdated),
+                                    submittedDate: app.submittedDate ? new Date(app.submittedDate) : undefined
+                                })));
+                            }
+                            if (data.profile) {
+                                setView('dashboard');
+                            } else {
+                                setView('onboarding');
+                            }
+                        }
+                    } else {
+                        setUserRole(sessionUser.type);
+                        if (sessionUser.type === 'mentor') {
+                            setView('mentor-onboarding');
+                        } else {
+                            setView('onboarding');
+                        }
                     }
-                } else {
-                    // User logged in but no profile
-                    setView('onboarding');
+                } catch (error) {
+                    console.error("Error fetching user data:", error);
+                    setUserRole(sessionUser.type);
+                    if (sessionUser.type === 'mentor') setView('mentor-onboarding');
+                    else setView('onboarding');
+                } finally {
+                    setIsFetchingProfile(false);
                 }
-            }
+            };
+            fetchUserData();
         } else {
             setView('landing');
         }
@@ -102,28 +121,43 @@ const App: React.FC = () => {
 
   // Persist data on changes
   useEffect(() => {
-      if (profile) {
-          localStorage.setItem('gradwyn_profile', JSON.stringify(profile));
+      if (profile && sessionUser && userRole !== 'mentor') {
+          const userDocRef = doc(db, 'users', sessionUser.id);
+          
+          const dataToSave = { 
+              profile, 
+              savedSchools, 
+              discardedSchools, 
+              applications: applications.map(app => ({
+                  ...app,
+                  lastUpdated: app.lastUpdated.toISOString(),
+                  submittedDate: app.submittedDate ? app.submittedDate.toISOString() : null
+              })),
+              role: userRole || 'applicant',
+              id: sessionUser.id,
+              email: sessionUser.email
+          };
+
+          // Deep remove undefined values
+          const cleanData = JSON.parse(JSON.stringify(dataToSave));
+
+          setDoc(userDocRef, cleanData, { merge: true }).catch(console.error);
       }
-  }, [profile]);
+  }, [profile, savedSchools, discardedSchools, applications, sessionUser, userRole]);
   
   useEffect(() => {
-      if (mentorProfile && sessionUser) {
-          localStorage.setItem(`gradwyn_mentor_${sessionUser.id}`, JSON.stringify(mentorProfile));
+      if (mentorProfile && sessionUser && userRole === 'mentor') {
+          const userDocRef = doc(db, 'users', sessionUser.id);
+          const dataToSave = { 
+              ...mentorProfile,
+              role: 'mentor',
+              id: sessionUser.id,
+              email: sessionUser.email
+          };
+          const cleanData = JSON.parse(JSON.stringify(dataToSave));
+          setDoc(userDocRef, cleanData, { merge: true }).catch(console.error);
       }
-  }, [mentorProfile, sessionUser]);
-
-  useEffect(() => {
-      if (savedSchools.length > 0) {
-          localStorage.setItem('gradwyn_savedSchools', JSON.stringify(savedSchools));
-      }
-  }, [savedSchools]);
-
-  useEffect(() => {
-      if (applications.length > 0) {
-          localStorage.setItem('gradwyn_applications', JSON.stringify(applications));
-      }
-  }, [applications]);
+  }, [mentorProfile, sessionUser, userRole]);
 
   // Check if API key is present
   const apiKey = process.env.API_KEY;
@@ -145,15 +179,8 @@ const App: React.FC = () => {
   };
 
   const handleLoginSuccess = (user: AuthUser) => {
-    // Check type and redirect
-    if (user.type === 'mentor') {
-        if (!mentorProfile) setView('mentor-onboarding');
-        else setView('mentor-dashboard');
-    } else {
-        // Handle 'university' type by sending them to applicant flow for this demo
-        if (!profile) setView('onboarding');
-        else setView('dashboard');
-    }
+    // The useEffect listening to sessionUser will handle fetching data and routing.
+    // We don't need to manually set the view here anymore.
   };
 
   const handleLogout = async () => {
@@ -179,10 +206,13 @@ const App: React.FC = () => {
         ...userProfile,
         id: sessionUser?.id || 'guest',
         email: sessionUser?.email || '',
-        photoUrl: sessionUser?.image,
         savedSchools: [],
         discardedSchools: []
     };
+    
+    if (sessionUser?.image) {
+        fullProfile.photoUrl = sessionUser.image;
+    }
 
     setProfile(fullProfile);
     startAnalysisFlow(fullProfile);
@@ -281,149 +311,101 @@ const App: React.FC = () => {
   };
 
   // Loading State for Session Check
-  if (isSessionPending) {
-      return (
-        <>
-          <div className="h-screen bg-beige-100"></div>
-          <SpeedInsights />
-        </>
-      );
+  if (isSessionPending || isFetchingProfile) {
+      return <div className="h-screen bg-beige-100 flex items-center justify-center">
+          <div className="animate-pulse text-brand-700 font-serif text-2xl">Loading...</div>
+      </div>;
   }
 
   if (view === 'landing') {
-    return (
-      <>
-        <LandingPage onGetStarted={handleRoleSelect} />
-        <SpeedInsights />
-      </>
-    );
+    return <LandingPage onGetStarted={handleRoleSelect} />;
   }
 
   if (view === 'login') {
-    return (
-      <>
-        <LoginPage 
-            initialRole={selectedRole}
-            onLoginSuccess={handleLoginSuccess} 
-            onBack={() => setView('landing')} 
-        />
-        <SpeedInsights />
-      </>
-    );
+    return <LoginPage 
+        initialRole={selectedRole}
+        onLoginSuccess={handleLoginSuccess} 
+        onBack={() => setView('landing')} 
+    />;
   }
 
   if (isLoadingWelcome) {
-    return (
-      <>
-        <LoadingScreen messages={PROFILE_ANALYSIS_MESSAGES} />
-        <SpeedInsights />
-      </>
-    );
+    return <LoadingScreen messages={PROFILE_ANALYSIS_MESSAGES} />;
   }
   
   if (view === 'mentor-onboarding') {
-      return (
-        <>
-          <MentorOnboarding 
-            onComplete={handleMentorOnboardingComplete} 
-            initialName={sessionUser?.name} 
-            initialEmail={sessionUser?.email} 
-            initialPhoto={sessionUser?.image} 
-            onBack={() => setView('login')}
-          />
-          <SpeedInsights />
-        </>
-      );
+      return <MentorOnboarding 
+        onComplete={handleMentorOnboardingComplete} 
+        initialName={sessionUser?.name} 
+        initialEmail={sessionUser?.email} 
+        initialPhoto={sessionUser?.image} 
+        onBack={() => setView('login')}
+      />;
   }
   
   if (view === 'mentor-dashboard' && mentorProfile) {
-      return (
-        <>
-          <MentorDashboard profile={mentorProfile} onUpdateProfile={setMentorProfile} onLogout={handleLogout} />
-          <SpeedInsights />
-        </>
-      );
+      return <MentorDashboard profile={mentorProfile} onUpdateProfile={setMentorProfile} onLogout={handleLogout} />;
   }
 
   if (view === 'onboarding') {
-    return (
-      <>
-        <Onboarding 
-          onComplete={handleOnboardingComplete} 
-          initialName={sessionUser?.name} 
-          onExit={() => setView('login')} 
-        />
-        <SpeedInsights />
-      </>
-    );
+    return <Onboarding 
+      onComplete={handleOnboardingComplete} 
+      initialName={sessionUser?.name} 
+      onExit={() => setView('login')} 
+    />;
   }
 
   if (isTransitioningToDashboard) {
-    return (
-      <>
-        <LoadingScreen messages={DASHBOARD_BUILD_MESSAGES} />
-        <SpeedInsights />
-      </>
-    );
+    return <LoadingScreen messages={DASHBOARD_BUILD_MESSAGES} />;
   }
 
   if (view === 'dashboard' && profile) {
       return (
-          <>
-            <Dashboard 
-                profile={profile} 
-                savedSchools={savedSchools}
-                applications={applications}
-                onDiscardSchool={handleDiscardSchool}
-                onSaveSchool={handleSaveSchool}
-                onUpdateApplication={handleUpdateApplication}
-                onWithdrawApplication={handleWithdrawApplication}
-                onUpdateProfile={handleFullProfileRefresh}
-                onLogout={handleLogout}
-                renderChat={() => (
-                    <ChatInterface 
-                      profile={profile} 
-                      messages={messages} 
-                      setMessages={setMessages}
-                      onUpdateProfile={handleFullProfileRefresh}
-                      onSaveSchool={handleSaveSchool}
-                      onDiscardSchool={handleDiscardSchool}
-                      savedSchools={savedSchools}
-                      discardedSchools={discardedSchools}
-                      onGoToDashboard={() => {}}
-                      embeddedInDashboard={true}
-                  />
-                )}
-            />
-            <SpeedInsights />
-          </>
+          <Dashboard 
+              profile={profile} 
+              savedSchools={savedSchools}
+              applications={applications}
+              onDiscardSchool={handleDiscardSchool}
+              onSaveSchool={handleSaveSchool}
+              onUpdateApplication={handleUpdateApplication}
+              onWithdrawApplication={handleWithdrawApplication}
+              onUpdateProfile={handleFullProfileRefresh}
+              onLogout={handleLogout}
+              renderChat={() => (
+                  <ChatInterface 
+                    profile={profile} 
+                    messages={messages} 
+                    setMessages={setMessages}
+                    onUpdateProfile={handleFullProfileRefresh}
+                    onSaveSchool={handleSaveSchool}
+                    onDiscardSchool={handleDiscardSchool}
+                    savedSchools={savedSchools}
+                    discardedSchools={discardedSchools}
+                    onGoToDashboard={() => {}}
+                    embeddedInDashboard={true}
+                />
+              )}
+          />
       )
   }
 
   if (profile) {
     return (
-        <>
-          <ChatInterface 
-              profile={profile} 
-              messages={messages}
-              setMessages={setMessages}
-              onUpdateProfile={handleFullProfileRefresh}
-              onSaveSchool={handleSaveSchool}
-              onDiscardSchool={handleDiscardSchool}
-              savedSchools={savedSchools}
-              discardedSchools={discardedSchools}
-              onGoToDashboard={handleGoToDashboard}
-          />
-          <SpeedInsights />
-        </>
+        <ChatInterface 
+            profile={profile} 
+            messages={messages}
+            setMessages={setMessages}
+            onUpdateProfile={handleFullProfileRefresh}
+            onSaveSchool={handleSaveSchool}
+            onDiscardSchool={handleDiscardSchool}
+            savedSchools={savedSchools}
+            discardedSchools={discardedSchools}
+            onGoToDashboard={handleGoToDashboard}
+        />
     );
   }
 
-  return (
-    <>
-      <SpeedInsights />
-    </>
-  );
+  return null;
 };
 
 export default App;

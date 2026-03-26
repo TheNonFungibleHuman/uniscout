@@ -12,7 +12,7 @@ interface LoginPageProps {
 const LoginPage: React.FC<LoginPageProps> = ({ initialRole, onLoginSuccess, onBack }) => {
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const [isSignUp, setIsSignUp] = useState(false);
+  const [isSignUp, setIsSignUp] = useState(true);
   const [selectedRole, setSelectedRole] = useState<'applicant' | 'mentor' | 'university'>(initialRole);
   
   // Ensure state syncs if prop changes
@@ -104,9 +104,11 @@ const LoginPage: React.FC<LoginPageProps> = ({ initialRole, onLoginSuccess, onBa
            <div className="w-12 h-12 bg-brand-700 flex items-center justify-center text-white font-bold font-serif text-2xl shadow-none mx-auto mb-4 rounded-none">
              G
            </div>
-           <p className="text-xs font-bold uppercase tracking-widest text-brand-500 mb-1">
-               {isSignUp ? 'Registering as' : 'Login as'} {getRoleLabel(selectedRole)}
-           </p>
+           {isSignUp && (
+               <p className="text-xs font-bold uppercase tracking-widest text-brand-500 mb-1">
+                   Registering as {getRoleLabel(selectedRole)}
+               </p>
+           )}
            <h2 className="text-2xl font-bold text-brand-900 font-serif mb-2">
              {isSignUp ? 'Create Account' : 'Welcome Back'}
            </h2>
@@ -119,33 +121,6 @@ const LoginPage: React.FC<LoginPageProps> = ({ initialRole, onLoginSuccess, onBa
             {error && (
                 <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 text-xs font-bold uppercase tracking-wide mb-4 leading-relaxed">
                     {error}
-                </div>
-            )}
-
-            {/* Role Toggle for visibility, though pre-selected from previous screen */}
-            {isSignUp && (
-                <div className="flex p-1 bg-slate-100 rounded-md mb-4">
-                    <button 
-                        type="button"
-                        onClick={() => setSelectedRole('applicant')}
-                        className={`flex-1 py-2 text-xs font-bold uppercase tracking-wider rounded transition-all ${selectedRole === 'applicant' ? 'bg-white text-brand-800 shadow-sm' : 'text-slate-400 hover:text-slate-600'}`}
-                    >
-                        Student
-                    </button>
-                    <button 
-                        type="button"
-                        onClick={() => setSelectedRole('mentor')}
-                        className={`flex-1 py-2 text-xs font-bold uppercase tracking-wider rounded transition-all ${selectedRole === 'mentor' ? 'bg-white text-brand-800 shadow-sm' : 'text-slate-400 hover:text-slate-600'}`}
-                    >
-                        Mentor
-                    </button>
-                    <button 
-                        type="button"
-                        onClick={() => setSelectedRole('university')}
-                        className={`flex-1 py-2 text-xs font-bold uppercase tracking-wider rounded transition-all ${selectedRole === 'university' ? 'bg-white text-brand-800 shadow-sm' : 'text-slate-400 hover:text-slate-600'}`}
-                    >
-                        Uni
-                    </button>
                 </div>
             )}
 
@@ -204,13 +179,14 @@ const LoginPage: React.FC<LoginPageProps> = ({ initialRole, onLoginSuccess, onBa
 
             <div className="text-center pt-2">
                 <button 
+                    type="button"
                     onClick={() => {
                         setIsSignUp(!isSignUp);
                         setError(null);
                     }}
                     className="text-xs font-bold text-brand-700 hover:text-brand-900 uppercase tracking-wider underline decoration-brand-200 underline-offset-4"
                 >
-                    {isSignUp ? 'Already have an account? Log In' : 'New here? Create an Account'}
+                    {isSignUp ? 'Already have an account? Log In' : `New here? Create a ${getRoleLabel(selectedRole)} Account`}
                 </button>
             </div>
         </div>

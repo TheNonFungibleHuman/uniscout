@@ -2000,7 +2000,7 @@
     "author": "user",
     "payload": {
       "type": "text",
-      "text": "I didn't see a .env file in your project files/code but here are the config keys from my initialized firebase app. Help em set it up perfectly, no mistakes, no errors\n\nconst firebaseConfig = {\n  apiKey: \"AIzaSyBDKBQg1V9Y6kuY_EbdjRKeEgYStT_EZA0\",\n  authDomain: \"gen-lang-client-0681949015.firebaseapp.com\",\n  projectId: \"gen-lang-client-0681949015\",\n  storageBucket: \"gen-lang-client-0681949015.firebasestorage.app\",\n  messagingSenderId: \"291482318316\",\n  appId: \"1:291482318316:web:391b6c1df554c17006fcc9\",\n  measurementId: \"G-XV75VXN5CK\"\n};",
+      "text": "I didn't see a .env file in your project files/code but here are the config keys from my initialized firebase app. Help em set it up perfectly, no mistakes, no errors\n\nconst firebaseConfig = {\n  apiKey: \"REPLACED_BY_ENV_VAR\",\n  authDomain: \"gen-lang-client-0681949015.firebaseapp.com\",\n  projectId: \"gen-lang-client-0681949015\",\n  storageBucket: \"gen-lang-client-0681949015.firebasestorage.app\",\n  messagingSenderId: \"291482318316\",\n  appId: \"1:291482318316:web:391b6c1df554c17006fcc9\",\n  measurementId: \"G-XV75VXN5CK\"\n};",
       "cMarkNode": {}
     },
     "createdTimestamp": 1763656728564

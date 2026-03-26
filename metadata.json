@@ -1,5 +1,5 @@
 {
-  "name": "UniScout AI",
+  "name": "Gradwyn",
   "description": "A personalized AI university researcher that helps students find their perfect academic match through deep research and tailored insights.",
   "requestFramePermissions": [
     "microphone"

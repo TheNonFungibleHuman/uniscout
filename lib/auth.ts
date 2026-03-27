@@ -34,13 +34,16 @@ export const authClient = {
     social: async ({ provider, role = 'applicant' }: { provider: 'google' | 'github', role?: 'applicant' | 'mentor' | 'university' }) => {
         if (provider === 'google') {
              try {
+                console.log("Initiating Google Sign-In with role:", role);
                 const result = await signInWithPopup(auth, googleProvider);
+                console.log("Google Sign-In successful for UID:", result.user.uid);
                 localStorage.setItem('gradwyn_user_role', role);
                 
                 // Ensure user document exists in Firestore
                 const userDocRef = doc(db, 'users', result.user.uid);
                 const userDoc = await getDoc(userDocRef);
                 if (!userDoc.exists()) {
+                    console.log("Creating new user document in Firestore...");
                     await setDoc(userDocRef, {
                         id: result.user.uid,
                         email: result.user.email,
@@ -52,9 +55,13 @@ export const authClient = {
                 
                 return { data: mapFirebaseUser(result.user, role), error: null };
              } catch (error: any) {
+                console.error("Google Sign-In Error:", error);
                 if (error.code === 'auth/popup-closed-by-user') return { data: null, error: "Sign-in cancelled." };
                 if (error.code === 'auth/account-exists-with-different-credential') return { data: null, error: "An account already exists with the same email address but different sign-in credentials." };
-                return { data: null, error: error.message };
+                if (error.code === 'auth/unauthorized-domain') {
+                    return { data: null, error: "This domain is not authorized for Firebase Authentication. Please add " + window.location.hostname + " to the 'Authorized domains' list in your Firebase Console (Authentication > Settings)." };
+                }
+                return { data: null, error: `Authentication failed: ${error.message} (${error.code})` };
              }
         }
         return { data: null, error: "Provider not supported" };

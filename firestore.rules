@@ -13,11 +13,25 @@ service cloud.firestore {
     function hasRequiredFields(fields) {
        return request.resource.data.keys().hasAll(fields);
     }
+    // Validate user role
+    function isValidRole(role) {
+       return role in ['applicant', 'mentor', 'university'];
+    }
+    // Verify ID hasn't been tampered with on update
+    function uidNotModified() {
+       return !('id' in request.resource.data) || request.resource.data.id == resource.data.id;
+    }
+    // Verify email hasn't been tampered with on update
+    function emailNotModified() {
+       return !('email' in request.resource.data) || request.resource.data.email == resource.data.email;
+    }
     
     match /users/{userId} {
       allow read: if isOwner(userId);
-      allow create: if isOwner(userId) && hasRequiredFields(['id', 'email', 'role']);
-      allow update: if isOwner(userId);
+      // Allow create only if the role is valid and they are creating their own document
+      allow create: if isOwner(userId) && hasRequiredFields(['id', 'email', 'role']) && isValidRole(request.resource.data.role);
+      // Allow update only if they are not changing their role, id, or email
+      allow update: if isOwner(userId) && (!('role' in request.resource.data) || request.resource.data.role == resource.data.role) && uidNotModified() && emailNotModified();
       allow delete: if isOwner(userId);
     }
   }

@@ -79,7 +79,19 @@ const App: React.FC = () => {
                                 setView('mentor-onboarding');
                             }
                         } else {
-                            if (data.profile) setProfile(data.profile as UserProfile);
+                            let loadedMessages: ChatMessage[] = [];
+                            if (data.messages) {
+                                loadedMessages = data.messages.map((m: any) => ({
+                                    ...m,
+                                    timestamp: new Date(m.timestamp)
+                                }));
+                                setMessages(loadedMessages);
+                            }
+
+                            if (data.profile) {
+                                setProfile(data.profile as UserProfile);
+                                initializeChatSession(data.profile as UserProfile, loadedMessages);
+                            }
                             if (data.savedSchools) setSavedSchools(data.savedSchools);
                             if (data.discardedSchools) setDiscardedSchools(data.discardedSchools);
                             if (data.applications) {
@@ -133,6 +145,10 @@ const App: React.FC = () => {
                   lastUpdated: app.lastUpdated.toISOString(),
                   submittedDate: app.submittedDate ? app.submittedDate.toISOString() : null
               })),
+              messages: messages.map(m => ({
+                  ...m,
+                  timestamp: m.timestamp.toISOString()
+              })),
               role: userRole || 'applicant',
               id: sessionUser.id,
               email: sessionUser.email
@@ -143,7 +159,7 @@ const App: React.FC = () => {
 
           setDoc(userDocRef, cleanData, { merge: true }).catch(console.error);
       }
-  }, [profile, savedSchools, discardedSchools, applications, sessionUser, userRole]);
+  }, [profile, savedSchools, discardedSchools, applications, messages, sessionUser, userRole]);
   
   useEffect(() => {
       if (mentorProfile && sessionUser && userRole === 'mentor') {

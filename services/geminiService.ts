@@ -29,6 +29,8 @@ const createSystemInstruction = (profile: UserProfile) => `
     4. **DEEP DETAIL:** In your text response, provide specific, "meaty" details about why you chose these schools. Mention specific professors, labs, clubs, or student sentiments found on forums.
     5. **SILENT JSON:** **NEVER** write "Here are the JSON blocks" or "Here is the data". The JSON block must be completely silent and invisible to the user in your text response. It exists ONLY for the code to read.
     6. **HYPERLINKS:** Always hyperlink university names in the text: [University Name](URL).
+    7. **LANGUAGE:** ALWAYS respond in English. Do not use any other language, even if the user prompts in another language or has a non-English name.
+    8. **STRICT GROUNDING:** Stay strictly in character as Gradwyn. Do not answer questions unrelated to university research, admissions, or the user's profile.
 
     OUTPUT FORMAT:
     Part 1: Detailed Markdown analysis. Compare the schools, discuss pros/cons/red flags.
@@ -49,19 +51,27 @@ const createSystemInstruction = (profile: UserProfile) => `
     \`\`\`
   `;
 
-export const initializeChatSession = (profile: UserProfile) => {
+export const initializeChatSession = (profile: UserProfile, previousMessages: ChatMessage[] = []) => {
+  const history = previousMessages
+    .filter(m => !m.isThinking && m.id !== 'error-fallback')
+    .map(m => ({
+      role: m.role === 'model' ? 'model' : 'user',
+      parts: [{ text: m.text }]
+    }));
+
   chatSession = ai.chats.create({
     model: 'gemini-2.5-flash',
     config: {
       systemInstruction: createSystemInstruction(profile),
       tools: [{ googleSearch: {} }],
     },
+    history: history.length > 0 ? history : undefined,
   });
 };
 
-export const updateChatProfile = async (newProfile: UserProfile) => {
-    // We re-initialize to ensure the system instruction is fresh
-    initializeChatSession(newProfile);
+export const updateChatProfile = async (newProfile: UserProfile, currentMessages: ChatMessage[] = []) => {
+    // We re-initialize to ensure the system instruction is fresh, keeping history
+    initializeChatSession(newProfile, currentMessages);
     
     const updateMessage = `
       SYSTEM UPDATE: The user has updated their profile.

@@ -59,8 +59,11 @@ const EditProfileModal: React.FC<EditProfileModalProps> = ({ isOpen, onClose, pr
             <label className="block text-sm font-semibold text-slate-700 mb-2">Preferred Locations</label>
             <div className="flex flex-wrap gap-2">
               {[
-                "USA - East Coast", "USA - West Coast", "USA - Midwest", 
-                "UK - London", "UK - Other", "Europe (EU)", "Canada", "Australia/NZ", "Africa", "Asia", "Remote/Online"
+                "USA - East Coast", "USA - West Coast", "USA - Midwest", "USA - South",
+                "Canada", "UK - London", "UK - Other", "Europe (EU)", "Europe (Non-EU)",
+                "Australia/NZ", "Asia", "Africa", "South America", "Middle East",
+                "Latin America (LATAM)", "Asia-Pacific (APAC)", "Europe, Middle East, & Africa (EMEA)",
+                "Remote/Online"
               ].map(loc => (
                 <button
                   key={loc}

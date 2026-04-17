@@ -32,11 +32,14 @@ const UniversityCard: React.FC<UniversityCardProps> = ({
   const scoreColorClass = university.matchScore >= 90 ? 'text-brand-700 border-brand-700' : 
                      university.matchScore >= 80 ? 'text-accent-olive border-accent-olive' : 'text-accent-gold border-accent-gold';
   
-  // Fallback image from Unsplash if primary fails
-  const fallbackImage = "https://images.unsplash.com/photo-1523050854058-8df90110c9f1?q=80&w=800&auto=format&fit=crop";
-
-  // Fallback logo logic
-  const fallbackLogo = `https://ui-avatars.com/api/?name=${encodeURIComponent(university.name)}&background=f6f1e9&color=162714&size=128&font-size=0.33&bold=true`;
+  // Get initials for fallback
+  const initials = university.name
+    .split(' ')
+    .filter(word => !['of', 'the', 'and', '&', 'at'].includes(word.toLowerCase()))
+    .map(word => word[0])
+    .join('')
+    .toUpperCase()
+    .slice(0, 3);
 
   return (
     <div 
@@ -44,13 +47,22 @@ const UniversityCard: React.FC<UniversityCardProps> = ({
         onClick={onClick}
     >
       {/* Image Container */}
-      <div className="relative aspect-[16/10] overflow-hidden rounded-[32px] bg-slate-100 mb-6">
-         <img 
-            src={(!imgError && university.images && university.images.length > 0) ? university.images[0] : fallbackImage} 
-            alt={university.name} 
-            className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110" 
-            onError={() => setImgError(true)}
-         />
+      <div className="relative aspect-[16/10] overflow-hidden rounded-[32px] bg-slate-900 mb-6 flex items-center justify-center">
+         {(!imgError && university.images && university.images.length > 0) ? (
+           <img 
+              src={university.images[0]} 
+              alt={university.name} 
+              className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110" 
+              onError={() => setImgError(true)}
+           />
+         ) : (
+           <div className="w-full h-full bg-slate-950 flex flex-col items-center justify-center p-8 transition-transform duration-700 group-hover:scale-105">
+              <span className="font-serif italic text-6xl text-white/90 tracking-tighter select-none">
+                {initials}
+              </span>
+              <div className="h-px w-12 bg-white/20 mt-4" />
+           </div>
+         )}
          
          {/* Match Score Badge */}
          <div className="absolute top-4 right-4 bg-white/10 backdrop-blur-xl px-4 py-2 rounded-full z-20 border border-white/20">
@@ -64,13 +76,19 @@ const UniversityCard: React.FC<UniversityCardProps> = ({
       <div className="flex flex-col px-2">
          <div className="flex items-start justify-between gap-4 mb-2">
             <div className="flex items-center gap-4">
-               <div className="w-8 h-8 rounded-xl overflow-hidden flex-shrink-0 border border-slate-50 shadow-sm bg-white p-1">
-                  <img 
-                     src={!logoError && university.logo ? university.logo : fallbackLogo} 
-                     alt="logo" 
-                     className="w-full h-full object-contain" 
-                     onError={() => setLogoError(true)}
-                  />
+               <div className="w-8 h-8 rounded-xl overflow-hidden flex-shrink-0 border border-slate-50 shadow-sm bg-slate-950 p-1 flex items-center justify-center">
+                  {!logoError && university.logo ? (
+                     <img 
+                        src={university.logo} 
+                        alt="logo" 
+                        className="w-full h-full object-contain" 
+                        onError={() => setLogoError(true)}
+                     />
+                  ) : (
+                     <span className="font-serif italic text-[10px] text-white/80 select-none">
+                       {initials}
+                     </span>
+                  )}
                </div>
                <h3 className="text-slate-900 font-bold text-xl leading-tight tracking-tight line-clamp-2 break-words">
                   {university.name}

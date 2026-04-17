@@ -125,21 +125,35 @@ const SchoolProfileView = ({
   const [coverError, setCoverError] = useState(false);
   const [logoError, setLogoError] = useState(false);
 
-  const defaultCover = 'https://images.unsplash.com/photo-1523050854058-8df90110c9f1?q=80&w=1200&auto=format&fit=crop';
-  const coverImage = !coverError && uni.images && uni.images[0] ? uni.images[0] : defaultCover;
-  const fallbackLogo = `https://ui-avatars.com/api/?name=${encodeURIComponent(uni.name)}&background=f6f1e9&color=162714&size=128&font-size=0.33&bold=true`;
+  // Get initials for fallback
+  const initials = uni.name
+    .split(' ')
+    .filter(word => !['of', 'the', 'and', '&', 'at'].includes(word.toLowerCase()))
+    .map(word => word[0])
+    .join('')
+    .toUpperCase()
+    .slice(0, 3);
 
   return (
   <div className="bg-white animate-fade-in flex flex-col w-full min-h-full overflow-x-hidden">
       {/* Header Image & Title */}
-      <div className="min-h-[500px] md:h-[450px] lg:h-[550px] relative bg-slate-900">
-         <div className="absolute inset-0 bg-gradient-to-t from-slate-900/90 via-slate-900/50 to-slate-900/30"></div>
-         <img 
-            src={coverImage} 
-            alt="Campus" 
-            className="absolute inset-0 w-full h-full object-cover opacity-50"
-            onError={() => setCoverError(true)}
-         />
+      <div className="min-h-[500px] md:h-[450px] lg:h-[550px] relative bg-slate-950 flex items-center justify-center overflow-hidden">
+         <div className="absolute inset-0 bg-gradient-to-t from-slate-900/90 via-slate-900/50 to-slate-900/30 z-10"></div>
+         
+         {(!coverError && uni.images && uni.images[0]) ? (
+           <img 
+              src={uni.images[0]} 
+              alt="Campus" 
+              className="absolute inset-0 w-full h-full object-cover opacity-50"
+              onError={() => setCoverError(true)}
+           />
+         ) : (
+           <div className="absolute inset-0 flex flex-col items-center justify-center p-8 opacity-20">
+              <span className="font-serif italic text-[20vw] text-white tracking-tighter select-none leading-none">
+                {initials}
+              </span>
+           </div>
+         )}
          
          <button 
             onClick={onClose}
@@ -153,13 +167,19 @@ const SchoolProfileView = ({
 
           <div className="absolute inset-x-0 bottom-8 md:bottom-16 px-6 md:px-16 flex flex-col lg:flex-row lg:items-end justify-between gap-8">
             <div className="flex flex-col items-center text-center lg:flex-row lg:items-center lg:text-left gap-4 md:gap-8 min-w-0 w-full lg:w-auto">
-                <div className="w-20 h-20 md:w-32 md:h-32 bg-white p-1.5 md:p-2 rounded-2xl md:rounded-3xl shadow-2xl shrink-0">
-                    <img 
-                        src={!logoError && uni.logo ? uni.logo : fallbackLogo} 
-                        alt={uni.name} 
-                        className="w-full h-full object-contain rounded-xl md:rounded-2xl"
-                        onError={() => setLogoError(true)}
-                    />
+                <div className="w-20 h-20 md:w-32 md:h-32 bg-slate-950 p-1.5 md:p-2 rounded-2xl md:rounded-3xl shadow-2xl shrink-0 border border-white/10 flex items-center justify-center overflow-hidden">
+                    {(!logoError && uni.logo) ? (
+                        <img 
+                            src={uni.logo} 
+                            alt={uni.name} 
+                            className="w-full h-full object-contain"
+                            onError={() => setLogoError(true)}
+                        />
+                    ) : (
+                        <span className="font-serif italic text-2xl md:text-4xl text-white/80 select-none">
+                           {initials}
+                        </span>
+                    )}
                 </div>
                 <div className="flex-1 min-w-0">
                     <h1 className="text-3xl md:text-5xl lg:text-6xl font-bold text-white tracking-tight mb-2 md:mb-4 break-words leading-tight drop-shadow-lg">{uni.name}</h1>
@@ -922,13 +942,22 @@ const Dashboard: React.FC<DashboardProps> = ({
                                 <div className="space-y-6">
                                     {displayedApplications.map(app => {
                                         const entityName = app.university?.name || app.scholarship?.name || "Unknown Application";
-                                        const entityInitials = entityName.substring(0, 2).toUpperCase();
+                                        const entityInitials = entityName
+                                            .split(' ')
+                                            .filter(word => !['of', 'the', 'and', '&', 'at'].includes(word.toLowerCase()))
+                                            .map(word => word[0])
+                                            .join('')
+                                            .toUpperCase()
+                                            .slice(0, 3);
                                         const isScholarshipApp = app.type === 'scholarship';
 
                                         return (
                                             <div key={app.id} className="bg-white border border-slate-200 p-8 shadow-sm hover:shadow-md transition-shadow flex flex-col md:flex-row gap-10 items-start md:items-center group">
-                                                <div className={`w-20 h-20 flex items-center justify-center font-serif font-bold text-3xl shrink-0 shadow-md ${isScholarshipApp ? 'bg-accent-gold text-white' : 'bg-brand-900 text-white'}`}>
-                                                    {entityInitials}
+                                                <div className={`w-20 h-20 flex flex-col items-center justify-center shrink-0 shadow-lg ${isScholarshipApp ? 'bg-slate-900 text-white' : 'bg-slate-950 text-white'}`}>
+                                                    <span className="font-serif italic text-3xl select-none leading-none">
+                                                        {entityInitials}
+                                                    </span>
+                                                    <div className="h-0.5 w-6 bg-white/20 mt-2" />
                                                 </div>
                                                 
                                                 <div className="flex-1 w-full">

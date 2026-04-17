@@ -1,6 +1,7 @@
 
 import React from 'react';
 import ReactMarkdown from 'react-markdown';
+import remarkGfm from 'remark-gfm';
 import { ChatMessage } from '../types';
 
 interface MessageBubbleProps {
@@ -36,6 +37,7 @@ const MessageBubble: React.FC<MessageBubbleProps> = ({ message }) => {
           ) : (
             <div className="markdown-content space-y-4 font-medium break-words [word-break:break-word] overflow-hidden">
                 <ReactMarkdown 
+                    remarkPlugins={[remarkGfm]}
                     components={{
                         ul: ({node, ...props}) => <ul className="list-disc pl-6 space-y-2 marker:text-slate-400" {...props} />,
                         ol: ({node, ...props}) => <ol className="list-decimal pl-6 space-y-2 marker:text-slate-400" {...props} />,
@@ -43,6 +45,14 @@ const MessageBubble: React.FC<MessageBubbleProps> = ({ message }) => {
                         strong: ({node, ...props}) => <strong className="font-bold text-inherit" {...props} />,
                         a: ({node, ...props}) => <a className="underline decoration-slate-300 underline-offset-4 font-bold hover:text-slate-500 transition-all" {...props} target="_blank" rel="noopener noreferrer" />,
                         p: ({node, ...props}) => <p className="mb-4 last:mb-0 leading-relaxed" {...props} />,
+                        table: ({node, ...props}) => (
+                            <div className="overflow-x-auto my-6 border border-slate-200 rounded-xl">
+                                <table className="w-full text-sm text-left border-collapse" {...props} />
+                            </div>
+                        ),
+                        thead: ({node, ...props}) => <thead className="bg-slate-100/50 border-b border-slate-200" {...props} />,
+                        th: ({node, ...props}) => <th className="px-4 py-3 font-bold text-slate-900" {...props} />,
+                        td: ({node, ...props}) => <td className="px-4 py-3 border-b border-slate-100 last:border-0" {...props} />,
                         code: ({node, className, children, ...props}) => {
                             const match = /language-(\w+)/.exec(className || '');
                             const isInline = !match;

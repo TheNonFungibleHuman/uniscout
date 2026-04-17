@@ -4,7 +4,7 @@ import { ChatMessage, UserProfile, University } from '../types';
 import MessageBubble from './MessageBubble';
 import EditProfileModal from './EditProfileModal';
 import UniversityCard from './UniversityCard';
-import { sendMessageToGemini, updateChatProfile } from '../services/geminiService';
+import { sendMessageToGeminiStream, updateChatProfile } from '../services/geminiService';
 import LoadingDots from './LoadingDots';
 
 interface ChatInterfaceProps {
@@ -110,11 +110,32 @@ const ChatInterface: React.FC<ChatInterfaceProps> = ({
     ]);
 
     try {
-        const response = await sendMessageToGemini(userText);
+        const response = await sendMessageToGeminiStream(userText, (streamedText) => {
+            setMessages(prev => {
+                const lastMsg = prev[prev.length - 1];
+                if (lastMsg && lastMsg.isThinking) {
+                    // Replace thinking with streaming
+                    const newMessages = [...prev];
+                    newMessages[newMessages.length - 1] = { 
+                        ...lastMsg, 
+                        id: 'streaming-' + userMsg.id,
+                        text: streamedText,
+                        isThinking: false
+                    };
+                    return newMessages;
+                } else if (lastMsg && lastMsg.id === 'streaming-' + userMsg.id) {
+                    // Update current streaming message
+                    const newMessages = [...prev];
+                    newMessages[newMessages.length - 1] = { ...lastMsg, text: streamedText };
+                    return newMessages;
+                }
+                return prev;
+            });
+        });
         
         setMessages(prev => {
-            // Remove thinking message
-            const filtered = prev.filter(m => m.id !== 'thinking');
+            // Finalize message with sources and recommendations
+            const filtered = prev.filter(m => m.id !== 'thinking' && m.id !== 'streaming-' + userMsg.id);
             return [
                 ...filtered,
                 {
@@ -167,9 +188,28 @@ const ChatInterface: React.FC<ChatInterfaceProps> = ({
       setIsProcessing(true);
       
       try {
-          const response = await updateChatProfile(newProfile);
+          const response = await updateChatProfile(newProfile, [], (streamedText) => {
+            setMessages(prev => {
+                const lastMsg = prev[prev.length - 1];
+                if (lastMsg && lastMsg.isThinking) {
+                    const newMessages = [...prev];
+                    newMessages[newMessages.length - 1] = { 
+                        ...lastMsg, 
+                        id: 'streaming-update',
+                        text: streamedText,
+                        isThinking: false
+                    };
+                    return newMessages;
+                } else if (lastMsg && lastMsg.id === 'streaming-update') {
+                    const newMessages = [...prev];
+                    newMessages[newMessages.length - 1] = { ...lastMsg, text: streamedText };
+                    return newMessages;
+                }
+                return prev;
+            });
+          });
           setMessages(prev => {
-            const filtered = prev.filter(m => m.id !== 'thinking');
+            const filtered = prev.filter(m => m.id !== 'thinking' && m.id !== 'streaming-update');
             return [
                 ...filtered,
                 {

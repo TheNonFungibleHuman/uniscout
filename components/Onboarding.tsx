@@ -96,28 +96,28 @@ const Onboarding: React.FC<OnboardingProps> = ({ onComplete, initialName = '', o
   };
 
   return (
-    <div className="flex flex-col items-center justify-center min-h-screen p-4 bg-gradient-to-br from-brand-50 to-indigo-50">
-      <div className="w-full max-w-xl bg-white rounded-2xl shadow-xl p-8 border border-slate-100 transition-all duration-500">
+    <div className="flex flex-col items-center justify-center min-h-screen p-4 bg-white">
+      <div className="w-full max-w-2xl transition-all duration-500">
         {/* Progress Bar */}
-        <div className="w-full bg-slate-100 h-2 rounded-full mb-8 overflow-hidden">
+        <div className="w-full bg-slate-100 h-1 rounded-full mb-16 overflow-hidden">
           <div 
-            className="bg-brand-600 h-full transition-all duration-500 ease-out"
+            className="bg-slate-900 h-full transition-all duration-700 ease-out"
             style={{ width: `${((currentStep + 1) / ONBOARDING_STEPS.length) * 100}%` }}
           ></div>
         </div>
 
         {/* Question */}
-        <div className="mb-8">
-          <h2 className="text-2xl md:text-3xl font-bold text-slate-900 mb-2 animate-fade-in">
+        <div className="mb-12">
+          <h2 className="text-4xl md:text-5xl font-bold text-slate-900 mb-4 tracking-tight leading-tight">
             {question.question}
           </h2>
           {question.subtext && (
-            <p className="text-slate-500 text-lg">{question.subtext}</p>
+            <p className="text-slate-500 text-xl font-medium">{question.subtext}</p>
           )}
         </div>
 
         {/* Input Area */}
-        <div className="min-h-[200px] flex flex-col justify-start">
+        <div className="min-h-[300px] flex flex-col justify-start">
           {question.type === 'text' && (
             <input
               type="text"
@@ -125,21 +125,21 @@ const Onboarding: React.FC<OnboardingProps> = ({ onComplete, initialName = '', o
               onChange={(e) => setInputValue(e.target.value)}
               onKeyDown={(e) => e.key === 'Enter' && !isNextDisabled() && handleNext()}
               placeholder={question.placeholder}
-              className="w-full text-xl p-4 border-b-2 border-brand-200 focus:border-brand-600 outline-none bg-transparent transition-colors placeholder:text-slate-300 text-slate-800"
+              className="w-full text-3xl py-6 border-b border-slate-200 focus:border-slate-900 outline-none bg-transparent transition-all placeholder:text-slate-200 text-slate-900 font-bold"
               autoFocus
             />
           )}
 
           {question.type === 'button-group' && question.options && (
-            <div className="grid grid-cols-1 gap-3">
+            <div className="grid grid-cols-1 gap-4">
               {question.options.map((opt) => (
                 <button
                   key={opt}
                   onClick={() => handleOptionSelect(opt)}
-                  className={`p-4 text-left rounded-xl border-2 transition-all duration-200 font-medium text-lg
+                  className={`p-6 text-left rounded-2xl border transition-all duration-300 font-bold text-xl
                     ${profile[question.id as keyof UserProfile] === opt 
-                      ? 'border-brand-600 bg-brand-50 text-brand-700' 
-                      : 'border-slate-200 hover:border-brand-300 text-slate-600 hover:bg-slate-50'
+                      ? 'border-slate-900 bg-slate-900 text-white shadow-xl shadow-slate-900/10' 
+                      : 'border-slate-100 hover:border-slate-300 text-slate-500 hover:text-slate-900 hover:bg-slate-50'
                     }`}
                 >
                   {opt}
@@ -149,17 +149,17 @@ const Onboarding: React.FC<OnboardingProps> = ({ onComplete, initialName = '', o
           )}
 
           {question.type === 'multiselect' && question.options && (
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               {question.options.map((opt) => {
                 const isSelected = (profile[question.id as keyof UserProfile] as string[])?.includes(opt);
                 return (
                   <button
                     key={opt}
                     onClick={() => handleOptionSelect(opt)}
-                    className={`p-3 rounded-xl border-2 transition-all duration-200 font-medium
+                    className={`p-5 rounded-2xl border transition-all duration-300 font-bold text-lg text-left
                       ${isSelected
-                        ? 'border-brand-600 bg-brand-50 text-brand-700' 
-                        : 'border-slate-200 hover:border-brand-300 text-slate-600 hover:bg-slate-50'
+                        ? 'border-slate-900 bg-slate-900 text-white shadow-xl shadow-slate-900/10' 
+                        : 'border-slate-100 hover:border-slate-300 text-slate-500 hover:text-slate-900 hover:bg-slate-50'
                       }`}
                   >
                     {opt}
@@ -171,20 +171,20 @@ const Onboarding: React.FC<OnboardingProps> = ({ onComplete, initialName = '', o
         </div>
 
         {/* Navigation */}
-        <div className="flex justify-between mt-8 pt-6 border-t border-slate-100">
+        <div className="flex justify-between mt-12 pt-8 border-t border-slate-100">
           <button
             onClick={handleBack}
             disabled={currentStep === 0 && !onExit}
-            className={`px-6 py-3 rounded-lg font-medium transition-colors
-              ${currentStep === 0 && !onExit ? 'opacity-0 pointer-events-none' : 'text-slate-500 hover:text-slate-800'}`}
+            className={`px-8 py-4 rounded-full font-bold transition-all text-lg
+              ${currentStep === 0 && !onExit ? 'opacity-0 pointer-events-none' : 'text-slate-400 hover:text-slate-900'}`}
           >
             Back
           </button>
           <button
             onClick={handleNext}
             disabled={isNextDisabled()}
-            className={`px-8 py-3 rounded-lg bg-brand-600 text-white font-bold shadow-lg shadow-brand-200 transition-all
-              ${isNextDisabled() ? 'opacity-50 cursor-not-allowed' : 'hover:bg-brand-700 hover:translate-y-[-1px]'}`}
+            className={`px-12 py-4 rounded-full bg-slate-900 text-white font-bold text-lg shadow-xl shadow-slate-900/10 transition-all
+              ${isNextDisabled() ? 'opacity-20 cursor-not-allowed' : 'hover:bg-slate-800 hover:translate-y-[-2px]'}`}
           >
             {isLastStep ? 'Start Exploring' : 'Next'}
           </button>

@@ -1,9 +1,9 @@
 
 import { GoogleGenAI, Chat, GroundingChunk } from "@google/genai";
-import { UserProfile, GroundingSource, University } from "../types";
+import { UserProfile, GroundingSource, University, ChatMessage } from "../types";
 import { UNI_IMAGES } from "../constants";
 
-const apiKey = process.env.API_KEY || '';
+const apiKey = process.env.GEMINI_API_KEY || '';
 const ai = new GoogleGenAI({ apiKey });
 
 let chatSession: Chat | null = null;
@@ -45,7 +45,11 @@ const createSystemInstruction = (profile: UserProfile) => `
         "tuition": "$XX,XXX/yr",
         "description": "A detailed 2-sentence summary focusing on the specific 'vibe' and academic strength matching the user.",
         "website": "https://...",
-        "tags": ["Tag1", "Tag2"]
+        "tags": ["Tag1", "Tag2"],
+        "acceptanceRate": "XX%",
+        "ranking": "#X Global",
+        "studentBody": "XX,XXX+",
+        "programs": ["Major 1", "Major 2"]
       }
     ]
     \`\`\`
@@ -60,7 +64,7 @@ export const initializeChatSession = (profile: UserProfile, previousMessages: Ch
     }));
 
   chatSession = ai.chats.create({
-    model: 'gemini-2.5-flash',
+    model: 'gemini-3-flash-preview',
     config: {
       systemInstruction: createSystemInstruction(profile),
       tools: [{ googleSearch: {} }],
@@ -119,7 +123,7 @@ export const sendMessageToGemini = async (message: string): Promise<{ text: stri
                 // Use absolute value of hash to map to image array index
                 const index = Math.abs(hash) % UNI_IMAGES.length;
                 const index2 = (index + 5) % UNI_IMAGES.length; // Get a second distinct image
-
+ 
                 const image1 = UNI_IMAGES[index];
                 const image2 = UNI_IMAGES[index2];
 
@@ -133,7 +137,11 @@ export const sendMessageToGemini = async (message: string): Promise<{ text: stri
                     website: u.website || "#",
                     tags: u.tags || [],
                     // Inject images if missing to ensure cards always look good
-                    images: u.images && u.images.length > 0 ? u.images : [image1, image2]
+                    images: u.images && u.images.length > 0 ? u.images : [image1, image2],
+                    acceptanceRate: u.acceptanceRate || "N/A",
+                    ranking: u.ranking || "N/A",
+                    studentBody: u.studentBody || "N/A",
+                    programs: u.programs || []
                 };
             });
         }

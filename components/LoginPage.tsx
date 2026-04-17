@@ -86,52 +86,44 @@ const LoginPage: React.FC<LoginPageProps> = ({ initialRole, onLoginSuccess, onBa
   };
 
   return (
-    <div className="min-h-screen bg-beige-100 flex flex-col items-center justify-center p-4 font-sans text-brand-900">
+    <div className="min-h-screen bg-white flex flex-col items-center justify-center p-4 font-sans text-slate-900">
       <button 
         onClick={onBack}
-        className="absolute top-6 left-6 text-slate-400 hover:text-brand-700 font-bold font-heading uppercase tracking-widest text-xs flex items-center gap-2 transition-colors z-50"
+        className="absolute top-8 left-8 text-slate-400 hover:text-slate-900 font-bold uppercase tracking-widest text-xs flex items-center gap-2 transition-all z-50 group"
       >
-        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" className="w-4 h-4">
-            <path fillRule="evenodd" d="M17 10a.75.75 0 01-.75.75H5.612l4.158 3.96a.75.75 0 11-1.04 1.08l-5.5-5.25a.75.75 0 010-1.08l5.5-5.25a.75.75 0 111.04 1.08L5.612 9.25H16.25A.75.75 0 0117 10z" clipRule="evenodd" />
-        </svg>
-        Back to Selection
+        <div className="p-2 rounded-full group-hover:bg-slate-50 transition-all">
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" className="w-5 h-5">
+                <path fillRule="evenodd" d="M17 10a.75.75 0 01-.75.75H5.612l4.158 3.96a.75.75 0 11-1.04 1.08l-5.5-5.25a.75.75 0 010-1.08l5.5-5.25a.75.75 0 111.04 1.08L5.612 9.25H16.25A.75.75 0 0117 10z" clipRule="evenodd" />
+            </svg>
+        </div>
+        Back
       </button>
 
-      <div className="w-full max-w-md bg-white shadow-[8px_8px_0px_0px_rgba(22,39,20,0.1)] border border-slate-200 overflow-hidden relative">
-        <div className="h-2 bg-brand-700 w-full absolute top-0"></div>
-        
-        <div className="p-8 pb-4 text-center">
-           <div className="w-12 h-12 bg-brand-700 flex items-center justify-center text-white font-bold font-serif text-2xl shadow-none mx-auto mb-4 rounded-none">
-             G
-           </div>
-           {isSignUp && (
-               <p className="text-xs font-bold uppercase tracking-widest text-brand-500 mb-1">
-                   Registering as {getRoleLabel(selectedRole)}
-               </p>
-           )}
-           <h2 className="text-2xl font-bold text-brand-900 font-serif mb-2">
+      <div className="w-full max-w-md bg-white transition-all duration-500">
+        <div className="p-8 pb-10 text-center">
+           <h1 className="text-4xl font-bold text-slate-900 tracking-tight mb-4">
              {isSignUp ? 'Create Account' : 'Welcome Back'}
-           </h2>
-           <p className="text-slate-500 text-sm font-medium">
-             {isSignUp ? 'Join the elite academic network.' : 'Secure access to your intelligence dashboard'}
+           </h1>
+           <p className="text-slate-500 text-lg font-medium">
+             {isSignUp ? `Join as a ${getRoleLabel(selectedRole)}` : 'Secure access to your dashboard'}
            </p>
         </div>
 
-        <div className="px-8 pb-8 space-y-4">
+        <div className="px-8 pb-8 space-y-6">
             {error && (
-                <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 text-xs font-bold uppercase tracking-wide mb-4 leading-relaxed">
+                <div className="bg-red-50 border border-red-100 text-red-600 px-4 py-3 rounded-xl text-sm font-bold mb-6">
                     {error}
                 </div>
             )}
 
-            <form onSubmit={handleEmailSubmit} className="space-y-3">
+            <form onSubmit={handleEmailSubmit} className="space-y-4">
                 {isSignUp && (
                     <input 
                         type="text" 
                         placeholder="Full Name" 
                         value={name}
                         onChange={(e) => setName(e.target.value)}
-                        className="w-full p-4 bg-white border border-slate-300 outline-none font-medium placeholder:text-slate-400 focus:border-brand-700 transition-colors text-sm text-slate-900" 
+                        className="w-full p-4 bg-slate-50 border border-slate-50 rounded-2xl outline-none font-bold placeholder:text-slate-300 focus:border-slate-900 focus:bg-white transition-all text-slate-900" 
                     />
                 )}
                 <input 
@@ -139,36 +131,36 @@ const LoginPage: React.FC<LoginPageProps> = ({ initialRole, onLoginSuccess, onBa
                     placeholder="Email address" 
                     value={email}
                     onChange={(e) => setEmail(e.target.value)}
-                    className="w-full p-4 bg-white border border-slate-300 outline-none font-medium placeholder:text-slate-400 focus:border-brand-700 transition-colors text-sm text-slate-900" 
+                    className="w-full p-4 bg-slate-50 border border-slate-50 rounded-2xl outline-none font-bold placeholder:text-slate-300 focus:border-slate-900 focus:bg-white transition-all text-slate-900" 
                 />
                 <input 
                     type="password" 
                     placeholder="Password" 
                     value={password}
                     onChange={(e) => setPassword(e.target.value)}
-                    className="w-full p-4 bg-white border border-slate-300 outline-none font-medium placeholder:text-slate-400 focus:border-brand-700 transition-colors text-sm text-slate-900" 
+                    className="w-full p-4 bg-slate-50 border border-slate-50 rounded-2xl outline-none font-bold placeholder:text-slate-300 focus:border-slate-900 focus:bg-white transition-all text-slate-900" 
                 />
                 <button 
                     type="submit" 
                     disabled={isLoading}
-                    className="w-full bg-brand-700 text-white font-bold font-heading uppercase tracking-widest py-4 hover:bg-brand-800 transition-colors disabled:opacity-70 disabled:cursor-not-allowed"
+                    className="w-full bg-slate-900 text-white font-bold rounded-full py-4 hover:bg-slate-800 transition-all disabled:opacity-20 disabled:cursor-not-allowed shadow-xl shadow-slate-900/10 text-lg"
                 >
                     {isLoading ? 'Processing...' : (isSignUp ? 'Create Account' : 'Sign In')}
                 </button>
             </form>
 
-            <div className="relative flex py-2 items-center">
-                <div className="flex-grow border-t border-slate-200"></div>
-                <span className="flex-shrink-0 mx-4 text-slate-400 text-[10px] font-bold uppercase tracking-widest">Or</span>
-                <div className="flex-grow border-t border-slate-200"></div>
+            <div className="relative flex py-4 items-center">
+                <div className="flex-grow border-t border-slate-100"></div>
+                <span className="flex-shrink-0 mx-4 text-slate-300 text-xs font-bold uppercase tracking-widest">Or</span>
+                <div className="flex-grow border-t border-slate-100"></div>
             </div>
 
             <button 
                 onClick={() => handleSocialLogin('google')}
                 disabled={isLoading}
-                className="w-full flex items-center justify-center gap-3 py-3 px-4 border-2 border-slate-200 hover:border-brand-700 bg-white hover:bg-beige-50 transition-all text-brand-900 font-bold relative group text-sm"
+                className="w-full flex items-center justify-center gap-3 py-4 px-6 border border-slate-100 rounded-full bg-white hover:bg-slate-50 transition-all text-slate-900 font-bold shadow-sm"
             >
-                <svg className="w-5 h-5 grayscale group-hover:grayscale-0 transition-all" viewBox="0 0 24 24">
+                <svg className="w-5 h-5" viewBox="0 0 24 24">
                     <path d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z" fill="#4285F4"/>
                     <path d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z" fill="#34A853"/>
                     <path d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z" fill="#FBBC05"/>
@@ -177,14 +169,14 @@ const LoginPage: React.FC<LoginPageProps> = ({ initialRole, onLoginSuccess, onBa
                 <span>Continue with Google</span>
             </button>
 
-            <div className="text-center pt-2">
+            <div className="text-center pt-4">
                 <button 
                     type="button"
                     onClick={() => {
                         setIsSignUp(!isSignUp);
                         setError(null);
                     }}
-                    className="text-xs font-bold text-brand-700 hover:text-brand-900 uppercase tracking-wider underline decoration-brand-200 underline-offset-4"
+                    className="text-sm font-bold text-slate-400 hover:text-slate-900 transition-all"
                 >
                     {isSignUp ? 'Already have an account? Log In' : `New here? Create a ${getRoleLabel(selectedRole)} Account`}
                 </button>

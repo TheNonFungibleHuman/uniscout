@@ -11,43 +11,45 @@ const MessageBubble: React.FC<MessageBubbleProps> = ({ message }) => {
   const isUser = message.role === 'user';
 
   return (
-    <div className={`flex w-full mb-6 ${isUser ? 'justify-end' : 'justify-start'}`}>
+    <div className={`flex w-full mb-10 ${isUser ? 'justify-end' : 'justify-start'} overflow-hidden`}>
       <div
-        className={`flex flex-col max-w-[85%] md:max-w-[75%] ${
+        className={`flex flex-col max-w-[92%] md:max-w-[80%] min-w-0 ${
           isUser ? 'items-end' : 'items-start'
         }`}
       >
-        {/* Avatar / Name */}
-        <span className="text-xs font-medium text-slate-400 mb-1 px-1 font-heading uppercase tracking-widest">
-          {isUser ? 'You' : 'Gradwyn'}
-        </span>
-
         {/* Bubble */}
         <div
-          className={`px-6 py-4 text-sm md:text-base shadow-sm leading-relaxed overflow-hidden transition-all
+          className={`px-5 py-4 md:px-8 md:py-6 text-base md:text-lg shadow-sm leading-relaxed overflow-hidden transition-all rounded-2xl md:rounded-3xl
             ${
               isUser
-                ? 'bg-brand-700 text-white'
+                ? 'bg-slate-900 text-white shadow-2xl shadow-slate-900/10'
                 : message.isThinking
-                  ? 'bg-brand-50 text-brand-800 border border-brand-100 italic'
-                  : 'bg-white border border-slate-200 text-slate-800'
+                  ? 'bg-slate-50 text-slate-500 border border-slate-50 italic'
+                  : 'bg-slate-50 border border-slate-50 text-slate-900'
             }`}
         >
           {message.isThinking ? (
-            <div className="flex items-center gap-3">
-               <div className="w-3 h-3 bg-brand-700 animate-spin"></div>
-               <span className="animate-pulse font-medium font-heading uppercase tracking-wider text-xs">{message.text || "Analyzing..."}</span>
+            <div className="flex items-center gap-4">
+               <div className="w-4 h-4 border-2 border-slate-300 border-t-slate-900 rounded-full animate-spin"></div>
+               <span className="font-bold uppercase tracking-widest text-xs">{message.text || "Analyzing..."}</span>
             </div>
           ) : (
-            <div className="markdown-content space-y-2 font-sans">
+            <div className="markdown-content space-y-4 font-medium break-words [word-break:break-word] overflow-hidden">
                 <ReactMarkdown 
                     components={{
-                        ul: ({node, ...props}) => <ul className="list-disc pl-4 space-y-1 marker:text-brand-600" {...props} />,
-                        ol: ({node, ...props}) => <ol className="list-decimal pl-4 space-y-1 marker:text-brand-600" {...props} />,
+                        ul: ({node, ...props}) => <ul className="list-disc pl-6 space-y-2 marker:text-slate-400" {...props} />,
+                        ol: ({node, ...props}) => <ol className="list-decimal pl-6 space-y-2 marker:text-slate-400" {...props} />,
                         li: ({node, ...props}) => <li className="mb-1" {...props} />,
-                        strong: ({node, ...props}) => <strong className="font-bold text-inherit font-heading tracking-wide" {...props} />,
-                        a: ({node, ...props}) => <a className="underline decoration-brand-300 underline-offset-4 font-medium text-brand-800 hover:text-brand-600 hover:decoration-brand-600 transition-all" {...props} target="_blank" rel="noopener noreferrer" />,
-                        p: ({node, ...props}) => <p className="mb-2 last:mb-0" {...props} />
+                        strong: ({node, ...props}) => <strong className="font-bold text-inherit" {...props} />,
+                        a: ({node, ...props}) => <a className="underline decoration-slate-300 underline-offset-4 font-bold hover:text-slate-500 transition-all" {...props} target="_blank" rel="noopener noreferrer" />,
+                        p: ({node, ...props}) => <p className="mb-4 last:mb-0 leading-relaxed" {...props} />,
+                        code: ({node, className, children, ...props}) => {
+                            const match = /language-(\w+)/.exec(className || '');
+                            const isInline = !match;
+                            return isInline 
+                                ? <code className="bg-slate-200/50 px-1.5 py-0.5 rounded text-sm font-mono break-all" {...props}>{children}</code>
+                                : <pre className="bg-slate-900 text-slate-100 p-4 rounded-xl overflow-x-auto text-sm font-mono my-4 max-w-full"><code className={className} {...props}>{children}</code></pre>
+                        }
                     }}
                 >
                     {message.text}
@@ -58,8 +60,8 @@ const MessageBubble: React.FC<MessageBubbleProps> = ({ message }) => {
 
         {/* Grounding Sources */}
         {!isUser && message.sources && message.sources.length > 0 && !message.isThinking && (
-          <div className="mt-3 w-full animate-fade-in">
-            <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-2 flex items-center gap-2 font-heading">
+          <div className="mt-4 w-full animate-fade-in px-2">
+            <p className="text-[10px] font-bold text-slate-300 uppercase tracking-widest mb-3 flex items-center gap-2">
               <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" className="w-3 h-3">
                 <path fillRule="evenodd" d="M10.5 3.75a6.75 6.75 0 100 13.5 6.75 6.75 0 000-13.5zM2.25 10.5a8.25 8.25 0 1114.59 5.28l4.69 4.69a.75.75 0 11-1.06 1.06l-4.69-4.69A8.25 8.25 0 012.25 10.5z" clipRule="evenodd" />
               </svg>
@@ -72,11 +74,11 @@ const MessageBubble: React.FC<MessageBubbleProps> = ({ message }) => {
                   href={source.uri}
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="inline-flex items-center max-w-full truncate text-[10px] bg-white hover:bg-brand-50 text-brand-700 px-3 py-1.5 border border-slate-200 hover:border-brand-300 transition-colors font-medium uppercase tracking-wider"
+                  className="inline-flex items-center max-w-full truncate text-[10px] bg-slate-50 hover:bg-slate-100 text-slate-500 hover:text-slate-900 px-4 py-2 rounded-full border border-slate-50 transition-all font-bold uppercase tracking-wider"
                   title={source.title}
                 >
                    <span className="truncate max-w-[150px] md:max-w-[200px]">{source.title}</span>
-                   <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" className="w-3 h-3 ml-1 flex-shrink-0 text-brand-300">
+                   <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" className="w-3 h-3 ml-2 flex-shrink-0 opacity-30">
                       <path fillRule="evenodd" d="M4.25 5.5a.75.75 0 00-.75.75v8.5c0 .414.336.75.75.75h8.5a.75.75 0 00.75-.75v-4a.75.75 0 011.5 0v4A2.25 2.25 0 0112.75 17h-8.5A2.25 2.25 0 012 14.75v-8.5A2.25 2.25 0 014.25 4h5a.75.75 0 010 1.5h-5z" clipRule="evenodd" />
                       <path fillRule="evenodd" d="M6.194 12.753a.75.75 0 001.06.053L16.5 4.44v2.81a.75.75 0 001.5 0v-4.5a.75.75 0 00-.75-.75h-4.5a.75.75 0 000 1.5h2.553l-9.056 8.194a.75.75 0 00-.053 1.06z" clipRule="evenodd" />
                    </svg>
@@ -87,7 +89,7 @@ const MessageBubble: React.FC<MessageBubbleProps> = ({ message }) => {
         )}
         
         {/* Timestamp */}
-        <span className="text-[10px] text-slate-300 mt-1 font-heading tracking-widest">
+        <span className="text-[10px] text-slate-200 mt-2 px-2 font-bold uppercase tracking-widest">
           {message.timestamp.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
         </span>
       </div>

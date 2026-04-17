@@ -40,100 +40,100 @@ const UniversityCard: React.FC<UniversityCardProps> = ({
 
   return (
     <div 
-        className={`group bg-white border border-slate-200 hover:border-brand-700 transition-all duration-300 flex flex-col shadow-none hover:shadow-xl ${minimal ? 'w-full' : 'w-80 md:w-96 flex-shrink-0'} ${className} cursor-pointer`}
+        className={`group flex flex-col ${minimal ? 'w-full' : 'w-full max-w-[380px]'} ${className} cursor-pointer`}
         onClick={onClick}
     >
-      {/* Image Header */}
-      <div className="h-40 relative overflow-hidden bg-slate-200">
-         <div className="absolute inset-0 bg-brand-900/20 group-hover:bg-brand-900/0 transition-colors z-10"></div>
-         
+      {/* Image Container */}
+      <div className="relative aspect-[16/10] overflow-hidden rounded-[32px] bg-slate-100 mb-6">
          <img 
             src={(!imgError && university.images && university.images.length > 0) ? university.images[0] : fallbackImage} 
             alt={university.name} 
-            className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105" 
+            className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110" 
             onError={() => setImgError(true)}
          />
          
          {/* Match Score Badge */}
-         <div className="absolute top-0 right-0 bg-beige-100 px-3 py-1.5 border-b border-l border-brand-700 z-20 shadow-sm">
-            <span className={`font-heading font-bold text-lg tracking-tight ${scoreColorClass.split(' ')[0]}`}>
+         <div className="absolute top-4 right-4 bg-white/10 backdrop-blur-xl px-4 py-2 rounded-full z-20 border border-white/20">
+            <span className="text-white text-[10px] font-bold uppercase tracking-widest">
                 {university.matchScore}% Match
             </span>
          </div>
-
-         {/* Logo Overlay */}
-         <div className="absolute bottom-0 left-4 transform translate-y-1/2 z-20 w-12 h-12 bg-white border border-slate-200 flex items-center justify-center p-1 shadow-sm">
-             <img 
-                src={!logoError && university.logo ? university.logo : fallbackLogo} 
-                alt="logo" 
-                className="w-full h-full object-contain" 
-                onError={() => setLogoError(true)}
-            />
-         </div>
       </div>
 
-      <div className="p-5 pt-8 flex-1 flex flex-col relative">
-         <div className="flex justify-between items-start mb-2">
-             <h3 className="text-brand-700 font-serif text-2xl leading-tight group-hover:text-accent-rust transition-colors">
-                {university.name}
-             </h3>
+      {/* Info Section */}
+      <div className="flex flex-col px-2">
+         <div className="flex items-start justify-between gap-4 mb-2">
+            <div className="flex items-center gap-4">
+               <div className="w-8 h-8 rounded-xl overflow-hidden flex-shrink-0 border border-slate-50 shadow-sm bg-white p-1">
+                  <img 
+                     src={!logoError && university.logo ? university.logo : fallbackLogo} 
+                     alt="logo" 
+                     className="w-full h-full object-contain" 
+                     onError={() => setLogoError(true)}
+                  />
+               </div>
+               <h3 className="text-slate-900 font-bold text-xl leading-tight tracking-tight line-clamp-2 break-words">
+                  {university.name}
+               </h3>
+            </div>
          </div>
          
-         <p className="text-accent-olive text-xs mb-3 font-heading font-bold uppercase tracking-widest flex items-center gap-1">
-            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" className="w-3 h-3">
-                <path fillRule="evenodd" d="M9.69 18.933l.003.001C9.89 19.02 10 19 10 19s.11.02.308-.066l.002-.001.006-.003.018-.008a5.741 5.741 0 00.281-.14c.186-.096.446-.24.757-.433.62-.384 1.445-.966 2.274-1.765C15.302 14.988 17 12.493 17 9A7 7 0 103 9c0 3.492 1.698 5.988 3.355 7.62.829.799 1.654 1.38 2.274 1.766a11.121 11.121 0 00.757.432l.018.009.006.003zM10 11.25a2.25 2.25 0 100-4.5 2.25 2.25 0 000 4.5z" clipRule="evenodd" />
-            </svg>
+         <p className="text-slate-400 text-sm font-bold uppercase tracking-widest mb-4 truncate">
             {university.location}
          </p>
 
-         <div className="flex flex-wrap gap-1 mb-4">
-            {university.tags.slice(0, 3).map(tag => (
-                <span key={tag} className="text-[10px] font-bold uppercase tracking-wider text-slate-600 bg-beige-200 px-2 py-1 border border-beige-300">
-                    {tag}
-                </span>
-            ))}
+         <div className="flex items-center gap-3 text-slate-400 text-xs font-bold uppercase tracking-widest overflow-hidden">
+            <span className="text-slate-900 shrink-0">{university.tuition}/yr</span>
+            <span className="opacity-20 shrink-0">•</span>
+            <div className="flex gap-2 truncate">
+                {university.tags?.slice(0, 2).map((tag, idx) => (
+                   <React.Fragment key={tag}>
+                      <span className="truncate">{tag}</span>
+                      {idx < 1 && <span className="opacity-20">•</span>}
+                   </React.Fragment>
+                ))}
+            </div>
          </div>
-         
-         <p className="text-xs text-slate-500 font-medium mb-2 border-l-2 border-accent-gold pl-2">{university.tuition}</p>
-         <p className="text-sm text-slate-700 mb-5 line-clamp-3 font-light leading-relaxed">{university.description}</p>
 
-         <div className="mt-auto flex gap-3 pt-4 border-t border-slate-100">
-            <a 
-                href={university.website} 
-                target="_blank" 
-                rel="noopener noreferrer"
-                className="flex-1 py-2 text-center text-xs font-bold uppercase tracking-widest text-brand-700 border border-brand-700 hover:bg-brand-700 hover:text-white transition-colors"
-                onClick={(e) => e.stopPropagation()}
-            >
-                Visit Site
-            </a>
-            
+         {/* Action buttons - always visible for better UX */}
+         <div className="mt-6 flex flex-wrap gap-3 transition-all duration-300">
             {!isSaved ? (
                 <button 
                     onClick={(e) => { e.stopPropagation(); onSave(university); }}
-                    className="flex-1 py-2 text-center text-xs font-bold uppercase tracking-widest text-white bg-brand-700 hover:bg-brand-800 transition-colors"
+                    className="px-6 py-2.5 bg-slate-900 text-white text-xs font-bold rounded-full hover:bg-slate-800 transition-all shadow-lg shadow-slate-900/10"
                 >
                     Save
                 </button>
             ) : (
                 <button 
-                    className="flex-1 py-2 text-center text-xs font-bold uppercase tracking-widest text-white bg-accent-olive cursor-default"
+                    className="px-6 py-2.5 bg-slate-50 text-slate-400 text-xs font-bold rounded-full cursor-default"
                     onClick={(e) => e.stopPropagation()}
                 >
                     Saved
                 </button>
             )}
-
+            {university.website && (
+                <a 
+                    href={university.website}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    onClick={(e) => e.stopPropagation()}
+                    className="px-6 py-2.5 border border-slate-100 text-slate-900 text-xs font-bold rounded-full hover:bg-slate-50 transition-all flex items-center gap-2"
+                >
+                    Visit Site
+                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" className="w-3 h-3 opacity-30">
+                        <path fillRule="evenodd" d="M4.25 5.5a.75.75 0 00-.75.75v8.5c0 .414.336.75.75.75h8.5a.75.75 0 00.75-.75v-4a.75.75 0 011.5 0v4A2.25 2.25 0 0112.75 17h-8.5A2.25 2.25 0 012 14.75v-8.5A2.25 2.25 0 014.25 4h5a.75.75 0 010 1.5h-5z" clipRule="evenodd" />
+                        <path fillRule="evenodd" d="M6.194 12.753a.75.75 0 001.06.053L16.5 4.44v2.81a.75.75 0 001.5 0v-4.5a.75.75 0 00-.75-.75h-4.5a.75.75 0 000 1.5h2.553l-9.056 8.194a.75.75 0 00-.053 1.06z" clipRule="evenodd" />
+                    </svg>
+                </a>
+            )}
             {!minimal && onDiscard && (
-                 <button 
-                 onClick={(e) => { e.stopPropagation(); onDiscard(university.id); }}
-                 className="w-9 flex items-center justify-center text-slate-400 hover:text-accent-rust hover:bg-red-50 border border-slate-200 hover:border-accent-rust transition-colors"
-                 title="Discard"
-             >
-                 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" className="w-4 h-4">
-                     <path d="M6.28 5.22a.75.75 0 00-1.06 1.06L8.94 10l-3.72 3.72a.75.75 0 101.06 1.06L10 11.06l3.72 3.72a.75.75 0 101.06-1.06L11.06 10l3.72-3.72a.75.75 0 00-1.06-1.06L10 8.94 6.28 5.22z" />
-                 </svg>
-             </button>
+               <button 
+                  onClick={(e) => { e.stopPropagation(); onDiscard(university.id); }}
+                  className="px-6 py-2.5 border border-slate-100 text-slate-400 text-xs font-bold rounded-full hover:bg-slate-50 hover:text-slate-900 transition-all"
+               >
+                  Discard
+               </button>
             )}
          </div>
       </div>

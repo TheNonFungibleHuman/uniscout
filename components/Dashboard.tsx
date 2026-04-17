@@ -29,12 +29,12 @@ const SidebarItem: React.FC<{
 }> = ({ view, currentView, label, icon, onClick }) => (
     <button 
         onClick={onClick}
-        className={`w-full flex items-center gap-3 px-6 py-4 transition-all font-heading text-sm font-bold uppercase tracking-widest border-l-4
+        className={`w-full flex items-center gap-3 px-4 py-2.5 transition-all text-sm font-medium rounded-full
             ${currentView === view 
-                ? 'bg-brand-50 text-brand-700 border-brand-700' 
-                : 'border-transparent text-slate-500 hover:bg-beige-200 hover:text-brand-700'}`}
+                ? 'bg-slate-100 text-slate-900' 
+                : 'text-slate-500 hover:bg-slate-50 hover:text-slate-700'}`}
     >
-        {icon}
+        <span className="opacity-70">{icon}</span>
         <span>{label}</span>
     </button>
 );
@@ -49,47 +49,45 @@ const ScholarshipDetailModal = ({
     onApply: (scholarship: Scholarship) => void;
 }) => {
     return (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm animate-fade-in">
-            <div className="bg-white rounded-2xl shadow-2xl w-full max-w-2xl max-h-[90vh] overflow-y-auto flex flex-col relative">
-                <button onClick={onClose} className="absolute top-4 right-4 text-slate-400 hover:text-slate-600 p-2 z-10">
-                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor" className="w-6 h-6">
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/10 backdrop-blur-xl animate-fade-in">
+            <div className="bg-white rounded-[40px] shadow-2xl w-full max-w-2xl max-h-[90vh] overflow-y-auto flex flex-col relative border border-slate-50">
+                <button onClick={onClose} className="absolute top-8 right-8 text-slate-400 hover:text-slate-900 p-3 z-10 hover:bg-slate-50 rounded-full transition-all">
+                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={2.5} stroke="currentColor" className="w-5 h-5">
                         <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
                     </svg>
                 </button>
 
-                <div className="h-32 bg-accent-gold relative overflow-hidden shrink-0">
-                    <div className="absolute inset-0 bg-black/10"></div>
-                    <div className="absolute bottom-0 left-0 p-8">
-                        <h2 className="text-3xl font-bold text-white font-serif">{scholarship.name}</h2>
-                        <p className="text-white/80 font-heading uppercase tracking-widest text-sm font-bold">{scholarship.provider}</p>
+                <div className="h-64 bg-slate-900 relative overflow-hidden shrink-0">
+                    <div className="absolute inset-0 bg-gradient-to-t from-slate-900/90 via-slate-900/40 to-transparent"></div>
+                    <div className="absolute bottom-0 left-0 p-12">
+                        <p className="text-white/60 font-bold uppercase tracking-[0.2em] text-[10px] mb-3">{scholarship.provider}</p>
+                        <h2 className="text-4xl md:text-5xl font-bold text-white tracking-tight leading-tight break-words line-clamp-3">{scholarship.name}</h2>
                     </div>
                 </div>
 
-                <div className="p-8 space-y-6">
-                    <div className="flex flex-wrap gap-4 text-sm">
-                        <div className="bg-green-50 text-green-800 px-4 py-2 rounded-lg font-bold border border-green-100">
+                <div className="p-12 space-y-12">
+                    <div className="flex flex-wrap gap-4">
+                        <div className="bg-slate-900 text-white px-8 py-4 rounded-3xl font-bold text-lg shadow-2xl shadow-slate-900/20">
                             {scholarship.amount}
                         </div>
-                        <div className="bg-slate-50 text-slate-600 px-4 py-2 rounded-lg font-bold border border-slate-200">
+                        <div className="bg-slate-50 text-slate-600 px-6 py-4 rounded-3xl font-bold border border-slate-50 flex items-center gap-3">
+                            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor" className="w-5 h-5 opacity-40">
+                                <path strokeLinecap="round" strokeLinejoin="round" d="M12 6v6h4.5m4.5 0a9 9 0 11-18 0 9 9 0 0118 0z" />
+                            </svg>
                             Deadline: {scholarship.deadline}
                         </div>
-                        {scholarship.location && (
-                            <div className="bg-slate-50 text-slate-600 px-4 py-2 rounded-lg font-bold border border-slate-200">
-                                {scholarship.location}
-                            </div>
-                        )}
                     </div>
 
-                    <div>
-                        <h3 className="font-bold text-slate-800 mb-2 text-lg">Description</h3>
-                        <p className="text-slate-600 leading-relaxed">{scholarship.description}</p>
+                    <div className="space-y-6">
+                        <h3 className="text-sm font-bold text-slate-400 uppercase tracking-widest">About the Scholarship</h3>
+                        <p className="text-xl text-slate-600 leading-relaxed font-medium break-words">{scholarship.description}</p>
                     </div>
 
-                    <div>
-                         <h3 className="font-bold text-slate-800 mb-2 text-lg">Eligibility & Tags</h3>
-                         <div className="flex flex-wrap gap-2">
-                             {scholarship.tags.map(tag => (
-                                 <span key={tag} className="text-xs bg-beige-100 text-slate-700 px-3 py-1 rounded-full font-medium border border-beige-200">
+                    <div className="space-y-6">
+                         <h3 className="text-sm font-bold text-slate-400 uppercase tracking-widest">Eligibility & Focus</h3>
+                         <div className="flex flex-wrap gap-3">
+                             {scholarship.tags?.map(tag => (
+                                 <span key={tag} className="px-6 py-3 bg-white border border-slate-100 rounded-full text-slate-900 font-bold shadow-sm">
                                      {tag}
                                  </span>
                              ))}
@@ -97,11 +95,11 @@ const ScholarshipDetailModal = ({
                     </div>
                 </div>
 
-                <div className="p-6 border-t border-slate-100 bg-slate-50 flex justify-end gap-4 sticky bottom-0">
-                    <button onClick={onClose} className="px-6 py-3 font-bold text-slate-500 hover:text-slate-800">Close</button>
+                <div className="p-10 border-t border-slate-50 bg-white/80 backdrop-blur-md flex justify-end gap-6 sticky bottom-0">
+                    <button onClick={onClose} className="px-8 py-4 font-bold text-slate-400 hover:text-slate-900 transition-all">Close</button>
                     <button 
                         onClick={() => onApply(scholarship)}
-                        className="px-8 py-3 bg-brand-700 text-white font-bold rounded-lg shadow-lg hover:bg-brand-800 transition-all hover:translate-y-[-1px]"
+                        className="px-12 py-4 bg-slate-900 text-white font-bold rounded-full shadow-2xl shadow-slate-900/20 hover:bg-slate-800 transition-all hover:scale-105 text-lg"
                     >
                         Apply Now
                     </button>
@@ -130,159 +128,152 @@ const SchoolProfileView = ({
   const fallbackLogo = `https://ui-avatars.com/api/?name=${encodeURIComponent(uni.name)}&background=f6f1e9&color=162714&size=128&font-size=0.33&bold=true`;
 
   return (
-  <div className="bg-white shadow-2xl border border-slate-200 overflow-hidden animate-fade-in flex flex-col h-full">
+  <div className="bg-white animate-fade-in flex flex-col w-full min-h-full overflow-x-hidden">
       {/* Header Image & Title */}
-      <div className="h-64 md:h-80 relative bg-brand-900">
-         <div className="absolute inset-0 bg-brand-900/40"></div>
+      <div className="min-h-[500px] md:h-[450px] lg:h-[550px] relative bg-slate-900">
+         <div className="absolute inset-0 bg-gradient-to-t from-slate-900/90 via-slate-900/50 to-slate-900/30"></div>
          <img 
             src={coverImage} 
             alt="Campus" 
-            className="w-full h-full object-cover opacity-90"
+            className="absolute inset-0 w-full h-full object-cover opacity-50"
             onError={() => setCoverError(true)}
          />
          
          <button 
             onClick={onClose}
-            className="absolute top-6 left-6 bg-white/90 hover:bg-white text-brand-900 p-3 shadow-lg transition-colors backdrop-blur-sm border border-brand-900 z-50 cursor-pointer"
+            className="absolute top-6 left-6 md:top-8 md:left-8 bg-slate-900/60 hover:bg-black text-white p-3 md:p-4 rounded-full shadow-2xl transition-all backdrop-blur-xl border border-white/20 z-50 cursor-pointer group"
             aria-label="Back to Dashboard"
          >
-            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" className="w-5 h-5">
-                <path fillRule="evenodd" d="M17 10a.75.75 0 01-.75.75H5.612l4.158 3.96a.75.75 0 11-1.04 1.08l-5.5-5.25a.75.75 0 010-1.08l5.5-5.25a.75.75 0 111.04 1.08L5.612 9.25H16.25A.75.75 0 0117 10z" clipRule="evenodd" />
+            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={2.5} stroke="currentColor" className="w-5 h-5 md:w-6 md:h-6 group-hover:-translate-x-1 transition-transform">
+                <path strokeLinecap="round" strokeLinejoin="round" d="M10.5 19.5L3 12m0 0l7.5-7.5M3 12h18" />
             </svg>
          </button>
 
-         <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-brand-900 to-transparent p-8 pt-24 flex flex-col md:flex-row items-end justify-between gap-6">
-             <div className="flex items-end gap-6">
-                <div className="w-24 h-24 bg-white p-2 shadow-lg hidden md:flex items-center justify-center">
+          <div className="absolute inset-x-0 bottom-8 md:bottom-16 px-6 md:px-16 flex flex-col lg:flex-row lg:items-end justify-between gap-8">
+            <div className="flex flex-col items-center text-center lg:flex-row lg:items-center lg:text-left gap-4 md:gap-8 min-w-0 w-full lg:w-auto">
+                <div className="w-20 h-20 md:w-32 md:h-32 bg-white p-1.5 md:p-2 rounded-2xl md:rounded-3xl shadow-2xl shrink-0">
                     <img 
                         src={!logoError && uni.logo ? uni.logo : fallbackLogo} 
-                        alt="Logo" 
-                        className="w-full h-full object-contain" 
+                        alt={uni.name} 
+                        className="w-full h-full object-contain rounded-xl md:rounded-2xl"
                         onError={() => setLogoError(true)}
                     />
                 </div>
-                <div>
-                    <h2 className="text-4xl md:text-5xl font-bold text-white font-serif tracking-tight">{uni.name}</h2>
-                    <p className="text-beige-300 flex items-center gap-2 mt-2 font-heading font-bold uppercase tracking-widest text-sm">
-                        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" className="w-4 h-4 text-accent-gold">
-                            <path fillRule="evenodd" d="M9.69 18.933l.003.001C9.89 19.02 10 19 10 19s.11.02.308-.066l.002-.001.006-.003.018-.008a5.741 5.741 0 00.281-.14c.186-.096.446-.24.757-.433.62-.384 1.445-.966 2.274-1.765C15.302 14.988 17 12.493 17 9A7 7 0 103 9c0 3.492 1.698 5.988 3.355 7.62.829.799 1.654 1.38 2.274 1.766a11.121 11.121 0 00.757.432l.018.009.006.003zM10 11.25a2.25 2.25 0 100-4.5 2.25 2.25 0 000 4.5z" clipRule="evenodd" />
+                <div className="flex-1 min-w-0">
+                    <h1 className="text-3xl md:text-5xl lg:text-6xl font-bold text-white tracking-tight mb-2 md:mb-4 break-words leading-tight drop-shadow-lg">{uni.name}</h1>
+                    <div className="flex items-center justify-center lg:justify-start gap-2 md:gap-3 text-white/80 font-bold uppercase tracking-widest text-[10px] md:text-xs">
+                        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" className="w-3 h-3 md:w-4 md:h-4 shrink-0">
+                            <path fillRule="evenodd" d="M9.69 18.933l.003.001C9.89 19.02 10 19 10 19s.11.02.308-.066l.002-.001.006-.003.018-.008a5.741 5.741 0 00.281-.14c.186-.096.446-.24.757-.433.62-.384 1.445-.966 2.274-1.765C15.302 14.988 17 12.493 17 9A7 7 0 103 9c0 3.492 1.698 5.988 3.355 7.584a13.731 13.731 0 002.273 1.765 11.842 11.842 0 00.976.544l.062.029.018.008.006.003zM10 11.25a2.25 2.25 0 100-4.5 2.25 2.25 0 000 4.5z" clipRule="evenodd" />
                         </svg>
-                        {uni.location}
-                    </p>
+                        <span>{uni.location}</span>
+                    </div>
                 </div>
-             </div>
-             
-             <div className="bg-white/10 backdrop-blur-md text-white px-6 py-3 border border-white/20">
-                <span className="block text-xs font-bold uppercase tracking-widest opacity-80 font-heading text-accent-gold">Alignment Score</span>
-                <span className="text-3xl font-bold font-serif">{uni.matchScore}%</span>
-             </div>
+            </div>
+            <div className="flex flex-col sm:flex-row items-stretch lg:items-center gap-4 shrink-0 w-full lg:w-auto">
+                <button 
+                    onClick={() => onStartApplication(uni)}
+                    className="bg-white text-slate-900 px-8 md:px-10 py-4 md:py-5 rounded-full font-bold text-base md:text-lg shadow-2xl hover:bg-slate-50 transition-all hover:scale-105"
+                >
+                    Start Application
+                </button>
+                {uni.website && (
+                    <a 
+                        href={uni.website}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="bg-white/10 backdrop-blur-xl text-white border border-white/20 px-8 md:px-10 py-4 md:py-5 rounded-full font-bold text-base md:text-lg shadow-2xl hover:bg-white/20 transition-all hover:scale-105 flex items-center justify-center gap-3"
+                    >
+                        Visit Website
+                        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" className="w-5 h-5 opacity-50">
+                            <path fillRule="evenodd" d="M4.25 5.5a.75.75 0 00-.75.75v8.5c0 .414.336.75.75.75h8.5a.75.75 0 00.75-.75v-4a.75.75 0 011.5 0v4A2.25 2.25 0 0112.75 17h-8.5A2.25 2.25 0 012 14.75v-8.5A2.25 2.25 0 014.25 4h5a.75.75 0 010 1.5h-5z" clipRule="evenodd" />
+                            <path fillRule="evenodd" d="M6.194 12.753a.75.75 0 001.06.053L16.5 4.44v2.81a.75.75 0 001.5 0v-4.5a.75.75 0 00-.75-.75h-4.5a.75.75 0 000 1.5h2.553l-9.056 8.194a.75.75 0 00-.053 1.06z" clipRule="evenodd" />
+                        </svg>
+                    </a>
+                )}
+            </div>
          </div>
       </div>
 
-      <div className="p-8 md:p-12 overflow-y-auto bg-beige-50 flex-1">
-         <div className="grid grid-cols-1 lg:grid-cols-3 gap-12">
-            {/* Main Content */}
-            <div className="lg:col-span-2 space-y-10">
-                <section>
-                    <h3 className="text-xl font-bold text-brand-900 mb-4 font-heading uppercase tracking-widest border-b border-brand-200 pb-2">Institutional Overview</h3>
-                    <p className="text-slate-800 leading-loose text-lg font-light">{uni.description} Founded on principles of excellence, {uni.name} offers a rigorous intellectual environment. The campus blends historic tradition with cutting-edge research facilities, fostering a community of scholars dedicated to global impact.</p>
-                </section>
-                
-                {/* Image Gallery */}
-                {uni.images && uni.images.length > 0 && (
-                    <section>
-                        <h3 className="text-xl font-bold text-brand-900 mb-4 font-heading uppercase tracking-widest border-b border-brand-200 pb-2">Campus Visuals</h3>
-                        <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
-                            {uni.images.map((img, idx) => (
-                                <div key={idx} className="h-40 overflow-hidden group relative cursor-pointer bg-slate-200">
-                                    <div className="absolute inset-0 bg-black/20 group-hover:bg-transparent transition-colors z-10"></div>
-                                    <img 
-                                        src={img} 
-                                        alt={`Campus view ${idx}`} 
-                                        className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110" 
-                                        onError={(e) => {
-                                            (e.target as HTMLImageElement).src = defaultCover;
-                                        }}
-                                    />
-                                </div>
-                            ))}
-                             {/* Add some placeholders if not enough images */}
-                             {uni.images.length < 3 && (
-                                 <div className="h-40 overflow-hidden group relative bg-slate-200">
-                                    <img src={defaultCover} alt="Students" className="w-full h-full object-cover grayscale group-hover:grayscale-0 transition-all duration-700" />
-                                 </div>
-                             )}
-                        </div>
-                    </section>
-                )}
+      <div className="p-6 md:p-10 lg:p-16 bg-white w-full">
+          <div className="max-w-6xl mx-auto grid grid-cols-1 lg:grid-cols-3 gap-10 md:gap-16 w-full">
+              <div className="lg:col-span-2 space-y-10 md:space-y-16">
+                  <section>
+                      <h3 className="text-[10px] md:text-sm font-bold text-slate-400 uppercase tracking-widest mb-4 md:mb-6">About the University</h3>
+                      <p className="text-lg md:text-xl text-slate-600 leading-relaxed font-medium">{uni.description}</p>
+                  </section>
 
-                <section>
-                    <h3 className="text-xl font-bold text-brand-900 mb-4 font-heading uppercase tracking-widest border-b border-brand-200 pb-2">Strategic Fit</h3>
-                    <div className="flex flex-wrap gap-3">
-                        {profile.keyMetrics.map(m => (
-                            <span key={m} className="bg-white text-brand-800 border border-brand-200 px-4 py-2 text-sm font-bold font-heading uppercase tracking-wider flex items-center gap-2 shadow-sm">
-                                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" className="w-4 h-4 text-accent-olive">
-                                    <path fillRule="evenodd" d="M16.704 4.153a.75.75 0 01.143 1.052l-8 10.5a.75.75 0 01-1.127.075l-4.5-4.5a.75.75 0 011.06-1.06l3.894 3.893 7.48-9.817a.75.75 0 011.05-.143z" clipRule="evenodd" />
-                                </svg>
-                                High Alignment: {m.split(' ')[0]}
-                            </span>
-                        ))}
-                    </div>
-                </section>
+                  <section className="grid grid-cols-2 md:grid-cols-4 gap-4 md:gap-8">
+                      {[
+                          { label: 'Acceptance Rate', value: uni.acceptanceRate },
+                          { label: 'Avg. Tuition', value: uni.tuition },
+                          { label: 'Ranking', value: uni.ranking },
+                          { label: 'Student Body', value: uni.studentBody }
+                      ].map(stat => (
+                          <div key={stat.label} className="p-4 md:p-6 bg-slate-50 rounded-2xl md:rounded-3xl border border-slate-50">
+                              <p className="text-[8px] md:text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-1 md:mb-2">{stat.label}</p>
+                              <p className="text-lg md:text-xl lg:text-2xl font-bold text-slate-900 break-words" title={stat.value}>{stat.value}</p>
+                          </div>
+                      ))}
+                  </section>
 
-                <div className="flex flex-col sm:flex-row gap-6 mt-8 p-8 bg-white border border-brand-100 shadow-lg">
-                     <div className="flex-1">
-                         <h4 className="font-serif text-2xl text-brand-900 mb-2">Ready to Apply?</h4>
-                         <p className="text-slate-500 mb-4">Initiate your candidacy for the upcoming term.</p>
-                         <button 
-                            onClick={() => onStartApplication(uni)}
-                            className="w-full bg-brand-700 text-white px-8 py-4 font-heading font-bold uppercase tracking-widest hover:bg-brand-800 transition-all shadow-xl shadow-brand-900/10 hover:-translate-y-1 flex items-center justify-center gap-2 text-lg"
-                         >
-                            <span>Begin Application</span>
-                            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" className="w-5 h-5">
-                                <path fillRule="evenodd" d="M4.5 2A1.5 1.5 0 003 3.5v13A1.5 1.5 0 004.5 18h11a1.5 1.5 0 001.5-1.5V7.621a1.5 1.5 0 00-.44-1.06l-4.12-4.122A1.5 1.5 0 0011.378 2H4.5zm2.25 8.5a.75.75 0 000 1.5h6.5a.75.75 0 000-1.5h-6.5zm0 3a.75.75 0 000 1.5h6.5a.75.75 0 000-1.5h-6.5z" clipRule="evenodd" />
-                            </svg>
-                        </button>
-                     </div>
-                    <div className="flex-1 border-l border-slate-100 pl-0 sm:pl-6 flex flex-col justify-end">
-                        <a href={uni.website} target="_blank" rel="noreferrer" className="w-full text-center border-2 border-slate-200 text-slate-600 px-6 py-4 font-heading font-bold uppercase tracking-widest hover:bg-slate-50 hover:border-slate-400 hover:text-slate-800 transition-all">
-                            Visit Official Website
-                        </a>
-                    </div>
-                </div>
-            </div>
+                  <section>
+                      <h3 className="text-sm font-bold text-slate-400 uppercase tracking-widest mb-6">Popular Programs</h3>
+                      <div className="flex flex-wrap gap-3">
+                          {uni.programs?.map(prog => (
+                              <span key={prog} className="px-6 py-3 bg-white border border-slate-100 rounded-full text-slate-900 font-bold shadow-sm">
+                                  {prog}
+                              </span>
+                          ))}
+                      </div>
+                  </section>
+              </div>
 
-            {/* Sidebar Stats */}
-            <div className="space-y-8">
-                <div className="bg-white p-8 border border-slate-200 shadow-sm">
-                    <h4 className="font-bold text-brand-900 mb-6 font-heading uppercase tracking-widest border-b border-brand-100 pb-2">Key Statistics</h4>
-                    <ul className="space-y-5 text-sm">
-                        <li className="flex justify-between items-center">
-                            <span className="text-slate-500 font-medium uppercase tracking-wider text-xs">Tuition</span>
-                            <span className="font-bold text-brand-900 text-base">{uni.tuition}</span>
-                        </li>
-                         <li className="flex justify-between items-center">
-                            <span className="text-slate-500 font-medium uppercase tracking-wider text-xs">Enrollment</span>
-                            <span className="font-bold text-brand-900 text-base">15,000+</span>
-                        </li>
-                         <li className="flex justify-between items-center">
-                            <span className="text-slate-500 font-medium uppercase tracking-wider text-xs">Acceptance</span>
-                            <span className="font-bold text-brand-900 text-base">~12%</span>
-                        </li>
-                        <li className="flex justify-between items-center">
-                            <span className="text-slate-500 font-medium uppercase tracking-wider text-xs">Location Type</span>
-                            <span className="font-bold text-brand-900 text-base">Urban / Historic</span>
-                        </li>
-                    </ul>
-                </div>
-                <div className="bg-accent-olive p-8 text-white border border-accent-olive shadow-lg relative overflow-hidden">
-                    <div className="absolute top-0 right-0 -mt-4 -mr-4 w-24 h-24 bg-white/10 rounded-full blur-2xl"></div>
-                    <h4 className="font-bold text-white mb-3 font-heading uppercase tracking-widest relative z-10">Alumni Network</h4>
-                    <p className="text-sm text-beige-200 mb-6 leading-relaxed relative z-10">Connect with 3 distinguished mentors from {uni.name} available for consultation.</p>
-                    <button className="w-full py-3 bg-white text-accent-olive font-heading font-bold uppercase tracking-widest hover:bg-beige-100 transition-colors relative z-10">View Mentors</button>
-                </div>
-            </div>
-         </div>
+              <div className="space-y-12">
+                  <div className="p-8 bg-slate-900 rounded-[40px] text-white shadow-2xl shadow-slate-900/20">
+                      <h3 className="text-2xl font-bold mb-6 tracking-tight">Intelligence Match</h3>
+                      <div className="space-y-6">
+                          <div className="flex items-center justify-between">
+                              <span className="text-slate-400 font-bold uppercase tracking-widest text-[10px]">Overall Score</span>
+                              <span className="text-3xl font-bold">{uni.matchScore}%</span>
+                          </div>
+                          <div className="h-2 bg-white/10 rounded-full overflow-hidden">
+                              <div className="h-full bg-white rounded-full" style={{ width: `${uni.matchScore}%` }}></div>
+                          </div>
+                          <p className="text-slate-400 text-sm leading-relaxed font-medium">
+                              Based on your profile in {profile.fieldOfStudy}, this university offers exceptional alignment with your academic and career goals.
+                          </p>
+                      </div>
+                  </div>
+
+                  <div className="p-8 bg-slate-50 rounded-[40px] border border-slate-50">
+                      <h3 className="text-xl font-bold text-slate-900 mb-6 tracking-tight">Key Deadlines</h3>
+                      <div className="space-y-6">
+                          <div className="flex items-center gap-4">
+                              <div className="w-10 h-10 bg-white rounded-2xl flex items-center justify-center text-slate-900 shadow-sm border border-slate-100">
+                                  <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor" className="w-5 h-5">
+                                      <path strokeLinecap="round" strokeLinejoin="round" d="M6.75 3v2.25M17.25 3v2.25M3 18.75V7.5a2.25 2.25 0 012.25-2.25h13.5A2.25 2.25 0 0121 7.5v11.25m-18 0A2.25 2.25 0 005.25 21h13.5A2.25 2.25 0 0021 18.75m-18 0v-7.5A2.25 2.25 0 015.25 9h13.5A2.25 2.25 0 0121 11.25v7.5" />
+                                  </svg>
+                              </div>
+                              <div>
+                                  <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">Early Action</p>
+                                  <p className="font-bold text-slate-900">Nov 1, 2024</p>
+                              </div>
+                          </div>
+                          <div className="flex items-center gap-4">
+                              <div className="w-10 h-10 bg-white rounded-2xl flex items-center justify-center text-slate-900 shadow-sm border border-slate-100">
+                                  <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor" className="w-5 h-5">
+                                      <path strokeLinecap="round" strokeLinejoin="round" d="M12 6v6h4.5m4.5 0a9 9 0 11-18 0 9 9 0 0118 0z" />
+                                  </svg>
+                              </div>
+                              <div>
+                                  <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">Regular Decision</p>
+                                  <p className="font-bold text-slate-900">Jan 15, 2025</p>
+                              </div>
+                          </div>
+                      </div>
+                  </div>
+              </div>
+          </div>
       </div>
   </div>
   );
@@ -456,109 +447,79 @@ const Dashboard: React.FC<DashboardProps> = ({
   });
 
   const SidebarContent = () => (
-    <div className="flex flex-col h-full bg-white border-r border-slate-200">
-        <div className="p-8 border-b border-slate-200 bg-beige-100">
-            <div className="flex items-center justify-between mb-8">
-                <div className="flex items-center gap-3">
-                    <div className="w-10 h-10 bg-brand-900 flex items-center justify-center text-white font-serif font-bold text-xl shadow-lg">G</div>
-                    <span className="font-serif font-bold text-2xl tracking-tight text-brand-900">Gradwyn</span>
-                </div>
-                {/* Close button for mobile only */}
-                <button onClick={() => setIsMobileMenuOpen(false)} className="md:hidden text-slate-400 hover:text-slate-600">
-                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="w-6 h-6">
-                        <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
-                    </svg>
-                </button>
-            </div>
-            <div className="mb-2 px-2">
-                <p className="text-[10px] font-heading font-bold uppercase tracking-widest text-accent-gold mb-1">Scholar Profile</p>
-                <p className="font-bold text-brand-900 text-lg truncate font-serif">{profile.name}</p>
+    <div className="flex flex-col h-full bg-white">
+        <div className="p-8">
+            <div className="flex items-center gap-3 mb-10">
+                <h1 className="text-3xl font-bold tracking-tight text-slate-900">Gradwyn</h1>
             </div>
         </div>
         
-        <nav className="flex-1 py-6 space-y-1 overflow-y-auto no-scrollbar">
+        <nav className="flex-1 px-4 space-y-1 overflow-y-auto no-scrollbar">
             <SidebarItem 
                 view="schools"
                 currentView={currentView} 
                 label="Institutions" 
                 onClick={() => handleSidebarClick('schools')}
-                icon={<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" className="w-5 h-5"><path d="M11.7 2.805a.75.75 0 01.6 0A60.65 60.65 0 0122.83 8.72a.75.75 0 01-.231 1.337 49.949 49.949 0 00-9.902 3.912l-.003.002-.34.18a.75.75 0 01-.707 0A50.009 50.009 0 001.402 10.06a.75.75 0 01-.23-1.337A60.653 60.653 0 0111.7 2.805z" /><path d="M13.06 15.473a48.45 48.45 0 017.666-3.282c.134 1.414.22 2.843.255 4.285a.75.75 0 01-.46.71 47.878 47.878 0 00-8.105 4.342.75.75 0 01-.832 0 47.877 47.877 0 00-8.104-4.342.75.75 0 01-.461-.71c.035-1.442.121-2.87.255-4.286A48.4 48.4 0 0110.94 15.473a.75.75 0 002.12 0z" /><path d="M4.462 19.462c.42-.419.753-.89 1-1.394.453.213.902.434 1.347.661a6.743 6.743 0 01-1.286 1.794.75.75 0 11-1.06-1.06z" /></svg>}
+                icon={<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor" className="w-5 h-5"><path strokeLinecap="round" strokeLinejoin="round" d="M12 21v-8.25M15.75 21v-8.25M8.25 21v-8.25M3 9l9-6 9 6m-1.5 12V10.332A48.36 48.36 0 0012 9.75c-2.551 0-5.056.2-7.5.582V21M3 21h18M12 6.75h.008v.008H12V6.75z" /></svg>}
             />
             <SidebarItem 
                 view="tracker" 
                 currentView={currentView}
                 label="Applications" 
                 onClick={() => handleSidebarClick('tracker')}
-                icon={<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" className="w-5 h-5"><path fillRule="evenodd" d="M5.625 1.5c-1.036 0-1.875.84-1.875 1.875v17.25c0 1.035.84 1.875 1.875 1.875h12.75c1.035 0 1.875-.84 1.875-1.875V12.75A3.75 3.75 0 0016.5 9h-1.875a1.875 1.875 0 01-1.875-1.875V5.25A3.75 3.75 0 009 1.5H5.625zM7.5 15a.75.75 0 01.75-.75h7.5a.75.75 0 010 1.5h-7.5A.75.75 0 017.5 15zm.75 2.25a.75.75 0 000 1.5H12a.75.75 0 000-1.5H8.25z" clipRule="evenodd" /><path d="M12.971 1.816A5.23 5.23 0 0114.25 5.25v1.875c0 .207.168.375.375.375H16.5a5.23 5.23 0 013.434 1.279 9.768 9.768 0 00-6.963-6.963z" /></svg>}
+                icon={<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor" className="w-5 h-5"><path strokeLinecap="round" strokeLinejoin="round" d="M19.5 14.25v-2.625a3.375 3.375 0 00-3.375-3.375h-1.5A1.125 1.125 0 0113.5 7.125v-1.5a3.375 3.375 0 00-3.375-3.375H8.25m0 12.75h7.5m-7.5 3H12M10.5 2.25H5.625c-.621 0-1.125.504-1.125 1.125v17.25c0 .621.504 1.125 1.125 1.125h12.75c.621 0 1.125-.504 1.125-1.125V11.25a9 9 0 00-9-9z" /></svg>}
             />
             <SidebarItem 
                 view="mentors" 
                 currentView={currentView}
                 label="Mentorship" 
                 onClick={() => handleSidebarClick('mentors')}
-                icon={<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" className="w-5 h-5"><path fillRule="evenodd" d="M7.5 6a4.5 4.5 0 119 0 4.5 4.5 0 01-9 0zM3.751 20.105a8.25 8.25 0 0116.498 0 .75.75 0 01-.437.695A18.683 18.683 0 0112 22.5c-2.786 0-5.433-.602-7.812-1.7a.75.75 0 01-.437-.695z" clipRule="evenodd" /></svg>}
+                icon={<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor" className="w-5 h-5"><path strokeLinecap="round" strokeLinejoin="round" d="M18 18.72a9.094 9.094 0 003.741-.479 3 3 0 00-4.656-5.64 9.039 9.039 0 00-6.225 9.24M15 12a3 3 0 11-6 0 3 3 0 016 0zm-9 6a9 9 0 1118 0 9 9 0 01-18 0z" /></svg>}
             />
             <SidebarItem 
                 view="scholarships" 
                 currentView={currentView}
                 label="Scholarships" 
                 onClick={() => handleSidebarClick('scholarships')}
-                icon={<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" className="w-5 h-5"><path d="M10.464 8.746c.227-.18.497-.311.786-.394v2.795a2.252 2.252 0 01-.786-.393c-.394-.313-.546-.681-.546-1.004 0-.324.152-.691.546-1.004zM12.75 15.662v-2.824c.347.085.664.228.921.421.427.32.579.686.579.991 0 .305-.152.671-.579.991a2.534 2.534 0 01-.921.42z" /><path fillRule="evenodd" d="M12 2.25c-5.385 0-9.75 4.365-9.75 9.75s4.365 9.75 9.75 9.75 9.75-4.365 9.75-9.75S17.385 2.25 12 2.25zM12.75 6a.75.75 0 00-1.5 0v.816a3.836 3.836 0 00-1.72.756c-.712.566-1.112 1.35-1.112 2.178 0 .829.4 1.612 1.113 2.178.516.412 1.108.682 1.719.787v2.905a3.799 3.799 0 001.72.756c.712.566 1.112 1.35 1.112 2.178 0 .829-.4 1.612-1.113 2.178a4.784 4.784 0 01-1.719.788v.816a.75.75 0 001.5 0v-.816a3.836 3.836 0 001.72-.756c.712-.566 1.112-1.35 1.112-2.178 0-.829.4-1.612 1.113-2.178a4.784 4.784 0 01-1.719-.787V9.252a3.838 3.838 0 00-1.72-.756c-.712-.566-1.112-1.35-1.112-2.178 0-.829.4-1.612 1.113-2.178.516-.412 1.108-.682 1.719-.787V6z" clipRule="evenodd" /></svg>}
+                icon={<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor" className="w-5 h-5"><path strokeLinecap="round" strokeLinejoin="round" d="M12 6v12m-3-2.818l.879.659c1.171.879 3.07.879 4.242 0 1.172-.879 1.172-2.303 0-3.182C13.536 12.219 12.768 12 12 12c-.725 0-1.45-.22-2.003-.659-1.106-.879-1.106-2.303 0-3.182s2.9-.879 4.006 0l.415.33M21 12a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>}
             />
             <SidebarItem 
                 view="chat" 
                 currentView={currentView}
                 label="Intelligence" 
                 onClick={() => handleSidebarClick('chat')}
-                icon={<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" className="w-5 h-5"><path fillRule="evenodd" d="M4.804 21.644A6.707 6.707 0 006 21.75a6.721 6.721 0 003.583-1.029c.774.182 1.584.279 2.417.279 5.322 0 9.75-3.97 9.75-9 0-5.03-4.428-9-9.75-9s-9.75 3.97-9.75 9c0 2.409 1.025 4.587 2.674 6.192.232.226.277.428.254.543a3.73 3.73 0 01-.814 1.686.75.75 0 00.44 1.223zM8.25 10.875a1.125 1.125 0 100 2.25 1.125 1.125 0 000-2.25zM10.875 12a1.125 1.125 0 112.25 0 1.125 1.125 0 01-2.25 0zm4.875-1.125a1.125 1.125 0 100 2.25 1.125 1.125 0 000-2.25z" clipRule="evenodd" /></svg>}
+                icon={<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor" className="w-5 h-5"><path strokeLinecap="round" strokeLinejoin="round" d="M12 18.75a6 6 0 006-6v-1.5m-6 7.5a6 6 0 01-6-6v-1.5m6 7.5v3.75m-3.75 0h7.5M12 15.75a3 3 0 01-3-3V4.5a3 3 0 116 0v8.25a3 3 0 01-3 3z" /></svg>}
             />
             <SidebarItem 
                 view="prep" 
                 currentView={currentView}
                 label="Prep Suite" 
                 onClick={() => handleSidebarClick('prep')}
-                icon={<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" className="w-5 h-5"><path d="M5.625 1.5c-1.036 0-1.875.84-1.875 1.875v17.25c0 1.035.84 1.875 1.875 1.875h12.75c1.035 0 1.875-.84 1.875-1.875V12.75A3.75 3.75 0 0016.5 9h-1.875a1.875 1.875 0 01-1.875-1.875V5.25A3.75 3.75 0 009 1.5H5.625z" /><path d="M12.971 1.816A5.23 5.23 0 0114.25 5.25v1.875c0 .207.168.375.375.375H16.5a5.23 5.23 0 013.434 1.279 9.768 9.768 0 00-6.963-6.963z" /></svg>}
+                icon={<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor" className="w-5 h-5"><path strokeLinecap="round" strokeLinejoin="round" d="M12 6.042A8.967 8.967 0 006 3.75c-1.052 0-2.062.18-3 .512v14.25A8.987 8.987 0 016 18c2.305 0 4.408.867 6 2.292m0-14.25a8.966 8.966 0 016-2.292c1.052 0 2.062.18 3 .512v14.25A8.987 8.987 0 0018 18c-2.305 0-4.408.867-6 2.292m0-14.25v14.25" /></svg>}
             />
             <SidebarItem 
                 view="guides" 
                 currentView={currentView}
                 label="Guides" 
                 onClick={() => handleSidebarClick('guides')}
-                icon={<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" className="w-5 h-5"><path d="M11.25 4.533A9.707 9.707 0 006 3a9.735 9.735 0 00-3.25.555.75.75 0 00-.5.707v14.25a.75.75 0 001 .707A8.237 8.237 0 016 18.75c1.995 0 3.823.707 5.25 1.886V4.533zM12.75 20.636A8.214 8.214 0 0118 18.75c.966 0 1.89.166 2.75.47a.75.75 0 001-.708V4.262a.75.75 0 00-.5-.707A9.735 9.735 0 0018 3a9.707 9.707 0 00-5.25 1.533v16.103z" /></svg>}
+                icon={<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor" className="w-5 h-5"><path strokeLinecap="round" strokeLinejoin="round" d="M12 6.042A8.967 8.967 0 006 3.75c-1.052 0-2.062.18-3 .512v14.25A8.987 8.987 0 016 18c2.305 0 4.408.867 6 2.292m0-14.25a8.966 8.966 0 016-2.292c1.052 0 2.062.18 3 .512v14.25A8.987 8.987 0 0018 18c-2.305 0-4.408.867-6 2.292m0-14.25v14.25" /></svg>}
             />
         </nav>
 
-        <div className="p-6 bg-beige-100 border-t border-slate-200">
-            <button 
-            onClick={() => { setIsEditModalOpen(true); setIsMobileMenuOpen(false); }}
-            className="w-full flex items-center gap-3 hover:bg-white p-2 transition-colors text-left mb-3 border border-transparent hover:border-slate-200"
-            >
-                <div className="w-8 h-8 bg-slate-300 flex-shrink-0 overflow-hidden border border-slate-400">
-                    <img 
-                        src={profile.photoUrl || `https://ui-avatars.com/api/?name=${profile.name || 'User'}&background=random`} 
-                        alt="User" 
-                        className="w-full h-full object-cover"
-                    />
-                </div>
-                <div className="flex-1 min-w-0">
-                    <p className="text-xs font-bold text-slate-600 uppercase tracking-wider">Preferences</p>
-                </div>
-                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" className="w-4 h-4 text-slate-400">
-                    <path fillRule="evenodd" d="M7.21 14.77a.75.75 0 01.02-1.06L11.168 10 7.23 6.29a.75.75 0 111.04-1.08l4.5 4.25a.75.75 0 010 1.08l-4.5 4.25a.75.75 0 01-1.06-.02z" clipRule="evenodd" />
-                </svg>
-            </button>
-            <button 
-                onClick={onLogout}
-                className="w-full flex items-center justify-center gap-2 text-xs font-bold text-brand-900 hover:text-accent-rust py-2 transition-colors uppercase tracking-widest border border-slate-300 hover:bg-white"
-            >
-                Log Out
-            </button>
+        <div className="p-6 mt-auto">
+            <SidebarItem 
+                view="tracker" 
+                currentView={currentView}
+                label="Settings" 
+                onClick={() => setIsEditModalOpen(true)}
+                icon={<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor" className="w-5 h-5"><path strokeLinecap="round" strokeLinejoin="round" d="M4.5 12a7.5 7.5 0 1115 0 7.5 7.5 0 01-15 0z" /><path strokeLinecap="round" strokeLinejoin="round" d="M12 9v3m0 0v3m0-3h3m-3 0H9" /></svg>}
+            />
         </div>
     </div>
   );
 
   return (
-    <div className="flex h-screen bg-beige-100 overflow-hidden font-sans">
+    <div className="flex h-screen h-[100dvh] bg-white font-sans overflow-hidden">
       <EditProfileModal 
         isOpen={isEditModalOpen} 
         onClose={() => setIsEditModalOpen(false)} 
@@ -587,34 +548,87 @@ const Dashboard: React.FC<DashboardProps> = ({
       {/* Mobile Menu Backdrop */}
       {isMobileMenuOpen && (
         <div 
-            className="fixed inset-0 bg-brand-900/70 z-30 md:hidden backdrop-blur-sm transition-opacity"
+            className="fixed inset-0 bg-slate-900/70 z-50 md:hidden backdrop-blur-sm transition-opacity"
             onClick={() => setIsMobileMenuOpen(false)}
         />
       )}
 
       {/* Responsive Sidebar */}
       <aside className={`
-        fixed md:relative z-40 h-full w-72 bg-white border-r border-slate-200 transition-transform duration-300 ease-in-out shadow-2xl md:shadow-none
+        fixed md:relative z-50 h-full w-64 bg-white border-r border-slate-100 transition-transform duration-300 ease-in-out
         ${isMobileMenuOpen ? 'translate-x-0' : '-translate-x-full md:translate-x-0'}
       `}>
          <SidebarContent />
       </aside>
 
       {/* Main Content */}
-      <main className="flex-1 flex flex-col h-full overflow-hidden relative w-full bg-beige-100">
-          {/* Mobile Header */}
-          <div className="md:hidden bg-white border-b border-slate-200 p-4 flex justify-between items-center flex-shrink-0 z-20 relative shadow-sm">
-              <button onClick={() => setIsMobileMenuOpen(true)} className="p-2 -ml-2 text-brand-900 hover:bg-beige-100">
-                  <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="w-6 h-6">
-                    <path strokeLinecap="round" strokeLinejoin="round" d="M3.75 6.75h16.5M3.75 12h16.5m-16.5 5.25h16.5" />
-                  </svg>
-              </button>
-              <span className="font-serif font-bold text-xl text-brand-900">Gradwyn</span>
-              <div className="w-8"></div> {/* Spacer for center alignment */}
-          </div>
+      <main className={`flex-1 flex flex-col h-full relative min-w-0 bg-white ${selectedSchool ? 'overflow-y-auto' : 'overflow-hidden'}`}>
+          {/* Top Bar matching image */}
+          <header className={`h-20 border-b border-slate-100 items-center justify-between px-4 md:px-8 flex-shrink-0 bg-white z-20 ${selectedSchool ? 'hidden' : 'flex'}`}>
+              <div className="md:hidden">
+                  <button onClick={() => setIsMobileMenuOpen(true)} className="p-2 text-slate-600">
+                      <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor" className="w-6 h-6">
+                        <path strokeLinecap="round" strokeLinejoin="round" d="M3.75 6.75h16.5M3.75 12h16.5m-16.5 5.25h16.5" />
+                      </svg>
+                  </button>
+              </div>
+
+              {/* Search Bar */}
+              <div className="flex-1 max-w-xl mx-auto relative px-4 md:px-0" ref={searchRef}>
+                  <div className="relative w-full">
+                      <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
+                          <svg className="h-4 w-4 text-slate-400" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+                          </svg>
+                      </div>
+                      <input 
+                          type="text"
+                          placeholder="Search universities"
+                          value={searchQuery}
+                          onChange={(e) => setSearchQuery(e.target.value)}
+                          onFocus={() => setIsSearchFocused(true)}
+                          className="block w-full pl-10 pr-4 py-2 bg-slate-100 border-none rounded-full text-sm focus:ring-2 focus:ring-slate-200 transition-all placeholder-slate-400"
+                      />
+                  </div>
+
+                  {/* Search Results Dropdown */}
+                  {isSearchFocused && searchQuery.trim().length > 1 && (
+                      <div className="absolute top-full left-0 mt-2 w-full bg-white shadow-xl rounded-2xl overflow-hidden z-50 border border-slate-100">
+                          {searchResults.length > 0 ? (
+                              searchResults.map((uni) => (
+                                  <button
+                                      key={uni.id}
+                                      onClick={() => handleSearchResultClick(uni)}
+                                      className="w-full text-left p-4 hover:bg-slate-50 border-b border-slate-50 last:border-0 transition-colors"
+                                  >
+                                      <div className="font-bold text-slate-900">{uni.name}</div>
+                                      <div className="text-xs text-slate-500">{uni.location}</div>
+                                  </button>
+                              ))
+                          ) : (
+                              <div className="p-4 text-slate-400 text-sm italic">No results found</div>
+                          )}
+                      </div>
+                  )}
+              </div>
+
+              {/* User Profile */}
+              <div className="flex items-center gap-2 md:gap-3">
+                  <div className="hidden sm:block text-right">
+                      <p className="text-xs md:text-sm font-bold text-slate-900 truncate max-w-[150px]">{profile.name || 'Account'}</p>
+                  </div>
+                  <div className="w-8 h-8 md:w-10 md:h-10 rounded-full bg-slate-100 flex items-center justify-center overflow-hidden border border-slate-200 shrink-0">
+                      <img 
+                          src={profile.photoUrl || `https://ui-avatars.com/api/?name=${profile.name || 'User'}&background=f1f5f9&color=475569`} 
+                          alt="User" 
+                          className="w-full h-full object-cover"
+                      />
+                  </div>
+              </div>
+          </header>
 
           {/* View Content */}
-          <div className={`flex-1 p-4 md:p-12 ${currentView === 'chat' ? 'overflow-hidden flex flex-col' : 'overflow-y-auto'}`}>
+          <div className={`flex-1 ${currentView === 'chat' ? 'overflow-hidden flex flex-col' : (selectedSchool ? '' : 'overflow-y-auto')} ${selectedSchool || currentView === 'chat' ? 'p-0' : 'p-4 md:p-12'}`}>
               {selectedSchool ? (
                   <SchoolProfileView 
                     uni={selectedSchool} 
@@ -625,62 +639,8 @@ const Dashboard: React.FC<DashboardProps> = ({
               ) : (
                   <>
                     {currentView === 'schools' && (
-                        <div className="max-w-7xl mx-auto animate-fade-in relative">
-                            <div className="flex flex-col md:flex-row md:items-end justify-between gap-8 mb-12">
-                                <div>
-                                    <h2 className="text-4xl font-bold text-brand-900 font-serif tracking-tight mb-3">Your Institutions</h2>
-                                    <p className="text-slate-600 text-lg font-light">
-                                        {isFallback 
-                                            ? "Curated selections based on your academic profile." 
-                                            : "Manage your shortlisted universities and candidacies."}
-                                    </p>
-                                </div>
-                                
-                                {/* Global Search Bar */}
-                                <div className="relative w-full md:w-96" ref={searchRef}>
-                                    <div className="relative">
-                                        <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
-                                            <svg className="h-5 w-5 text-brand-500" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor">
-                                                <path fillRule="evenodd" d="M9 3.5a5.5 5.5 0 100 11 5.5 5.5 0 000-11zM2 9a7 7 0 1112.452 4.391l3.328 3.329a.75.75 0 11-1.06 1.06l-3.329-3.328A7 7 0 012 9z" clipRule="evenodd" />
-                                            </svg>
-                                        </div>
-                                        <input 
-                                            type="text"
-                                            placeholder="Search global database..."
-                                            value={searchQuery}
-                                            onChange={(e) => setSearchQuery(e.target.value)}
-                                            onFocus={() => setIsSearchFocused(true)}
-                                            className="block w-full pl-12 pr-4 py-4 border border-slate-300 leading-5 bg-white placeholder-slate-400 focus:outline-none focus:border-brand-700 focus:ring-1 focus:ring-brand-700 transition duration-150 ease-in-out shadow-sm font-medium text-brand-900 rounded-none"
-                                        />
-                                    </div>
-                                    
-                                    {/* Autocomplete Dropdown */}
-                                    {isSearchFocused && searchQuery.trim().length > 1 && (
-                                        <div className="absolute mt-0 w-full bg-white shadow-2xl max-h-80 overflow-auto z-50 border border-brand-900">
-                                            {searchResults.length > 0 ? (
-                                                searchResults.map((uni) => (
-                                                    <button
-                                                        key={uni.id}
-                                                        onClick={() => handleSearchResultClick(uni)}
-                                                        className="w-full text-left cursor-pointer select-none relative py-4 pl-6 pr-6 hover:bg-beige-100 border-b border-slate-100 last:border-0 transition-colors group"
-                                                    >
-                                                        <div className="flex items-center justify-between mb-1">
-                                                            <span className="font-serif font-bold block truncate text-brand-900 text-lg group-hover:text-brand-700">{uni.name}</span>
-                                                        </div>
-                                                        <span className="text-xs text-slate-500 block truncate font-heading uppercase tracking-wider">{uni.location}</span>
-                                                    </button>
-                                                ))
-                                            ) : (
-                                                <div className="cursor-default select-none relative py-4 pl-6 pr-6 text-slate-500 italic">
-                                                    No institutions found matching query.
-                                                </div>
-                                            )}
-                                        </div>
-                                    )}
-                                </div>
-                            </div>
-                            
-                            <div className="flex flex-wrap gap-8 justify-center md:justify-start">
+                        <div className="max-w-7xl mx-auto animate-fade-in">
+                            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-x-8 gap-y-12">
                                 {displaySchools.map(uni => (
                                     <UniversityCard 
                                         key={uni.id}
@@ -692,12 +652,12 @@ const Dashboard: React.FC<DashboardProps> = ({
                                         onDiscard={!isFallback ? onDiscardSchool : undefined}
                                     />
                                 ))}
-                                {isFallback && (
-                                    <div className="w-full bg-white border border-brand-200 p-8 text-center text-brand-900 shadow-sm mt-8">
-                                        <p className="font-medium text-lg font-serif">Consult the Gradwyn Intelligence Chat to curate a personalized list.</p>
-                                    </div>
-                                )}
                             </div>
+                            {isFallback && (
+                                <div className="w-full bg-slate-50 rounded-3xl p-12 text-center text-slate-500 mt-12 border border-slate-100">
+                                    <p className="font-medium text-lg">Consult the Gradwyn Intelligence Chat to curate a personalized list.</p>
+                                </div>
+                            )}
                         </div>
                     )}
 
@@ -760,7 +720,7 @@ const Dashboard: React.FC<DashboardProps> = ({
                                         <p className="text-slate-600 text-sm mb-6 flex-1 leading-relaxed">{sch.description}</p>
                                         <div className="flex justify-between items-center pt-4 border-t border-slate-100 mt-auto">
                                             <div className="flex gap-2 flex-wrap">
-                                                {sch.tags.slice(0, 3).map(tag => (
+                                                {sch.tags?.slice(0, 3).map(tag => (
                                                     <span key={tag} className="text-[10px] bg-beige-100 text-slate-600 px-2 py-1 rounded-none border border-beige-200">{tag}</span>
                                                 ))}
                                             </div>
@@ -952,7 +912,7 @@ const Dashboard: React.FC<DashboardProps> = ({
                                         <div className="p-6 flex-1">
                                             <p className="text-slate-600 text-sm leading-relaxed mb-4">{mentor.bio}</p>
                                             <div className="flex flex-wrap gap-2 mb-6">
-                                                {mentor.tags.map(tag => (
+                                                {mentor.tags?.map(tag => (
                                                     <span key={tag} className="text-[10px] bg-beige-100 text-slate-600 px-2 py-1 border border-beige-200">{tag}</span>
                                                 ))}
                                             </div>

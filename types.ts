@@ -101,6 +101,10 @@ export interface University {
   tags: string[];
   logo?: string; // URL
   images?: string[]; // Array of URLs
+  acceptanceRate?: string;
+  ranking?: string;
+  studentBody?: string;
+  programs?: string[];
 }
 
 export interface Mentor {

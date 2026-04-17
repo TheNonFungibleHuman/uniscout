@@ -297,6 +297,7 @@ const Dashboard: React.FC<DashboardProps> = ({
 
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+  const [isProfileDropdownOpen, setIsProfileDropdownOpen] = useState(false);
   
   // Scholarship State
   const [scholarshipTab, setScholarshipTab] = useState<'all' | 'forYou'>('all');
@@ -316,6 +317,7 @@ const Dashboard: React.FC<DashboardProps> = ({
   const [searchResults, setSearchResults] = useState<University[]>([]);
   const [isSearchFocused, setIsSearchFocused] = useState(false);
   const searchRef = useRef<HTMLDivElement>(null);
+  const profileDropdownRef = useRef<HTMLDivElement>(null);
 
   // Handle Search Logic
   useEffect(() => {
@@ -331,11 +333,14 @@ const Dashboard: React.FC<DashboardProps> = ({
     }
   }, [searchQuery]);
 
-  // Click outside search to close
+  // Click outside search or profile dropdown to close
   useEffect(() => {
       const handleClickOutside = (event: MouseEvent) => {
           if (searchRef.current && !searchRef.current.contains(event.target as Node)) {
               setIsSearchFocused(false);
+          }
+          if (profileDropdownRef.current && !profileDropdownRef.current.contains(event.target as Node)) {
+              setIsProfileDropdownOpen(false);
           }
       };
       document.addEventListener('mousedown', handleClickOutside);
@@ -449,8 +454,21 @@ const Dashboard: React.FC<DashboardProps> = ({
   const SidebarContent = () => (
     <div className="flex flex-col h-full bg-white">
         <div className="p-8">
-            <div className="flex items-center gap-3 mb-10">
-                <h1 className="text-3xl font-bold tracking-tight text-slate-900">Gradwyn</h1>
+            <div className="flex items-center gap-4 mb-10">
+                <div 
+                    onClick={() => setIsEditModalOpen(true)}
+                    className="w-12 h-12 rounded-full overflow-hidden border-2 border-slate-100 shrink-0 cursor-pointer hover:border-brand-200 transition-colors"
+                >
+                    <img 
+                        src={profile.photoUrl || `https://ui-avatars.com/api/?name=${profile.name || 'User'}&background=f1f5f9&color=475569`} 
+                        alt="User" 
+                        className="w-full h-full object-cover"
+                    />
+                </div>
+                <div>
+                    <h1 className="text-2xl font-bold tracking-tight text-slate-900 leading-none">Gradwyn</h1>
+                    <p className="text-[10px] text-slate-400 font-bold uppercase tracking-widest mt-1">Intelligent Search</p>
+                </div>
             </div>
         </div>
         
@@ -506,14 +524,23 @@ const Dashboard: React.FC<DashboardProps> = ({
             />
         </nav>
 
-        <div className="p-6 mt-auto">
+        <div className="p-6 mt-auto border-t border-slate-50">
             <SidebarItem 
                 view="tracker" 
                 currentView={currentView}
                 label="Settings" 
                 onClick={() => setIsEditModalOpen(true)}
-                icon={<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor" className="w-5 h-5"><path strokeLinecap="round" strokeLinejoin="round" d="M4.5 12a7.5 7.5 0 1115 0 7.5 7.5 0 01-15 0z" /><path strokeLinecap="round" strokeLinejoin="round" d="M12 9v3m0 0v3m0-3h3m-3 0H9" /></svg>}
+                icon={<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor" className="w-5 h-5"><path strokeLinecap="round" strokeLinejoin="round" d="M10.5 6h9.75M10.5 6a1.5 1.5 0 11-3 0m3 0a1.5 1.5 0 10-3 0M3.75 6H7.5m3 12h9.75m-9.75 0a1.5 1.5 0 11-3 0m3 0a1.5 1.5 0 10-3 0m-3.75 0H7.5m9-6h3.75m-3.75 0a1.5 1.5 0 11-3 0m3 0a1.5 1.5 0 10-3 0M3.75 12h12.75" /></svg>}
             />
+            <button 
+                onClick={() => onLogout()}
+                className="w-full mt-2 flex items-center gap-3 px-4 py-3 text-red-500 hover:text-red-700 hover:bg-red-50 rounded-xl transition-all font-bold text-sm text-left"
+            >
+                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor" className="w-5 h-5">
+                    <path strokeLinecap="round" strokeLinejoin="round" d="M15.75 9V5.25A2.25 2.25 0 0013.5 3h-6A2.25 2.25 0 005.25 5.25v13.5A2.25 2.25 0 007.5 21h6a2.25 2.25 0 002.25-2.25V15M12 9l-3 3m0 0l3 3m-3-3h12.75" />
+                </svg>
+                Sign Out
+            </button>
         </div>
     </div>
   );
@@ -613,17 +640,53 @@ const Dashboard: React.FC<DashboardProps> = ({
               </div>
 
               {/* User Profile */}
-              <div className="flex items-center gap-2 md:gap-3">
-                  <div className="hidden sm:block text-right">
-                      <p className="text-xs md:text-sm font-bold text-slate-900 truncate max-w-[150px]">{profile.name || 'Account'}</p>
-                  </div>
-                  <div className="w-8 h-8 md:w-10 md:h-10 rounded-full bg-slate-100 flex items-center justify-center overflow-hidden border border-slate-200 shrink-0">
-                      <img 
-                          src={profile.photoUrl || `https://ui-avatars.com/api/?name=${profile.name || 'User'}&background=f1f5f9&color=475569`} 
-                          alt="User" 
-                          className="w-full h-full object-cover"
-                      />
-                  </div>
+              <div className="flex items-center gap-2 md:gap-3 relative" ref={profileDropdownRef}>
+                  <button 
+                    onClick={() => setIsProfileDropdownOpen(!isProfileDropdownOpen)}
+                    className="flex items-center gap-2 md:gap-3 hover:bg-slate-50 p-1 rounded-full transition-colors"
+                  >
+                      <div className="hidden sm:block text-right">
+                          <p className="text-xs md:text-sm font-bold text-slate-900 truncate max-w-[150px]">{profile.name || 'Account'}</p>
+                      </div>
+                      <div className="w-8 h-8 md:w-10 md:h-10 rounded-full bg-slate-100 flex items-center justify-center overflow-hidden border border-slate-200 shrink-0">
+                          <img 
+                              src={profile.photoUrl || `https://ui-avatars.com/api/?name=${profile.name || 'User'}&background=f1f5f9&color=475569`} 
+                              alt="User" 
+                              className="w-full h-full object-cover"
+                          />
+                      </div>
+                  </button>
+
+                  {/* Profile Dropdown */}
+                  {isProfileDropdownOpen && (
+                      <div className="absolute top-full right-0 mt-2 w-48 bg-white shadow-xl rounded-2xl overflow-hidden z-50 border border-slate-100 py-2 animate-in fade-in slide-in-from-top-2 duration-200">
+                          <button 
+                              onClick={() => {
+                                  setIsEditModalOpen(true);
+                                  setIsProfileDropdownOpen(false);
+                              }}
+                              className="w-full text-left px-4 py-3 text-sm font-medium text-slate-700 hover:bg-slate-50 flex items-center gap-3 transition-colors"
+                          >
+                              <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor" className="w-4 h-4">
+                                  <path strokeLinecap="round" strokeLinejoin="round" d="M15.75 6a3.75 3.75 0 11-7.5 0 3.75 3.75 0 017.5 0zM4.501 20.118a7.5 7.5 0 0114.998 0A17.933 17.933 0 0112 21.75c-2.676 0-5.216-.584-7.499-1.632z" />
+                              </svg>
+                              My Profile
+                          </button>
+                          <div className="h-px bg-slate-100 my-1 mx-2" />
+                          <button 
+                              onClick={() => {
+                                  onLogout();
+                                  setIsProfileDropdownOpen(false);
+                              }}
+                              className="w-full text-left px-4 py-3 text-sm font-medium text-red-600 hover:bg-red-50 flex items-center gap-3 transition-colors"
+                          >
+                              <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor" className="w-4 h-4">
+                                  <path strokeLinecap="round" strokeLinejoin="round" d="M15.75 9V5.25A2.25 2.25 0 0013.5 3h-6A2.25 2.25 0 005.25 5.25v13.5A2.25 2.25 0 007.5 21h6a2.25 2.25 0 002.25-2.25V15M12 9l-3 3m0 0l3 3m-3-3h12.75" />
+                              </svg>
+                              Sign Out
+                          </button>
+                      </div>
+                  )}
               </div>
           </header>
 

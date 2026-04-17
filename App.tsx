@@ -12,7 +12,7 @@ import { UserProfile, ChatMessage, University, AuthUser, Application, MentorProf
 import { generateWelcomeMessage, initializeChatSession } from './services/geminiService';
 import { authClient } from './lib/auth';
 import { db } from './firebase';
-import { doc, getDoc, setDoc } from 'firebase/firestore';
+import { doc, getDoc, setDoc, deleteDoc } from 'firebase/firestore';
 
 type AppView = 'landing' | 'login' | 'onboarding' | 'mentor-onboarding' | 'chat' | 'dashboard' | 'mentor-dashboard';
 
@@ -217,6 +217,45 @@ const App: React.FC = () => {
     setView('landing');
   };
 
+  const handleDeleteAccount = async () => {
+    if (!sessionUser) return;
+    
+    try {
+        const userDocRef = doc(db, 'users', sessionUser.id);
+        
+        // 1. Delete Firestore Data
+        await deleteDoc(userDocRef);
+        
+        // 2. Delete Auth Account
+        const { error } = await authClient.deleteAccount();
+        
+        if (error) {
+            // If auth deletion fails (usually requires recent login), 
+            // we at least signed them out and deleted DB data.
+            console.warn("Auth deletion failed, signing out instead:", error);
+            await authClient.signOut();
+        }
+    } catch (error) {
+        console.error("Error during account deletion:", error);
+    } finally {
+        // Clear State
+        setProfile(null);
+        setMentorProfile(null);
+        setSavedSchools([]);
+        setApplications([]);
+        setMessages([]);
+        setDiscardedSchools([]);
+        
+        // Clear Local Storage
+        localStorage.removeItem('gradwyn_profile');
+        localStorage.removeItem('gradwyn_savedSchools');
+        localStorage.removeItem('gradwyn_applications');
+        localStorage.removeItem('gradwyn_user_role');
+        
+        setView('landing');
+    }
+  };
+
   const handleOnboardingComplete = async (userProfile: UserProfile) => {
     const fullProfile: UserProfile = {
         ...userProfile,
@@ -360,7 +399,7 @@ const App: React.FC = () => {
   }
   
   if (view === 'mentor-dashboard' && mentorProfile) {
-      return <MentorDashboard profile={mentorProfile} onUpdateProfile={setMentorProfile} onLogout={handleLogout} />;
+      return <MentorDashboard profile={mentorProfile} onUpdateProfile={setMentorProfile} onLogout={handleLogout} onDeleteAccount={handleDeleteAccount} />;
   }
 
   if (view === 'onboarding') {
@@ -387,6 +426,7 @@ const App: React.FC = () => {
               onWithdrawApplication={handleWithdrawApplication}
               onUpdateProfile={handleFullProfileRefresh}
               onLogout={handleLogout}
+              onDeleteAccount={handleDeleteAccount}
               renderChat={() => (
                   <ChatInterface 
                     profile={profile} 
@@ -399,6 +439,7 @@ const App: React.FC = () => {
                     discardedSchools={discardedSchools}
                     onGoToDashboard={() => {}}
                     embeddedInDashboard={true}
+                    onDeleteAccount={handleDeleteAccount}
                 />
               )}
           />
@@ -417,6 +458,7 @@ const App: React.FC = () => {
             savedSchools={savedSchools}
             discardedSchools={discardedSchools}
             onGoToDashboard={handleGoToDashboard}
+            onDeleteAccount={handleDeleteAccount}
         />
     );
   }

@@ -118,6 +118,19 @@ export const authClient = {
         return { data: null, error: error.message };
      }
   },
+
+  deleteAccount: async () => {
+    try {
+        const user = auth.currentUser;
+        if (!user) throw new Error("No authenticated user found.");
+        
+        await user.delete();
+        return { data: true, error: null };
+    } catch (error: any) {
+        console.error("deleteAccount error:", error);
+        return { data: null, error: error.message };
+    }
+  },
   
   useSession: () => {
     const [data, setData] = useState<AuthUser | null>(null);

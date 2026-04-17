@@ -18,6 +18,7 @@ interface ChatInterfaceProps {
   discardedSchools: string[];
   onGoToDashboard: () => void;
   embeddedInDashboard?: boolean;
+  onDeleteAccount?: () => void;
 }
 
 const LOADING_PHRASES = [
@@ -41,7 +42,8 @@ const ChatInterface: React.FC<ChatInterfaceProps> = ({
     savedSchools,
     discardedSchools,
     onGoToDashboard,
-    embeddedInDashboard = false
+    embeddedInDashboard = false,
+    onDeleteAccount = () => {}
 }) => {
   const [inputText, setInputText] = useState('');
   const [isProcessing, setIsProcessing] = useState(false);
@@ -236,6 +238,7 @@ const ChatInterface: React.FC<ChatInterfaceProps> = ({
         onClose={() => setIsEditModalOpen(false)} 
         profile={profile} 
         onSave={handleProfileUpdate}
+        onDeleteAccount={onDeleteAccount}
       />
 
       {/* Header (only if not embedded) */}

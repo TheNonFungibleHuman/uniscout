@@ -17,6 +17,7 @@ interface DashboardProps {
   renderChat: () => React.ReactNode;
   onUpdateProfile: (newProfile: UserProfile) => void;
   onLogout: () => void;
+  onDeleteAccount: () => void;
 }
 
 type DashboardView = 'schools' | 'mentors' | 'chat' | 'scholarships' | 'tracker' | 'forum' | 'guides' | 'prep';
@@ -290,7 +291,8 @@ const Dashboard: React.FC<DashboardProps> = ({
     onWithdrawApplication,
     renderChat, 
     onUpdateProfile, 
-    onLogout 
+    onLogout,
+    onDeleteAccount
 }) => {
   const [currentView, setCurrentView] = useState<DashboardView>('schools');
   const [selectedSchool, setSelectedSchool] = useState<University | null>(null);
@@ -554,6 +556,7 @@ const Dashboard: React.FC<DashboardProps> = ({
         onClose={() => setIsEditModalOpen(false)} 
         profile={profile} 
         onSave={handleProfileUpdateWithRedirect}
+        onDeleteAccount={onDeleteAccount}
       />
 
       <FeedbackModal 

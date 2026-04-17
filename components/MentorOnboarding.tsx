@@ -1,6 +1,8 @@
 
 import React, { useState } from 'react';
 import { MentorProfile } from '../types';
+import { motion, AnimatePresence } from 'motion/react';
+import { AlertTriangle, Trash2 } from 'lucide-react';
 
 interface MentorOnboardingProps {
   onComplete: (profile: MentorProfile) => void;
@@ -10,6 +12,7 @@ interface MentorOnboardingProps {
   initialProfile?: MentorProfile;
   onCancel?: () => void;
   onBack?: () => void;
+  onDeleteAccount?: () => void;
 }
 
 const MentorOnboarding: React.FC<MentorOnboardingProps> = ({ 
@@ -19,9 +22,11 @@ const MentorOnboarding: React.FC<MentorOnboardingProps> = ({
     initialPhoto = '', 
     initialProfile,
     onCancel,
-    onBack
+    onBack,
+    onDeleteAccount
 }) => {
   const [step, setStep] = useState(1);
+  const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
   const [formData, setFormData] = useState<Partial<MentorProfile>>({
     name: initialProfile?.name || initialName,
     email: initialProfile?.email || initialEmail,
@@ -250,6 +255,25 @@ const MentorOnboarding: React.FC<MentorOnboardingProps> = ({
                                 If disabled, you will not appear in student searches.
                             </p>
                         </div>
+
+                        {initialProfile && (
+                            <div className="pt-8 mt-8 border-t border-red-50">
+                                <h3 className="text-xs font-bold text-red-900 uppercase tracking-widest mb-3 flex items-center gap-2">
+                                    <AlertTriangle size={14} />
+                                    Danger Zone
+                                </h3>
+                                <p className="text-[10px] text-red-600/70 mb-4 font-medium italic">
+                                    Deleting your account is permanent. All mentor profile data and student guidance history will be lost.
+                                </p>
+                                <button 
+                                    onClick={() => setShowDeleteConfirm(true)}
+                                    className="text-[10px] font-bold uppercase tracking-widest text-red-600 hover:text-white hover:bg-red-600 border border-red-200 hover:border-red-600 px-4 py-2.5 transition-all flex items-center gap-2"
+                                >
+                                    <Trash2 size={12} />
+                                    Delete My Account
+                                </button>
+                            </div>
+                        )}
                     </div>
                 )}
              </div>
@@ -284,6 +308,49 @@ const MentorOnboarding: React.FC<MentorOnboardingProps> = ({
              </div>
         </div>
       </div>
+
+      {/* Delete Confirmation Modal for Mentors */}
+      <AnimatePresence>
+        {showDeleteConfirm && (
+          <div className="fixed inset-0 z-[110] flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-sm">
+            <motion.div 
+              initial={{ opacity: 0, scale: 0.95, y: 20 }}
+              animate={{ opacity: 1, scale: 1, y: 0 }}
+              exit={{ opacity: 0, scale: 0.95, y: 20 }}
+              className="bg-white rounded-none shadow-2xl w-full max-w-md overflow-hidden flex flex-col border border-slate-200"
+            >
+              <div className="p-10 text-center">
+                <div className="w-16 h-16 bg-red-50 text-red-600 rounded-none flex items-center justify-center mx-auto mb-6 border border-red-100">
+                  <AlertTriangle size={32} />
+                </div>
+                <h3 className="text-2xl font-serif font-bold text-slate-900 mb-2">Delete Account?</h3>
+                <p className="text-slate-500 mb-8 font-medium text-sm">
+                  This action is irreversible. All your mentor records and data will be permanently purged from the Gradwyn archives.
+                </p>
+                
+                <div className="flex flex-col gap-3">
+                  <button 
+                    onClick={() => {
+                       onDeleteAccount?.();
+                       setShowDeleteConfirm(false);
+                    }}
+                    className="w-full py-4 bg-red-600 text-white font-bold uppercase tracking-widest text-xs hover:bg-red-700 transition-all shadow-lg flex items-center justify-center gap-3"
+                  >
+                    <Trash2 size={16} />
+                    Yes, Delete Permanently
+                  </button>
+                  <button 
+                    onClick={() => setShowDeleteConfirm(false)}
+                    className="w-full py-4 bg-white border border-slate-200 text-slate-400 font-bold uppercase tracking-widest text-xs hover:text-slate-900 hover:border-slate-900 transition-all"
+                  >
+                    No, Cancel
+                  </button>
+                </div>
+              </div>
+            </motion.div>
+          </div>
+        )}
+      </AnimatePresence>
     </div>
   );
 };

@@ -7,9 +7,10 @@ interface MentorDashboardProps {
   profile: MentorProfile;
   onUpdateProfile: (profile: MentorProfile) => void;
   onLogout: () => void;
+  onDeleteAccount: () => void;
 }
 
-const MentorDashboard: React.FC<MentorDashboardProps> = ({ profile, onUpdateProfile, onLogout }) => {
+const MentorDashboard: React.FC<MentorDashboardProps> = ({ profile, onUpdateProfile, onLogout, onDeleteAccount }) => {
   const [isEditing, setIsEditing] = useState(false);
 
   const handleToggleStatus = () => {
@@ -53,6 +54,7 @@ const MentorDashboard: React.FC<MentorDashboardProps> = ({ profile, onUpdateProf
                             setIsEditing(false);
                         }}
                         onCancel={() => setIsEditing(false)}
+                        onDeleteAccount={onDeleteAccount}
                    />
                </div>
            </div>

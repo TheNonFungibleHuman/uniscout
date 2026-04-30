@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import Onboarding from './components/Onboarding';
 import MentorOnboarding from './components/MentorOnboarding';
@@ -175,20 +174,6 @@ const App: React.FC = () => {
       }
   }, [mentorProfile, sessionUser, userRole]);
 
-  // Check if API key is present
-  const apiKey = process.env.GEMINI_API_KEY;
-
-  if (!apiKey) {
-    return (
-      <div className="h-screen w-screen flex items-center justify-center bg-beige-100 text-brand-900 p-8 text-center">
-         <div className="border border-accent-rust p-8 bg-white">
-             <h1 className="text-2xl font-serif font-bold text-accent-rust mb-2">Configuration Error</h1>
-             <p className="font-sans">GEMINI_API_KEY is missing from the environment.</p>
-         </div>
-      </div>
-    );
-  }
-
   const handleRoleSelect = (role: 'applicant' | 'mentor' | 'university') => {
       setSelectedRole(role);
       setView('login');
@@ -208,12 +193,6 @@ const App: React.FC = () => {
     setApplications([]);
     setMessages([]);
     setDiscardedSchools([]);
-    // Clear Local Storage (Optional: Keep specific user data, but clear session keys)
-    localStorage.removeItem('gradwyn_profile');
-    localStorage.removeItem('gradwyn_savedSchools');
-    localStorage.removeItem('gradwyn_applications');
-    localStorage.removeItem('gradwyn_user_role'); // Clear preferred role
-    
     setView('landing');
   };
 
@@ -245,13 +224,6 @@ const App: React.FC = () => {
         setApplications([]);
         setMessages([]);
         setDiscardedSchools([]);
-        
-        // Clear Local Storage
-        localStorage.removeItem('gradwyn_profile');
-        localStorage.removeItem('gradwyn_savedSchools');
-        localStorage.removeItem('gradwyn_applications');
-        localStorage.removeItem('gradwyn_user_role');
-        
         setView('landing');
     }
   };

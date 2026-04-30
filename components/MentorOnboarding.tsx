@@ -1,7 +1,7 @@
 
 import React, { useState } from 'react';
 import { MentorProfile } from '../types';
-import { motion, AnimatePresence } from 'motion/react';
+import { motion as mot, AnimatePresence } from 'motion/react';
 import { AlertTriangle, Trash2 } from 'lucide-react';
 
 interface MentorOnboardingProps {
@@ -313,7 +313,7 @@ const MentorOnboarding: React.FC<MentorOnboardingProps> = ({
       <AnimatePresence>
         {showDeleteConfirm && (
           <div className="fixed inset-0 z-[110] flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-sm">
-            <motion.div 
+            <mot.div 
               initial={{ opacity: 0, scale: 0.95, y: 20 }}
               animate={{ opacity: 1, scale: 1, y: 0 }}
               exit={{ opacity: 0, scale: 0.95, y: 20 }}
@@ -347,7 +347,7 @@ const MentorOnboarding: React.FC<MentorOnboardingProps> = ({
                   </button>
                 </div>
               </div>
-            </motion.div>
+            </mot.div>
           </div>
         )}
       </AnimatePresence>

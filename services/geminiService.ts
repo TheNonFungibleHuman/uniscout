@@ -1,12 +1,12 @@
 
-import { GoogleGenAI, Chat, GroundingChunk, ThinkingLevel } from "@google/genai";
+import { httpsCallable } from "firebase/functions";
+import { functions } from "../firebase";
 import { UserProfile, GroundingSource, University, ChatMessage } from "../types";
 import { UNI_IMAGES } from "../constants";
 
-const apiKey = process.env.GEMINI_API_KEY || '';
-const ai = new GoogleGenAI({ apiKey });
-
-let chatSession: Chat | null = null;
+// State to maintain session context as the Cloud Function is stateless
+let currentHistory: any[] = [];
+let currentSystemInstruction: string = "";
 
 const createSystemInstruction = (profile: UserProfile) => `
     You are Gradwyn, an elite AI university researcher. Your goal is to provide deep, analytical, and well-formatted research for high-achieving students.
@@ -59,22 +59,13 @@ const createSystemInstruction = (profile: UserProfile) => `
   `;
 
 export const initializeChatSession = (profile: UserProfile, previousMessages: ChatMessage[] = []) => {
-  const history = previousMessages
+  currentSystemInstruction = createSystemInstruction(profile);
+  currentHistory = previousMessages
     .filter(m => !m.isThinking && m.id !== 'error-fallback' && !m.id.startsWith('streaming-'))
     .map(m => ({
       role: m.role === 'model' ? 'model' : 'user',
       parts: [{ text: m.text }]
     }));
-
-  chatSession = ai.chats.create({
-    model: 'gemini-3-flash-preview',
-    config: {
-      systemInstruction: createSystemInstruction(profile),
-      tools: [{ googleSearch: {} }],
-      thinkingConfig: { thinkingLevel: ThinkingLevel.LOW }
-    },
-    history: history.length > 0 ? history : undefined,
-  });
 };
 
 export const updateChatProfile = async (newProfile: UserProfile, currentMessages: ChatMessage[] = [], onToken?: (token: string) => void) => {
@@ -88,14 +79,13 @@ export const updateChatProfile = async (newProfile: UserProfile, currentMessages
       Remember the divider: ---UNIVERSITIES_DATA---
     `;
     
-    return sendMessageToGeminiStream(updateMessage, onToken);
+    return sendMessageToGemini(updateMessage, onToken);
 };
 
 export const parseRecommendations = (fullText: string): { cleanText: string; recommendations: University[] } => {
     let cleanText = fullText;
     let recommendations: University[] = [];
     
-    // 1. Identify the JSON section using the divider
     const divider = "---UNIVERSITIES_DATA---";
     const dividerIndex = fullText.indexOf(divider);
     
@@ -103,7 +93,6 @@ export const parseRecommendations = (fullText: string): { cleanText: string; rec
         cleanText = fullText.substring(0, dividerIndex).trim();
         const possibleJsonSection = fullText.substring(dividerIndex + divider.length);
         
-        // Extract JSON from within possible section (look for block or raw array)
         const jsonMatch = possibleJsonSection.match(/```(?:json)?\s*(\[[\s\S]*?\])\s*```/) || 
                           possibleJsonSection.match(/(\[[\s\S]*?\])/);
         
@@ -139,20 +128,15 @@ export const parseRecommendations = (fullText: string): { cleanText: string; rec
                         };
                     });
                 }
-            } catch (e) {
-                // Silently fail if JSON is partial or invalid
-            }
+            } catch (e) {}
         }
     } else {
-        // Fallback: If divider is missing but we see backticks
         const backtickMatch = fullText.match(/```(?:json)?\s*(\[[\s\S]*?\])\s*```/);
         if (backtickMatch) {
             cleanText = fullText.replace(backtickMatch[0], '').trim();
             try {
                 const parsed = JSON.parse(backtickMatch[1]);
                 if (Array.isArray(parsed)) {
-                   // ... (same mapping as above, but omitting for brevity if possible)
-                   // Actually need the mapping to return valid University objects
                    recommendations = parsed.map((u: any) => {
                         const str = u.name;
                         let hash = 0;
@@ -177,72 +161,50 @@ export const parseRecommendations = (fullText: string): { cleanText: string; rec
                 }
             } catch(e) {}
         }
-
-        // Streaming safety: Strip anything from the end if it looks like a block start
-        const streamingMarkers = ['```json', '```', '\n[ {', ' [ {'];
-        for (const marker of streamingMarkers) {
-            const index = cleanText.lastIndexOf(marker);
-            if (index !== -1 && index > cleanText.length - 2000) {
-                cleanText = cleanText.substring(0, index).trim();
-                break;
-            }
-        }
     }
 
-    // Clean up trailing introductory phrases
     cleanText = cleanText.replace(/(Here (is|are) the (JSON|data|blocks|recommendations).*?[:.]\s*$)/gim, '').trim();
-    
     return { cleanText, recommendations };
 };
 
-export const sendMessageToGeminiStream = async (
+export const sendMessageToGemini = async (
     message: string, 
     onToken?: (token: string) => void
 ): Promise<{ text: string; sources: GroundingSource[]; recommendations?: University[] }> => {
-  if (!chatSession) {
+  if (!currentSystemInstruction) {
     throw new Error("Chat session not initialized");
   }
 
   try {
-    const result = await chatSession.sendMessageStream({ message });
-    let fullText = "";
-    let sources: GroundingSource[] = [];
+    const askGeminiFunction = httpsCallable<any, any>(functions, 'askGemini');
+    const result = await askGeminiFunction({
+      message,
+      systemInstruction: currentSystemInstruction,
+      history: currentHistory
+    });
 
-    for await (const chunk of result) {
-      const part = chunk.text;
-      if (part) {
-        fullText += part;
-        // STREAMING FIX: clean text before passing to onToken callback
-        const { cleanText } = parseRecommendations(fullText);
-        if (onToken) onToken(cleanText);
-      }
+    const { text: rawText, sources } = result.data;
+    const { cleanText, recommendations } = parseRecommendations(rawText);
 
-      // Collect sources logic
-      const candidate = chunk.candidates?.[0];
-      if (candidate?.groundingMetadata?.groundingChunks) {
-          candidate.groundingMetadata.groundingChunks.forEach((c: any) => {
-              if (c.web?.uri && c.web?.title && !sources.some(s => s.uri === c.web.uri)) {
-                  sources.push({ title: c.web.title, uri: c.web.uri });
-              }
-          });
-      }
+    // Update local history
+    currentHistory.push({ role: 'user', parts: [{ text: message }] });
+    currentHistory.push({ role: 'model', parts: [{ text: rawText }] });
+
+    if (onToken) {
+      onToken(cleanText);
     }
-
-    const { cleanText, recommendations } = parseRecommendations(fullText);
 
     return { text: cleanText, sources, recommendations };
   } catch (error) {
-    console.error("Gemini Streaming Error:", error);
+    console.error("Gemini Cloud Function Error:", error);
     throw error;
   }
 };
 
-export const sendMessageToGemini = async (message: string): Promise<{ text: string; sources: GroundingSource[]; recommendations?: University[] }> => {
-  return sendMessageToGeminiStream(message);
-};
+export const sendMessageToGeminiStream = sendMessageToGemini;
 
 export const generateWelcomeMessage = async (profile: UserProfile, onToken?: (token: string) => void): Promise<{ text: string; sources: GroundingSource[]; recommendations?: University[] }> => {
-  if (!chatSession) {
+  if (!currentSystemInstruction) {
     initializeChatSession(profile);
   }
   
@@ -253,5 +215,5 @@ export const generateWelcomeMessage = async (profile: UserProfile, onToken?: (to
     Use the divider: ---UNIVERSITIES_DATA---
   `;
 
-  return sendMessageToGeminiStream(prompt, onToken);
+  return sendMessageToGemini(prompt, onToken);
 };

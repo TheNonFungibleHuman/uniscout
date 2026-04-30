@@ -1,6 +1,7 @@
 import { initializeApp } from 'firebase/app';
 import { getAuth } from 'firebase/auth';
 import { getFirestore } from 'firebase/firestore';
+import { getFunctions } from 'firebase/functions';
 
 const firebaseConfig = {
   apiKey: process.env.FIREBASE_API_KEY,
@@ -38,3 +39,4 @@ if (!firebaseConfig.projectId) console.error("Firebase Project ID is missing!");
 const app = initializeApp(firebaseConfig);
 export const auth = getAuth(app);
 export const db = getFirestore(app, process.env.FIREBASE_FIRESTORE_DATABASE_ID || undefined);
+export const functions = getFunctions(app);

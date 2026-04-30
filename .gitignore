@@ -28,4 +28,3 @@ dist-ssr
 .env.*
 !.env.example
 firebase-applet-config.json
-Gradwyn Code Architecture/

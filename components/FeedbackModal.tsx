@@ -1,6 +1,6 @@
 
 import React, { useState } from 'react';
-import { motion, AnimatePresence } from 'motion/react';
+import { motion as m, AnimatePresence } from 'motion/react';
 import { X, Send, CheckCircle2, AlertCircle } from 'lucide-react';
 import { useForm, ValidationError } from '@formspree/react';
 
@@ -20,7 +20,7 @@ const FeedbackModal: React.FC<FeedbackModalProps> = ({ isOpen, onClose, userEmai
 
   return (
     <div className="fixed inset-0 z-[110] flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-sm">
-      <motion.div 
+      <m.div 
         initial={{ opacity: 0, scale: 0.95, y: 20 }}
         animate={{ opacity: 1, scale: 1, y: 0 }}
         exit={{ opacity: 0, scale: 0.95, y: 20 }}
@@ -39,7 +39,7 @@ const FeedbackModal: React.FC<FeedbackModalProps> = ({ isOpen, onClose, userEmai
         <div className="p-8">
           <AnimatePresence mode="wait">
             {state.succeeded ? (
-              <motion.div 
+              <m.div 
                 key="success"
                 initial={{ opacity: 0, y: 10 }}
                 animate={{ opacity: 1, y: 0 }}
@@ -56,9 +56,9 @@ const FeedbackModal: React.FC<FeedbackModalProps> = ({ isOpen, onClose, userEmai
                 >
                     Back to Gradwyn
                 </button>
-              </motion.div>
+              </m.div>
             ) : (
-              <motion.form 
+              <m.form 
                 key="form"
                 initial={{ opacity: 0 }}
                 animate={{ opacity: 1 }}
@@ -118,11 +118,11 @@ const FeedbackModal: React.FC<FeedbackModalProps> = ({ isOpen, onClose, userEmai
                     </>
                   )}
                 </button>
-              </motion.form>
+              </m.form>
             )}
           </AnimatePresence>
         </div>
-      </motion.div>
+      </m.div>
     </div>
   );
 };

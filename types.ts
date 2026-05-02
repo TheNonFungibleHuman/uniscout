@@ -75,6 +75,17 @@ export interface MentorProfile {
   tags: string[];
 }
 
+export interface UniversityProfile {
+  id: string; 
+  name: string;
+  email: string;
+  website: string;
+  logoUrl?: string;
+  location: string;
+  description: string;
+  programs: string[];
+}
+
 export interface OnboardingQuestion {
   id: keyof UserProfile;
   question: string;

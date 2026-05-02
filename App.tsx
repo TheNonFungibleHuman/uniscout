@@ -4,16 +4,17 @@ import MentorOnboarding from './components/MentorOnboarding';
 import ChatInterface from './components/ChatInterface';
 import Dashboard from './components/Dashboard';
 import MentorDashboard from './components/MentorDashboard';
+import UniversityDashboard from './components/UniversityDashboard';
 import LandingPage from './components/LandingPage';
 import LoginPage from './components/LoginPage';
 import LoadingScreen from './components/LoadingScreen';
-import { UserProfile, ChatMessage, University, AuthUser, Application, MentorProfile } from './types';
+import { UserProfile, ChatMessage, University, AuthUser, Application, MentorProfile, UniversityProfile } from './types';
 import { generateWelcomeMessage, initializeChatSession } from './services/geminiService';
 import { authClient } from './lib/auth';
 import { db } from './firebase';
 import { doc, getDoc, setDoc, deleteDoc } from 'firebase/firestore';
 
-type AppView = 'landing' | 'login' | 'onboarding' | 'mentor-onboarding' | 'chat' | 'dashboard' | 'mentor-dashboard';
+type AppView = 'landing' | 'login' | 'onboarding' | 'mentor-onboarding' | 'chat' | 'dashboard' | 'mentor-dashboard' | 'university-dashboard';
 
 const PROFILE_ANALYSIS_MESSAGES = [
     "Consulting global academic archives...",
@@ -40,6 +41,7 @@ const App: React.FC = () => {
   
   const [profile, setProfile] = useState<UserProfile | null>(null);
   const [mentorProfile, setMentorProfile] = useState<MentorProfile | null>(null);
+  const [universityProfile, setUniversityProfile] = useState<UniversityProfile | null>(null);
   const [userRole, setUserRole] = useState<'applicant' | 'mentor' | 'university' | null>(null);
   
   // Lifted Chat State
@@ -77,6 +79,9 @@ const App: React.FC = () => {
                             } else {
                                 setView('mentor-onboarding');
                             }
+                        } else if (role === 'university') {
+                            setUniversityProfile(data as UniversityProfile);
+                            setView('university-dashboard');
                         } else {
                             let loadedMessages: ChatMessage[] = [];
                             if (data.messages) {
@@ -325,8 +330,13 @@ const App: React.FC = () => {
       }
   };
 
-  const handleWithdrawApplication = (appId: string) => {
-      setApplications(prev => prev.filter(a => a.id !== appId));
+  const handleWithdrawApplication = async (appId: string) => {
+      try {
+          await deleteDoc(doc(db, 'applications', appId));
+          setApplications(prev => prev.filter(a => a.id !== appId));
+      } catch (error) {
+          console.error("Error withdrawing application:", error);
+      }
   };
 
   const handleGoToDashboard = () => {
@@ -372,6 +382,10 @@ const App: React.FC = () => {
   
   if (view === 'mentor-dashboard' && mentorProfile) {
       return <MentorDashboard profile={mentorProfile} onUpdateProfile={setMentorProfile} onLogout={handleLogout} onDeleteAccount={handleDeleteAccount} />;
+  }
+
+  if (view === 'university-dashboard' && universityProfile) {
+      return <UniversityDashboard profile={universityProfile} onLogout={handleLogout} />;
   }
 
   if (view === 'onboarding') {

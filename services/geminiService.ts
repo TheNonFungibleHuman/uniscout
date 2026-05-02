@@ -1,10 +1,14 @@
 
-import { httpsCallable } from "firebase/functions";
-import { functions } from "../firebase";
+import { GoogleGenAI } from "@google/genai";
 import { UserProfile, GroundingSource, University, ChatMessage } from "../types";
 import { UNI_IMAGES } from "../constants";
 
-// State to maintain session context as the Cloud Function is stateless
+// Initialize AI
+const ai = new GoogleGenAI({ 
+    apiKey: process.env.GEMINI_API_KEY || '' 
+});
+
+// State to maintain session context
 let currentHistory: any[] = [];
 let currentSystemInstruction: string = "";
 
@@ -23,7 +27,7 @@ const createSystemInstruction = (profile: UserProfile) => `
     COMMUNICATION STYLE:
     - **RICH FORMATTING:** Use bolding, bullet points, numbered lists, and Markdown tables to make information digestible and professional.
     - **DEEP ANALYSIS:** Don't just list facts. Explain the *logic* behind your research. Discuss campus culture, academic prestige, and career outcomes.
-    - **PROACTIVE RESEARCH:** Use the search tool to find recent student sentiments, upcoming deadlines, or unique program features.
+    - **PROACTIVE RESEARCH:** Use Google Search to find recent student sentiments, upcoming deadlines, or unique program features.
     - **CONVERSATIONAL ADVISOR:** You are a high-end educational consultant. Be expert, helpful, and concise yet detailed where it matters.
 
     STRICT BEHAVIORAL RULES:
@@ -64,7 +68,7 @@ export const initializeChatSession = (profile: UserProfile, previousMessages: Ch
     .filter(m => !m.isThinking && m.id !== 'error-fallback' && !m.id.startsWith('streaming-'))
     .map(m => ({
       role: m.role === 'model' ? 'model' : 'user',
-      parts: [{ text: m.text }]
+      content: { parts: [{ text: m.text }] }
     }));
 };
 
@@ -79,7 +83,7 @@ export const updateChatProfile = async (newProfile: UserProfile, currentMessages
       Remember the divider: ---UNIVERSITIES_DATA---
     `;
     
-    return sendMessageToGemini(updateMessage, onToken);
+    return sendMessageToGeminiStream(updateMessage, onToken);
 };
 
 export const parseRecommendations = (fullText: string): { cleanText: string; recommendations: University[] } => {
@@ -112,7 +116,7 @@ export const parseRecommendations = (fullText: string): { cleanText: string; rec
                         const image2 = UNI_IMAGES[index2];
 
                         return {
-                            id: u.name.replace(/\s+/g, '-').toLowerCase() + '-' + Date.now() + Math.random().toString(36).substr(2, 5),
+                            id: u.id || u.name.replace(/\s+/g, '-').toLowerCase() + '-' + Date.now() + Math.random().toString(36).substr(2, 5),
                             name: u.name,
                             location: u.location || "Unknown Location",
                             matchScore: u.matchScore || 80,
@@ -133,17 +137,18 @@ export const parseRecommendations = (fullText: string): { cleanText: string; rec
     } else {
         const backtickMatch = fullText.match(/```(?:json)?\s*(\[[\s\S]*?\])\s*```/);
         if (backtickMatch) {
-            cleanText = fullText.replace(backtickMatch[0], '').trim();
+            const jsonPart = backtickMatch[1];
             try {
-                const parsed = JSON.parse(backtickMatch[1]);
+                const parsed = JSON.parse(jsonPart);
                 if (Array.isArray(parsed)) {
-                   recommendations = parsed.map((u: any) => {
+                    cleanText = fullText.replace(backtickMatch[0], '').trim();
+                    recommendations = parsed.map((u: any) => {
                         const str = u.name;
                         let hash = 0;
                         for (let i = 0; i < str.length; i++) { hash = str.charCodeAt(i) + ((hash << 5) - hash); }
                         const index = Math.abs(hash) % UNI_IMAGES.length;
                         return {
-                            id: u.name.replace(/\s+/g, '-').toLowerCase() + '-' + Date.now(),
+                            id: u.id || u.name.replace(/\s+/g, '-').toLowerCase() + '-' + Date.now(),
                             name: u.name,
                             location: u.location || "Unknown Location",
                             matchScore: u.matchScore || 80,
@@ -167,7 +172,7 @@ export const parseRecommendations = (fullText: string): { cleanText: string; rec
     return { cleanText, recommendations };
 };
 
-export const sendMessageToGemini = async (
+export const sendMessageToGeminiStream = async (
     message: string, 
     onToken?: (token: string) => void
 ): Promise<{ text: string; sources: GroundingSource[]; recommendations?: University[] }> => {
@@ -176,32 +181,66 @@ export const sendMessageToGemini = async (
   }
 
   try {
-    const askGeminiFunction = httpsCallable<any, any>(functions, 'askGemini');
-    const result = await askGeminiFunction({
-      message,
-      systemInstruction: currentSystemInstruction,
-      history: currentHistory
+    const responseStream = await ai.models.generateContentStream({
+      model: "gemini-3-flash-preview",
+      contents: [
+        ...currentHistory,
+        { role: 'user', content: { parts: [{ text: message }] } }
+      ],
+      config: {
+        systemInstruction: currentSystemInstruction,
+        tools: [{ googleSearch: {} }]
+      }
     });
 
-    const { text: rawText, sources } = result.data;
-    const { cleanText, recommendations } = parseRecommendations(rawText);
+    let fullText = "";
+    let sources: GroundingSource[] = [];
 
-    // Update local history
-    currentHistory.push({ role: 'user', parts: [{ text: message }] });
-    currentHistory.push({ role: 'model', parts: [{ text: rawText }] });
+    for await (const chunk of responseStream) {
+      fullText += chunk.text || "";
+      
+      // Extract grounding sources if available
+      const groundingMetadata = chunk.candidates?.[0]?.groundingMetadata;
+      if (groundingMetadata?.searchEntryPoint) {
+          // You could handle search entry point here
+      }
+      
+      if (groundingMetadata?.groundingChunks) {
+          const newSources = groundingMetadata.groundingChunks
+            .filter((c: any) => c.web && c.web.title && c.web.uri)
+            .map((c: any) => ({
+              title: c.web!.title!,
+              uri: c.web!.uri!
+            }));
+          
+          // Add unique sources
+          newSources.forEach(ns => {
+              if (!sources.some(s => s.uri === ns.uri)) {
+                  sources.push(ns);
+              }
+          });
+      }
 
-    if (onToken) {
-      onToken(cleanText);
+      if (onToken) {
+        const { cleanText } = parseRecommendations(fullText);
+        onToken(cleanText);
+      }
     }
+
+    const { cleanText, recommendations } = parseRecommendations(fullText);
+
+    // Update history
+    currentHistory.push({ role: 'user', content: { parts: [{ text: message }] } });
+    currentHistory.push({ role: 'model', content: { parts: [{ text: fullText }] } });
 
     return { text: cleanText, sources, recommendations };
   } catch (error) {
-    console.error("Gemini Cloud Function Error:", error);
+    console.error("Gemini Error:", error);
     throw error;
   }
 };
 
-export const sendMessageToGeminiStream = sendMessageToGemini;
+export const sendMessageToGemini = sendMessageToGeminiStream;
 
 export const generateWelcomeMessage = async (profile: UserProfile, onToken?: (token: string) => void): Promise<{ text: string; sources: GroundingSource[]; recommendations?: University[] }> => {
   if (!currentSystemInstruction) {
@@ -215,5 +254,5 @@ export const generateWelcomeMessage = async (profile: UserProfile, onToken?: (to
     Use the divider: ---UNIVERSITIES_DATA---
   `;
 
-  return sendMessageToGemini(prompt, onToken);
+  return sendMessageToGeminiStream(prompt, onToken);
 };

@@ -1,12 +1,21 @@
 import express from "express";
 import path from "node:path";
+import { fileURLToPath } from "node:url";
 import { GoogleGenerativeAI } from "@google/generative-ai";
+
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
 
 async function startServer() {
   const app = express();
   const PORT = 3000;
 
   app.use(express.json());
+
+  // Health check for Cloud Run / Load Balancers
+  app.get("/api/health", (req, res) => {
+    res.json({ status: "ok", timestamp: new Date().toISOString() });
+  });
 
   // Safe Gemini API endpoint
   app.post("/api/chat", async (req, res) => {
@@ -26,7 +35,7 @@ async function startServer() {
 
       // Start chat with history
       const chat = model.startChat({
-        history: history.map((h: any) => ({
+        history: (history || []).map((h: any) => ({
           role: h.role === 'model' ? 'model' : 'user',
           parts: [{ text: h.content?.parts?.[0]?.text || h.parts?.[0]?.text || "" }]
         })),
@@ -67,9 +76,21 @@ async function startServer() {
     });
     app.use(vite.middlewares);
   } else {
-    const distPath = path.join(process.cwd(), 'dist');
+    // Robust static file serving for production
+    const distPath = path.resolve(__dirname, 'dist');
     app.use(express.static(distPath));
-    app.get('*all', (req, res) => {
+    
+    // Explicitly handle index.html for the root
+    app.get("/", (req, res) => {
+      res.sendFile(path.join(distPath, 'index.html'));
+    });
+
+    // Catch-all for SPA routing
+    app.get("*", (req, res) => {
+      // Avoid catching API routes or static files that should have been handled
+      if (req.url.startsWith('/api')) {
+          return res.status(404).json({ error: "API route not found" });
+      }
       res.sendFile(path.join(distPath, 'index.html'));
     });
   }

@@ -11,8 +11,8 @@ import LoadingScreen from './components/LoadingScreen';
 import { UserProfile, ChatMessage, University, AuthUser, Application, MentorProfile, UniversityProfile } from './types';
 import { generateWelcomeMessage, initializeChatSession } from './services/geminiService';
 import { authClient } from './lib/auth';
-import { db } from './firebase';
-import { doc, getDoc, setDoc, deleteDoc } from 'firebase/firestore';
+import { db, handleFirestoreError, OperationType } from './firebase';
+import { doc, getDoc, setDoc, deleteDoc, getDocFromServer } from 'firebase/firestore';
 
 type AppView = 'landing' | 'login' | 'onboarding' | 'mentor-onboarding' | 'chat' | 'dashboard' | 'mentor-dashboard' | 'university-dashboard';
 
@@ -65,7 +65,18 @@ const App: React.FC = () => {
                 setIsFetchingProfile(true);
                 try {
                     const userDocRef = doc(db, 'users', sessionUser.id);
-                    const docSnap = await getDoc(userDocRef);
+                    // Fetch user data with fallback logic
+                    let docSnap;
+                    try {
+                        docSnap = await getDoc(userDocRef);
+                    } catch (e: any) {
+                        if (e.message?.includes('offline')) {
+                            console.warn("Client is offline, using cache if available.");
+                            docSnap = await getDoc(userDocRef);
+                        } else {
+                            throw e;
+                        }
+                    }
                     
                     if (docSnap.exists()) {
                         const data = docSnap.data();
@@ -119,11 +130,15 @@ const App: React.FC = () => {
                             setView('onboarding');
                         }
                     }
-                } catch (error) {
-                    console.error("Error fetching user data:", error);
-                    setUserRole(sessionUser.type);
-                    if (sessionUser.type === 'mentor') setView('mentor-onboarding');
-                    else setView('onboarding');
+                } catch (error: any) {
+                    if (error.message?.includes('offline')) {
+                        console.error("Firebase is offline. Please check your connection.");
+                        setUserRole(sessionUser.type);
+                        if (sessionUser.type === 'mentor') setView('mentor-onboarding');
+                        else setView('onboarding');
+                    } else {
+                        handleFirestoreError(error, OperationType.GET, `users/${sessionUser.id}`);
+                    }
                 } finally {
                     setIsFetchingProfile(false);
                 }
@@ -161,7 +176,9 @@ const App: React.FC = () => {
           // Deep remove undefined values
           const cleanData = JSON.parse(JSON.stringify(dataToSave));
 
-          setDoc(userDocRef, cleanData, { merge: true }).catch(console.error);
+          setDoc(userDocRef, cleanData, { merge: true }).catch(error => 
+              handleFirestoreError(error, OperationType.WRITE, `users/${sessionUser.id}`)
+          );
       }
   }, [profile, savedSchools, discardedSchools, applications, messages, sessionUser, userRole]);
   
@@ -175,7 +192,9 @@ const App: React.FC = () => {
               email: sessionUser.email
           };
           const cleanData = JSON.parse(JSON.stringify(dataToSave));
-          setDoc(userDocRef, cleanData, { merge: true }).catch(console.error);
+          setDoc(userDocRef, cleanData, { merge: true }).catch(error => 
+              handleFirestoreError(error, OperationType.WRITE, `users/${sessionUser.id}`)
+          );
       }
   }, [mentorProfile, sessionUser, userRole]);
 

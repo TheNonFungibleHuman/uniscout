@@ -1,18 +1,46 @@
 import { initializeApp } from 'firebase/app';
 import { getAuth } from 'firebase/auth';
-import { getFirestore } from 'firebase/firestore';
+import { getFirestore, doc, getDocFromServer } from 'firebase/firestore';
 import { getFunctions } from 'firebase/functions';
-
-const firebaseConfig = {
-  apiKey: "AIzaSyBuLhH-9F0hh6ouIMspbMd5zcuHlJTQR8I",
-  authDomain: "gen-lang-client-0681949015.firebaseapp.com",
-  projectId: "gen-lang-client-0681949015",
-  storageBucket: "gen-lang-client-0681949015.firebasestorage.app",
-  messagingSenderId: "291482318316",
-  appId: "1:291482318316:web:4ca78b068fc7e44406fcc9",
-};
+import firebaseConfig from './firebase-applet-config.json';
 
 const app = initializeApp(firebaseConfig);
 export const auth = getAuth(app);
-export const db = getFirestore(app);
+export const db = getFirestore(app, firebaseConfig.firestoreDatabaseId);
+
+export enum OperationType {
+  CREATE = 'create',
+  UPDATE = 'update',
+  DELETE = 'delete',
+  LIST = 'list',
+  GET = 'get',
+  WRITE = 'write',
+}
+
+export function handleFirestoreError(error: unknown, operationType: OperationType, path: string | null) {
+  const errInfo = {
+    error: error instanceof Error ? error.message : String(error),
+    authInfo: {
+      userId: auth.currentUser?.uid,
+      email: auth.currentUser?.email,
+      emailVerified: auth.currentUser?.emailVerified,
+    },
+    operationType,
+    path
+  }
+  console.error('Firestore Error: ', JSON.stringify(errInfo));
+  throw new Error(JSON.stringify(errInfo));
+}
 export const functions = getFunctions(app);
+
+async function testConnection() {
+  try {
+    await getDocFromServer(doc(db, 'test', 'connection'));
+  } catch (error) {
+    if(error instanceof Error && error.message.includes('the client is offline')) {
+      console.error("Please check your Firebase configuration. The client is reporting as offline.");
+    }
+  }
+}
+
+testConnection();

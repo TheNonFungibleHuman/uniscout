@@ -1,7 +1,7 @@
 
 import React, { useState, useEffect } from 'react';
 import { UniversityProfile, Application } from '../types';
-import { db } from '../firebase';
+import { db, handleFirestoreError, OperationType } from '../firebase';
 import { collection, query, where, getDocs, updateDoc, doc } from 'firebase/firestore';
 
 interface UniversityDashboardProps {
@@ -28,7 +28,7 @@ const UniversityDashboard: React.FC<UniversityDashboardProps> = ({ profile, onLo
         const universityApps = apps.filter(app => app.university?.id === profile.id || app.university?.name === profile.name);
         setApplications(universityApps);
       } catch (error) {
-        console.error("Error fetching applications:", error);
+        handleFirestoreError(error, OperationType.LIST, 'applications');
       } finally {
         setIsLoading(false);
       }
@@ -47,7 +47,7 @@ const UniversityDashboard: React.FC<UniversityDashboardProps> = ({ profile, onLo
         app.id === appId ? { ...app, status: newStatus } : app
       ));
     } catch (error) {
-      console.error("Error updating status:", error);
+      handleFirestoreError(error, OperationType.UPDATE, `applications/${appId}`);
     }
   };
 

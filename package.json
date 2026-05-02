@@ -4,7 +4,8 @@
   "version": "0.0.0",
   "type": "module",
   "scripts": {
-    "dev": "vite",
+    "dev": "tsx server.ts",
+    "start": "node server.ts",
     "build": "vite build",
     "preview": "vite preview",
     "lint": "tsc --noEmit"
@@ -12,7 +13,10 @@
   "dependencies": {
     "@formspree/react": "^3.0.0",
     "@google/genai": "^1.30.0",
+    "@google/generative-ai": "^0.24.1",
     "@tailwindcss/vite": "^4.2.2",
+    "@types/express": "^5.0.6",
+    "express": "^5.2.1",
     "firebase": "^12.6.0",
     "lucide-react": "^1.8.0",
     "motion": "^12.38.0",
@@ -20,7 +24,8 @@
     "react-dom": "^19.2.0",
     "react-markdown": "^10.1.0",
     "remark-gfm": "^4.0.1",
-    "tailwindcss": "^4.2.2"
+    "tailwindcss": "^4.2.2",
+    "tsx": "^4.21.0"
   },
   "devDependencies": {
     "@types/node": "^22.14.0",

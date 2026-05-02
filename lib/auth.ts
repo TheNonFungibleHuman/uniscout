@@ -10,8 +10,8 @@ import {
     onAuthStateChanged, 
     User 
 } from 'firebase/auth';
-import { doc, setDoc, getDoc } from 'firebase/firestore';
-import { auth, db } from '../firebase';
+import { auth, db, handleFirestoreError, OperationType } from '../firebase';
+import { doc, setDoc, getDoc, getDocFromServer } from 'firebase/firestore';
 
 const googleProvider = new GoogleAuthProvider();
 
@@ -41,16 +41,26 @@ export const authClient = {
                 
                 // Ensure user document exists in Firestore
                 const userDocRef = doc(db, 'users', result.user.uid);
-                const userDoc = await getDoc(userDocRef);
+                let userDoc;
+                try {
+                    userDoc = await getDocFromServer(userDocRef);
+                } catch (e) {
+                    userDoc = await getDoc(userDocRef);
+                }
+                
                 if (!userDoc.exists()) {
                     console.log("Creating new user document in Firestore...");
-                    await setDoc(userDocRef, {
-                        id: result.user.uid,
-                        email: result.user.email,
-                        name: result.user.displayName || 'User',
-                        role: role,
-                        createdAt: new Date().toISOString()
-                    });
+                    try {
+                        await setDoc(userDocRef, {
+                            id: result.user.uid,
+                            email: result.user.email,
+                            name: result.user.displayName || 'User',
+                            role: role,
+                            createdAt: new Date().toISOString()
+                        });
+                    } catch (error) {
+                        handleFirestoreError(error, OperationType.WRITE, `users/${result.user.uid}`);
+                    }
                 }
                 
                 return { data: mapFirebaseUser(result.user, role), error: null };
@@ -74,13 +84,17 @@ export const authClient = {
             localStorage.setItem('gradwyn_user_role', role);
             
             // Create user document in Firestore
-            await setDoc(doc(db, 'users', userCredential.user.uid), {
-                id: userCredential.user.uid,
-                email: email,
-                name: name,
-                role: role,
-                createdAt: new Date().toISOString()
-            });
+            try {
+                await setDoc(doc(db, 'users', userCredential.user.uid), {
+                    id: userCredential.user.uid,
+                    email: email,
+                    name: name,
+                    role: role,
+                    createdAt: new Date().toISOString()
+                });
+            } catch (error) {
+                handleFirestoreError(error, OperationType.WRITE, `users/${userCredential.user.uid}`);
+            }
             
             return { data: mapFirebaseUser(userCredential.user, role), error: null };
         } catch (error: any) {

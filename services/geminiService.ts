@@ -1,12 +1,6 @@
 
-import { GoogleGenAI } from "@google/genai";
 import { UserProfile, GroundingSource, University, ChatMessage } from "../types";
 import { UNI_IMAGES } from "../constants";
-
-// Initialize AI
-const ai = new GoogleGenAI({ 
-    apiKey: process.env.GEMINI_API_KEY || '' 
-});
 
 // State to maintain session context
 let currentHistory: any[] = [];
@@ -181,61 +175,39 @@ export const sendMessageToGeminiStream = async (
   }
 
   try {
-    const responseStream = await ai.models.generateContentStream({
-      model: "gemini-3-flash-preview",
-      contents: [
-        ...currentHistory,
-        { role: 'user', content: { parts: [{ text: message }] } }
-      ],
-      config: {
+    const response = await fetch("/api/chat", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        message,
         systemInstruction: currentSystemInstruction,
-        tools: [{ googleSearch: {} }]
-      }
+        history: currentHistory
+      }),
     });
 
-    let fullText = "";
-    let sources: GroundingSource[] = [];
-
-    for await (const chunk of responseStream) {
-      fullText += chunk.text || "";
-      
-      // Extract grounding sources if available
-      const groundingMetadata = chunk.candidates?.[0]?.groundingMetadata;
-      if (groundingMetadata?.searchEntryPoint) {
-          // You could handle search entry point here
-      }
-      
-      if (groundingMetadata?.groundingChunks) {
-          const newSources = groundingMetadata.groundingChunks
-            .filter((c: any) => c.web && c.web.title && c.web.uri)
-            .map((c: any) => ({
-              title: c.web!.title!,
-              uri: c.web!.uri!
-            }));
-          
-          // Add unique sources
-          newSources.forEach(ns => {
-              if (!sources.some(s => s.uri === ns.uri)) {
-                  sources.push(ns);
-              }
-          });
-      }
-
-      if (onToken) {
-        const { cleanText } = parseRecommendations(fullText);
-        onToken(cleanText);
-      }
+    if (!response.ok) {
+      const errData = await response.json();
+      throw new Error(errData.error || "Failed to communicate with AI server");
     }
 
-    const { cleanText, recommendations } = parseRecommendations(fullText);
+    const result = await response.json();
+    const { text, sources } = result;
+    
+    if (onToken) {
+      onToken(text);
+    }
+
+    const { cleanText, recommendations } = parseRecommendations(text);
 
     // Update history
     currentHistory.push({ role: 'user', content: { parts: [{ text: message }] } });
-    currentHistory.push({ role: 'model', content: { parts: [{ text: fullText }] } });
+    currentHistory.push({ role: 'model', content: { parts: [{ text: text }] } });
 
     return { text: cleanText, sources, recommendations };
   } catch (error) {
-    console.error("Gemini Error:", error);
+    console.error("Gemini Proxy Error:", error);
     throw error;
   }
 };

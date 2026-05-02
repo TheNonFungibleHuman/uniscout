@@ -86,7 +86,7 @@ async function startServer() {
     });
 
     // Catch-all for SPA routing
-    app.get("*", (req, res) => {
+    app.get("*all", (req, res) => {
       // Avoid catching API routes or static files that should have been handled
       if (req.url.startsWith('/api')) {
           return res.status(404).json({ error: "API route not found" });

@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { Routes, Route, useNavigate, Navigate, useLocation } from 'react-router-dom';
 import Onboarding from './components/Onboarding';
 import MentorOnboarding from './components/MentorOnboarding';
 import ChatInterface from './components/ChatInterface';
@@ -36,7 +37,8 @@ const DASHBOARD_BUILD_MESSAGES = [
 
 const App: React.FC = () => {
   const { data: sessionUser, isPending: isSessionPending } = authClient.useSession();
-  const [view, setView] = useState<AppView>('landing');
+  const navigate = useNavigate();
+  const location = useLocation();
   const [selectedRole, setSelectedRole] = useState<'applicant' | 'mentor' | 'university'>('applicant');
   
   const [profile, setProfile] = useState<UserProfile | null>(null);
@@ -86,13 +88,13 @@ const App: React.FC = () => {
                         if (role === 'mentor') {
                             if (data.bio && data.university) {
                                 setMentorProfile(data as MentorProfile);
-                                setView('mentor-dashboard');
+                                navigate('/mentor-dashboard');
                             } else {
-                                setView('mentor-onboarding');
+                                navigate('/mentor-onboarding');
                             }
                         } else if (role === 'university') {
                             setUniversityProfile(data as UniversityProfile);
-                            setView('university-dashboard');
+                            navigate('/university-dashboard');
                         } else {
                             let loadedMessages: ChatMessage[] = [];
                             if (data.messages) {
@@ -117,25 +119,25 @@ const App: React.FC = () => {
                                 })));
                             }
                             if (data.profile) {
-                                setView('dashboard');
+                                navigate('/dashboard');
                             } else {
-                                setView('onboarding');
+                                navigate('/onboarding');
                             }
                         }
                     } else {
                         setUserRole(sessionUser.type);
                         if (sessionUser.type === 'mentor') {
-                            setView('mentor-onboarding');
+                            navigate('/mentor-onboarding');
                         } else {
-                            setView('onboarding');
+                            navigate('/onboarding');
                         }
                     }
                 } catch (error: any) {
                     if (error.message?.includes('offline')) {
                         console.error("Firebase is offline. Please check your connection.");
                         setUserRole(sessionUser.type);
-                        if (sessionUser.type === 'mentor') setView('mentor-onboarding');
-                        else setView('onboarding');
+                        if (sessionUser.type === 'mentor') navigate('/mentor-onboarding');
+                        else navigate('/onboarding');
                     } else {
                         handleFirestoreError(error, OperationType.GET, `users/${sessionUser.id}`);
                     }
@@ -145,7 +147,9 @@ const App: React.FC = () => {
             };
             fetchUserData();
         } else {
-            setView('landing');
+            if (location.pathname !== '/' && location.pathname !== '/login') {
+                navigate('/');
+            }
         }
     }
   }, [sessionUser, isSessionPending]);
@@ -200,12 +204,11 @@ const App: React.FC = () => {
 
   const handleRoleSelect = (role: 'applicant' | 'mentor' | 'university') => {
       setSelectedRole(role);
-      setView('login');
+      navigate('/login');
   };
 
   const handleLoginSuccess = (user: AuthUser) => {
     // The useEffect listening to sessionUser will handle fetching data and routing.
-    // We don't need to manually set the view here anymore.
   };
 
   const handleLogout = async () => {
@@ -217,7 +220,7 @@ const App: React.FC = () => {
     setApplications([]);
     setMessages([]);
     setDiscardedSchools([]);
-    setView('landing');
+    navigate('/');
   };
 
   const handleDeleteAccount = async () => {
@@ -233,8 +236,6 @@ const App: React.FC = () => {
         const { error } = await authClient.deleteAccount();
         
         if (error) {
-            // If auth deletion fails (usually requires recent login), 
-            // we at least signed them out and deleted DB data.
             console.warn("Auth deletion failed, signing out instead:", error);
             await authClient.signOut();
         }
@@ -248,7 +249,7 @@ const App: React.FC = () => {
         setApplications([]);
         setMessages([]);
         setDiscardedSchools([]);
-        setView('landing');
+        navigate('/');
     }
   };
 
@@ -275,14 +276,14 @@ const App: React.FC = () => {
           id: sessionUser?.id || Date.now().toString(),
       };
       setMentorProfile(fullProfile);
-      setView('mentor-dashboard');
+      navigate('/mentor-dashboard');
   };
 
   // Trigger the AI analysis and switch to chat view
   const startAnalysisFlow = async (userProfile: UserProfile) => {
       setIsLoadingWelcome(true);
       setMessages([]); // Clear any previous chat
-      setView('chat'); // Force view to chat immediately behind loading screen
+      navigate('/chat'); // Force view to chat immediately behind loading screen
 
       initializeChatSession(userProfile);
 
@@ -361,66 +362,65 @@ const App: React.FC = () => {
   const handleGoToDashboard = () => {
       setIsTransitioningToDashboard(true);
       setTimeout(() => {
-          setView('dashboard');
+          navigate('/dashboard');
           setIsTransitioningToDashboard(false);
       }, 3000);
   };
 
-  // Loading State for Session Check
   if (isSessionPending || isFetchingProfile) {
       return <div className="h-screen bg-beige-100 flex items-center justify-center">
           <div className="animate-pulse text-brand-700 font-serif text-2xl">Loading...</div>
       </div>;
   }
 
-  if (view === 'landing') {
-    return <LandingPage onGetStarted={handleRoleSelect} />;
-  }
-
-  if (view === 'login') {
-    return <LoginPage 
-        initialRole={selectedRole}
-        onLoginSuccess={handleLoginSuccess} 
-        onBack={() => setView('landing')} 
-    />;
-  }
-
   if (isLoadingWelcome) {
     return <LoadingScreen messages={PROFILE_ANALYSIS_MESSAGES} />;
-  }
-  
-  if (view === 'mentor-onboarding') {
-      return <MentorOnboarding 
-        onComplete={handleMentorOnboardingComplete} 
-        initialName={sessionUser?.name} 
-        initialEmail={sessionUser?.email} 
-        initialPhoto={sessionUser?.image} 
-        onBack={() => setView('login')}
-      />;
-  }
-  
-  if (view === 'mentor-dashboard' && mentorProfile) {
-      return <MentorDashboard profile={mentorProfile} onUpdateProfile={setMentorProfile} onLogout={handleLogout} onDeleteAccount={handleDeleteAccount} />;
-  }
-
-  if (view === 'university-dashboard' && universityProfile) {
-      return <UniversityDashboard profile={universityProfile} onLogout={handleLogout} />;
-  }
-
-  if (view === 'onboarding') {
-    return <Onboarding 
-      onComplete={handleOnboardingComplete} 
-      initialName={sessionUser?.name} 
-      onExit={() => setView('login')} 
-    />;
   }
 
   if (isTransitioningToDashboard) {
     return <LoadingScreen messages={DASHBOARD_BUILD_MESSAGES} />;
   }
 
-  if (view === 'dashboard' && profile) {
-      return (
+  return (
+    <Routes>
+      <Route path="/" element={<LandingPage onGetStarted={handleRoleSelect} />} />
+      <Route path="/login" element={<LoginPage 
+          initialRole={selectedRole}
+          onLoginSuccess={handleLoginSuccess} 
+          onBack={() => navigate('/')} 
+      />} />
+      <Route path="/onboarding" element={
+        sessionUser ? (
+          <Onboarding 
+            onComplete={handleOnboardingComplete} 
+            initialName={sessionUser?.name} 
+            onExit={() => navigate('/login')} 
+          />
+        ) : <Navigate to="/login" />
+      } />
+      <Route path="/mentor-onboarding" element={
+        sessionUser ? (
+          <MentorOnboarding 
+            onComplete={handleMentorOnboardingComplete} 
+            initialName={sessionUser?.name} 
+            initialEmail={sessionUser?.email} 
+            initialPhoto={sessionUser?.image} 
+            onBack={() => navigate('/login')}
+          />
+        ) : <Navigate to="/login" />
+      } />
+      <Route path="/mentor-dashboard" element={
+        mentorProfile ? (
+          <MentorDashboard profile={mentorProfile} onUpdateProfile={setMentorProfile} onLogout={handleLogout} onDeleteAccount={handleDeleteAccount} />
+        ) : <Navigate to="/login" />
+      } />
+      <Route path="/university-dashboard" element={
+        universityProfile ? (
+          <UniversityDashboard profile={universityProfile} onLogout={handleLogout} />
+        ) : <Navigate to="/login" />
+      } />
+      <Route path="/dashboard" element={
+        profile ? (
           <Dashboard 
               profile={profile} 
               savedSchools={savedSchools}
@@ -448,27 +448,27 @@ const App: React.FC = () => {
                 />
               )}
           />
-      )
-  }
-
-  if (profile) {
-    return (
-        <ChatInterface 
-            profile={profile} 
-            messages={messages}
-            setMessages={setMessages}
-            onUpdateProfile={handleFullProfileRefresh}
-            onSaveSchool={handleSaveSchool}
-            onDiscardSchool={handleDiscardSchool}
-            savedSchools={savedSchools}
-            discardedSchools={discardedSchools}
-            onGoToDashboard={handleGoToDashboard}
-            onDeleteAccount={handleDeleteAccount}
-        />
-    );
-  }
-
-  return null;
+        ) : <Navigate to="/login" />
+      } />
+      <Route path="/chat" element={
+        profile ? (
+            <ChatInterface 
+                profile={profile} 
+                messages={messages}
+                setMessages={setMessages}
+                onUpdateProfile={handleFullProfileRefresh}
+                onSaveSchool={handleSaveSchool}
+                onDiscardSchool={handleDiscardSchool}
+                savedSchools={savedSchools}
+                discardedSchools={discardedSchools}
+                onGoToDashboard={handleGoToDashboard}
+                onDeleteAccount={handleDeleteAccount}
+            />
+        ) : <Navigate to="/login" />
+      } />
+      <Route path="*" element={<Navigate to="/" />} />
+    </Routes>
+  );
 };
 
 export default App;
